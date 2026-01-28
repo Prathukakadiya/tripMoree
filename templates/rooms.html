@@ -1,0 +1,15 @@
+<h2>Available Rooms</h2>
+
+<a href="/my_bookings">My Bookings</a> |
+<a href="/logout">Logout</a>
+<hr>
+
+{% for room in rooms %}
+    <p>
+        Room Type: {{ room.room_type }} <br>
+        Price: ₹{{ room.price }} <br>
+        Available: {{ room.available_rooms }} <br>
+        <a href="/book/{{ room.id }}">Book</a>
+    </p>
+    <hr>
+{% endfor %}
