@@ -5,7 +5,6 @@ body {
     color: #222;
 }
 
-/* Titles */
 .page-title {
     text-align: center;
     margin-top: 30px;
@@ -18,12 +17,13 @@ body {
     margin-bottom: 25px;
 }
 
-/* Vacation types */
+/* Vacation buttons */
 .vacation-types {
     display: flex;
     justify-content: center;
     gap: 18px;
     flex-wrap: wrap;
+    margin: 25px 0;
 }
 
 .vacation-card {
@@ -32,8 +32,8 @@ body {
     border-radius: 30px;
     cursor: pointer;
     font-weight: 600;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-    transition: 0.3s;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    transition: all 0.3s ease;
 }
 
 .vacation-card:hover {
@@ -92,13 +92,10 @@ body {
 }
 
 .destination-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+    transform: translateY(-6px);
 }
 
-/* Image animation */
 .image-wrapper {
-    position: relative;
     height: 190px;
     overflow: hidden;
 }
@@ -107,54 +104,33 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s;
 }
 
-.destination-card:hover img {
-    transform: scale(1.1);
-}
-
-/* Overlay name */
-.overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: 0.4s;
-}
-
-.overlay h2 {
-    color: white;
-    font-size: 22px;
-}
-
-.destination-card:hover .overlay {
-    opacity: 1;
-}
-
-/* Info */
 .destination-info {
     padding: 15px;
-    font-size: 14px;
 }
 
-.explore-btn {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 10px 16px;
-    background: #0077ff;
-    color: white;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
+.location {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    color: #0077ff;
 }
 
-.loading, .no-results {
-    text-align: center;
-    grid-column: 1 / -1;
-    font-size: 18px;
+.rating {
+    background: #ffb703;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.best-time {
+    font-size: 13px;
     color: #666;
+    margin: 6px 0;
+}
+
+.tags {
+    font-size: 13px;
+    color: #444;
 }
