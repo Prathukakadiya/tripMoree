@@ -29,7 +29,8 @@
 <script>
 const destinationId = {{ destination_id }};
 
-fetch(`/api/compare_hotels/${destinationId}`)
+/* ✅ FIX 1: correct API */
+fetch(`/api/hotels/${destinationId}`)
 .then(res => res.json())
 .then(data => {
     const div = document.getElementById("hotels");
@@ -37,10 +38,13 @@ fetch(`/api/compare_hotels/${destinationId}`)
     data.forEach(h => {
         div.innerHTML += `
         <div class="card">
-            <img src="${h.images[0]}">
+            <img src="${h.images.length ? h.images[0] : ''}">
             <h3>${h.hotel}</h3>
             <p>⭐ ${h.stars}</p>
-            <p>₹ ${h.starting_price}</p>
+
+            <!-- ✅ FIX 2: correct key -->
+            <p>₹ ${h.price}</p>
+
             <p>Rooms: ${h.available_rooms}</p>
             <p>${h.amenities.join(", ")}</p>
         </div>

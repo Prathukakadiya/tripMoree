@@ -1,7 +1,8 @@
-from flask import Flask, render_template, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from flask import Flask, render_template, jsonify, request
 
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func,text
+import math
 app = Flask(__name__)
 app.secret_key = "tripmoreee"
 
@@ -32,7 +33,6 @@ hotel_amenities = db.Table(
     db.Column("amenity_id", db.Integer, db.ForeignKey("amenity.id"))
 )
 
-
 class Hotel(db.Model):
     __tablename__ = "hotel"
 
@@ -42,11 +42,13 @@ class Hotel(db.Model):
     stars = db.Column(db.Float)
     starting_price = db.Column(db.Integer)
 
+    latitude = db.Column(db.Float)      # ✅ ADD THIS
+    longitude = db.Column(db.Float)     # ✅ ADD THIS
+
     destination = db.relationship("Destination", backref="hotels")
     amenities = db.relationship("Amenity", secondary=hotel_amenities)
     rooms = db.relationship("Room", backref="hotel")
     images = db.relationship("HotelImage", backref="hotel")
-
 
 class Amenity(db.Model):
     __tablename__ = "amenity"
@@ -99,6 +101,14 @@ class NightSafetyZones(db.Model):
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
 
+class Transport(db.Model):
+    __tablename__ = "transport"
+
+    id = db.Column(db.Integer, primary_key=True)
+    vehicle_name = db.Column(db.String(100))
+    vehicle_type = db.Column(db.String(50))
+    ac_type = db.Column(db.String(20))
+    price_per_km = db.Column(db.Integer)
 
 class LocalEtiquettes(db.Model):
     __tablename__ = "local_etiquettes"
@@ -107,6 +117,16 @@ class LocalEtiquettes(db.Model):
     location_name = db.Column(db.String(100))
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
+
+class HypeSpot(db.Model):
+    __tablename__ = "hype_spots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    destination_id = db.Column(db.Integer, db.ForeignKey("destination.id"))
+    spot_name = db.Column(db.String(100))
+
+    latitude = db.Column(db.Float)      
+    longitude = db.Column(db.Float)     
 
 
 class TouristAlertsTips(db.Model):
@@ -211,7 +231,7 @@ def guide(location):
 
     alerts = TouristAlertsTips.query.filter(
         func.lower(TouristAlertsTips.location_name) == location.lower()
-    ).all()
+    ).all() 
 
     essentials = LocationEssentials.query.filter(
         func.lower(LocationEssentials.location_name) == location.lower()
@@ -231,6 +251,99 @@ def guide(location):
 @app.route("/login")
 def login():
     return render_template("login.html")
+
+@app.route("/api/hype_spots/<int:destination_id>")
+def get_hype_spots(destination_id):
+    spots = HypeSpot.query.filter_by(destination_id=destination_id).all()
+    return jsonify([s.spot_name for s in spots])
+
+@app.route("/spots/<int:destination_id>")
+def spots_page(destination_id):
+    dest = Destination.query.get_or_404(destination_id)
+
+    spots = HypeSpot.query.filter_by(destination_id=destination_id).all()
+
+    # 👇 destination નો first hotel લો
+    hotel = Hotel.query.filter_by(destination_id=destination_id).first()
+
+    return render_template(
+        "hype_spots.html",
+        destination_name=dest.name,
+        spots=spots,
+        hotel_id=hotel.id if hotel else None
+    )
+
+@app.route("/api/calculate-distance", methods=["POST"])
+def calculate_distance():
+
+    data = request.get_json()
+    spot_ids = [int(i) for i in data.get("spots", []) if str(i).isdigit()]
+    hotel_id = data.get("hotel_id")
+
+    if not spot_ids or not hotel_id:
+        return jsonify({"distance_km": 0})
+
+    hotel = db.session.get(Hotel, hotel_id)
+    if not hotel or hotel.latitude is None:
+        return jsonify({"distance_km": 0})
+
+    spots = db.session.execute(
+        text("""
+            SELECT latitude, longitude
+            FROM hype_spots
+            WHERE id IN :ids
+            AND destination_id = :dest_id
+        """),
+        {
+            "ids": tuple(spot_ids),
+            "dest_id": hotel.destination_id
+        }
+    ).fetchall()
+
+    total = 0
+    prev_lat, prev_lon = hotel.latitude, hotel.longitude
+
+    for s in spots:
+        total += haversine(prev_lat, prev_lon, s.latitude, s.longitude)
+        prev_lat, prev_lon = s.latitude, s.longitude
+
+    return jsonify({"distance_km": round(total, 2)})
+
+
+@app.route("/api/calculate-transport", methods=["POST"])
+def calculate_transport():
+
+    data = request.json
+    distance = data["distance"]
+
+    vehicles = Transport.query.all()
+    result = []
+
+    for v in vehicles:
+        price = distance * v.price_per_km
+        result.append({
+            "vehicle": v.vehicle_name,
+            "type": v.vehicle_type,
+            "ac": v.ac_type,
+            "price": round(price, 2)
+        })
+
+    return jsonify(result)
+
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # km
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+
+    a = (
+        math.sin(dlat/2)**2 +
+        math.cos(math.radians(lat1)) *
+        math.cos(math.radians(lat2)) *
+        math.sin(dlon/2)**2
+    )
+
+    return 2 * R * math.asin(math.sqrt(a))
 
 
 # ================= RUN =================

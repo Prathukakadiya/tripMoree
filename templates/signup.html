@@ -3,42 +3,63 @@
 <head>
     <title>Signup | TripMoreee</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+      body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+
+            background-image: url("https://images.unsplash.com/photo-1506929562872-bb421503ef21");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
+
         .box {
-            width: 350px;
-            margin: 80px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px gray;
+            width: 360px;
+            padding: 28px;
+            border-radius: 14px;
+            background: #D8C6A3;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+            animation: slideFade 1s ease;
         }
 
         h2 {
             text-align: center;
         }
 
-        input {
+          input {
             width: 100%;
-            padding: 8px;
-            margin-top: 8px;
+            padding: 10px;
+            margin-top: 4px;
             margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #AAA;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: #1F2839;
         }
 
-        button {
+         button {
             width: 100%;
-            padding: 8px;
-            background: green;
-            color: white;
+            padding: 10px;
+            background: #1F2839;
+            color: #FFFFFF;
             border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
             cursor: pointer;
+            transition: background 0.3s ease;
         }
 
-        button:hover {
-            background: darkgreen;
+      button:hover {
+            background: #141B27;
         }
 
         .link {
@@ -54,13 +75,17 @@
 
     <form method="post">
         Name:
-        <input type="text" name="name" required>
+        <input type="text" name="name" placeholder="enter your name" required>
 
         Email:
-        <input type="email" name="email" required>
+        <input type="email" name="email" placeholder="enter your email" required>
+
+        Mobile No:
+        <input type="text" name="mobile" placeholder="enter your mobile number" required>
+
 
         Password:
-        <input type="password" name="password" required>
+        <input type="password" name="password" placeholder="enter your password" required>
 
         <button type="submit">Signup</button>
     </form>

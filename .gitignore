@@ -1,4 +1,9 @@
-.ipynb_checkpoints/
+# Database
+*.db
+
+# Flask instance
+instance/
+
+# Python cache
 __pycache__/
 *.pyc
-.env
