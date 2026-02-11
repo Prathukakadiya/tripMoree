@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ destination.name }} | TripMoreee</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            margin-bottom: 5px;
+        }
+        .section {
+            margin-top: 30px;
+        }
+        .hotel-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .spot {
+            margin-bottom: 10px;
+        }
+        .book-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 14px;
+            background: #1F2839;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .book-btn:hover {
+            background: #141B27;
+        }
+    </style>
+</head>
+<body>
+
+<h1>📍 {{ destination.name }}</h1>
+<p>⭐ Rating: {{ destination.rating }}</p>
+<p>🕒 Best Time: {{ destination.best_time }}</p>
+
+<hr>
+
+<div class="section">
+    <h2>🏨 Available Hotels</h2>
+
+    {% if hotels %}
+        {% for hotel in hotels %}
+            <div class="hotel-card">
+                <h3>{{ hotel.name }}</h3>
+                <p>⭐ {{ hotel.stars }} Stars</p>
+                <p>💰 Starting Price: ₹{{ hotel.starting_price }}</p>
+
+                <!-- 🔥 FINAL FIX: NEXT PARAMETER ADDED -->
+                <a href="/login?next=/book-hotel/{{ hotel.id }}" class="book-btn">
+                    Book Now
+                </a>
+
+                <!-- Existing link kept (NOT removed) -->
+                <br><br>
+                <a href="/hotels/{{ destination.id }}">View Rooms</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hotels available for this destination.</p>
+    {% endif %}
+</div>
+
+<hr>
+
+<div class="section">
+    <h2>🔥 Hype Spots</h2>
+
+    {% if spots %}
+        {% for spot in spots %}
+            <div class="spot">
+                📍 {{ spot.spot_name }}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hype spots added yet.</p>
+    {% endif %}
+</div>
+
+<hr>
+
+<a href="/guide/{{ destination.name }}">👉 View Travel Guide</a>
+
+</body>
+</html>

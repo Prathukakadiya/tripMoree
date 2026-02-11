@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Train Search</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(
+                        rgba(0, 0, 0, 0.65),
+                        rgba(0, 0, 0, 0.65)
+                    ),
+                    url("https://images.unsplash.com/photo-1548013146-72479768bada");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 14px;
+            padding: 30px;
+            color: #000;
+        }
+
+        table {
+            background: #ffffff;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+{% include "navbar.html" %}
+<div class="container mt-5">
+
+    <div class="text-center mb-4">
+        <h2>Train Search</h2>
+        <p class="opacity-75">Safe • Fast • Comfortable Journey</p>
+    </div>
+
+    <div class="search-box shadow-lg mb-4">
+        <form method="POST" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="source" class="form-control" placeholder="Source Station" required>
+            </div>
+
+            <div class="col-md-4">
+                <input type="text" name="destination" class="form-control" placeholder="Destination Station" required>
+            </div>
+
+            <div class="col-md-2">
+                <input type="number" name="persons" class="form-control" min="1" placeholder="Persons" required>
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-danger w-100">Search & Book</button>
+            </div>
+        </form>
+    </div>
+
+    {% if trains %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Train No</th>
+                    <th>Train Name</th>
+                    <th>Type</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Fare (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in trains %}
+                <tr>
+                    <td>{{ t.train_number }}</td>
+                    <td>{{ t.train_name }}</td>
+                    <td>{{ t.train_type }}</td>
+                    <td>{{ t.departure_time }}</td>
+                    <td>{{ t.arrival_time }}</td>
+                    <td>{{ t.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif request.method == "POST" %}
+        <p class="text-warning text-center fs-5 mt-4">No trains available</p>
+    {% endif %}
+
+    {% if message %}
+        <p class="text-success text-center fs-5">{{ message }}</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

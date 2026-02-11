@@ -1,0 +1,67 @@
+<style>
+    .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.88);
+        padding: 12px 40px;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+        box-sizing: border-box;
+    }
+
+    .hamburger {
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        margin-right: 20px;
+    }
+
+    .logo {
+        color: gold;
+        font-size: 22px;
+        font-weight: bold;
+        margin-right: auto;
+    }
+
+    .nav-links a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 17px;
+        white-space: nowrap;
+    }
+
+    .nav-links a:hover {
+        color: gold;
+    }
+
+    .book-btn {
+        background: gold;
+        color: black !important;
+        padding: 6px 14px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+</style>
+
+<div class="navbar">
+    <div class="hamburger">☰</div>
+    <div class="logo">TripMoreee</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/destinations">Destinations</a>
+
+        {% if session.get("user_id") %}
+            <a href="/my-bookings">My Bookings</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
+
+        <a href="/destinations" class="book-btn">Book Now</a>
+    </div>
+</div>

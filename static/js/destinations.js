@@ -49,6 +49,12 @@ function renderCards(data) {
         const card = document.createElement("div");
         card.className = "destination-card";
 
+        /* 🔥 ONLY REQUIRED CHANGE */
+        card.style.cursor = "pointer";
+        card.addEventListener("click", () => {
+            window.location.href = `/hotels/${dest.id}`;
+        });
+
         card.innerHTML = `
             <div class="image-wrapper">
                 <img src="${dest.image}" alt="${dest.name}">
@@ -73,3 +79,4 @@ function renderCards(data) {
         container.appendChild(card);
     });
 }
+    

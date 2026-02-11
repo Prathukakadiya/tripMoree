@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Bookings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+{% include "navbar.html" %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">📜 My Bookings</h2>
+
+    {% if bookings %}
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Persons</th>
+                <th>Total Price (₹)</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+    {% for booking in bookings %}
+    <tr>
+        <td>{{ booking.booking_type }}</td>
+        <td>{{ booking.source }}</td>
+        <td>{{ booking.destination }}</td>
+        <td>{{ booking.persons }}</td>
+        <td>₹ {{ booking.price }}</td>
+        <td>{{ booking.created_at }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+    </table>
+    {% else %}
+        <p class="text-center fs-5">No bookings yet 😕</p>
+    {% endif %}
+</div>
+
+</body>
+</html>

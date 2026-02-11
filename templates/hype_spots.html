@@ -96,95 +96,125 @@
 
 <div class="container">
 
-    <!-- SPOTS -->
     {% for s in spots %}
     <div class="spot">
         <label>
-            <input type="checkbox"
-                   class="spot-check"
-                   data-id="{{ s.id }}">
+            <input type="checkbox" class="spot-check" data-id="{{ s.id }}">
             <strong>{{ s.spot_name }}</strong>
         </label>
     </div>
     {% endfor %}
 
-    <!-- TRANSPORT -->
     <div id="transport">
         <h2>🚕 Select Transportation</h2>
         <div id="distanceInfo" class="distance-badge"></div>
         <div id="cabList" class="cabs"></div>
+
+        <button style="margin-top:20px;padding:10px 20px;background:#28a745;color:white;border:none;border-radius:6px;">
+            🚕 Book Cab
+        </button>
+    </div>
+
+    <div style="margin-top:40px;text-align:center;">
+        <a href="/my-bookings" style="text-decoration:none;font-size:18px;">
+            ✅ Finish Trip & View Booking
+        </a>
     </div>
 
 </div>
-
 <script>
-/* ✅ THIS WAS MISSING – ROOT FIX */
-const hotel_id = {{ hotel_id }};
+document.addEventListener("DOMContentLoaded", function () {
 
-const transportDiv = document.getElementById("transport");
-const cabList = document.getElementById("cabList");
-const distanceInfo = document.getElementById("distanceInfo");
+    const transportDiv = document.getElementById("transport");
+    const cabList = document.getElementById("cabList");
+    const distanceInfo = document.getElementById("distanceInfo");
+    const bookBtn = document.querySelector("button");
 
-document.addEventListener("change", () => {
+    let selectedCab = null;
 
-    const selectedSpots = [];
-    document.querySelectorAll(".spot-check:checked").forEach(cb => {
-        selectedSpots.push(cb.dataset.id);
+    document.querySelectorAll(".spot-check").forEach(cb => {
+        cb.addEventListener("change", handleSpotChange);
     });
 
-    if (selectedSpots.length === 0) {
-        transportDiv.style.display = "none";
-        cabList.innerHTML = "";
-        distanceInfo.innerHTML = "";
-        return;
-    }
+    function handleSpotChange() {
 
-    fetch("/api/calculate-distance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            hotel_id: hotel_id,
-            spots: selectedSpots
-        })
-    })
-    .then(res => res.json())
-    .then(dist => {
+        const selectedSpots = [];
+        document.querySelectorAll(".spot-check:checked").forEach(cb => {
+            selectedSpots.push(cb.dataset.id);
+        });
 
-        distanceInfo.innerText = `📍 Total Distance: ${dist.distance_km} km`;
+        if (selectedSpots.length === 0) {
+            transportDiv.style.display = "none";
+            cabList.innerHTML = "";
+            distanceInfo.innerHTML = "";
+            return;
+        }
 
-        return fetch("/api/calculate-transport", {
+        fetch("/api/calculate-distance", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ distance: dist.distance_km })
+            body: JSON.stringify({ spots: selectedSpots })
+        })
+        .then(res => res.json())
+        .then(dist => {
+
+            distanceInfo.innerText = `📍 Total Distance: ${dist.distance_km} km`;
+
+            return fetch("/api/calculate-transport", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ distance: dist.distance_km })
+            });
+        })
+        .then(res => res.json())
+        .then(cars => {
+
+            transportDiv.style.display = "block";
+            cabList.innerHTML = "";
+            selectedCab = null;
+
+            cars.forEach((c, i) => {
+                const card = document.createElement("div");
+                card.className = "cab-card";
+                card.style.animationDelay = `${i * 0.1}s`;
+
+                card.innerHTML = `
+                    <h3>${c.vehicle}</h3>
+                    <p>${c.type} • ${c.ac}</p>
+                    <strong>₹ ${c.price}</strong>
+                `;
+
+                card.onclick = () => {
+                    document.querySelectorAll(".cab-card")
+                        .forEach(x => x.classList.remove("active"));
+                    card.classList.add("active");
+                    selectedCab = c;
+                };
+
+                cabList.appendChild(card);
+            });
         });
-    })
-    .then(res => res.json())
-    .then(cars => {
+    }
 
-        transportDiv.style.display = "block";
-        cabList.innerHTML = "";
+    bookBtn.onclick = function () {
+        if (!selectedCab) {
+            alert("Please select a cab first 🚕");
+            return;
+        }
 
-        cars.forEach((c, i) => {
-            const card = document.createElement("div");
-            card.className = "cab-card";
-            card.style.animationDelay = `${i * 0.1}s`;
-
-            card.innerHTML = `
-                <h3>${c.vehicle}</h3>
-                <p>${c.type} • ${c.ac}</p>
-                <strong>₹ ${c.price}</strong>
-            `;
-
-            card.onclick = () => {
-                document.querySelectorAll(".cab-card")
-                    .forEach(x => x.classList.remove("active"));
-                card.classList.add("active");
-            };
-
-            cabList.appendChild(card);
+        fetch("/book-cab", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                price: selectedCab.price
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert("Cab booked successfully ✅");
+            window.location.href = "/my-bookings";
         });
-    })
-    .catch(err => console.error(err));
+    };
 });
 </script>
 

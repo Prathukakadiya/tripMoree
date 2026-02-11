@@ -7,6 +7,8 @@
 </head>
 <body>
 
+{% include "navbar.html" %}
+
 <h1 class="page-title">What kind of vacation are you planning?</h1>
 <p class="subtitle">Select a vacation type or search destinations</p>
 
@@ -32,5 +34,6 @@
 <div id="destinations-container"></div>
 
 <script src="{{ url_for('static', filename='js/destinations.js') }}"></script>
+
 </body>
 </html>

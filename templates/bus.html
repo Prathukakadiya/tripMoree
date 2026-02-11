@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+    body {
+        background: linear-gradient(
+                    rgba(0, 0, 0, 0.65),
+                    rgba(0, 0, 0, 0.65)
+                ),
+                url("https://images.unsplash.com/photo-1570125909232-eb263c188f7e");
+        background-size: cover;
+        background-position: center;
+        min-height: 100vh;
+        color: #ffffff;
+    }
+
+    table {
+        background: #fff;
+        color: #000;
+    }
+</style>
+
+<body>
+{% include "navbar.html" %}
+<div class="container mt-5">
+
+    <h2 class="text-center mb-4">🚌 Bus Search</h2>
+
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="text" name="source" class="form-control" placeholder="Source City" required>
+        </div>
+
+        <div class="col-md-4">
+            <input type="text" name="destination" class="form-control" placeholder="Destination City" required>
+        </div>
+
+        <div class="col-md-2">
+            <input type="number" name="persons" class="form-control" min="1" placeholder="Persons" required>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-success w-100">Search & Book</button>
+        </div>
+    </form>
+
+    {% if buses %}
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Bus No</th>
+                <th>Operator</th>
+                <th>Type</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Price (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in buses %}
+            <tr>
+                <td>{{ b.bus_number }}</td>
+                <td>{{ b.operator }}</td>
+                <td>{{ b.bus_type }}</td>
+                <td>{{ b.departure_time }}</td>
+                <td>{{ b.arrival_time }}</td>
+                <td>{{ b.price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if message %}
+        <p class="text-success text-center fs-5">{{ message }}</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Next Steps | TripMoreee</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 30px;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .option {
+            margin: 15px 0;
+        }
+
+        a.btn {
+            display: inline-block;
+            padding: 10px 16px;
+            background: #1F2839;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        a.btn.skip {
+            background: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>✅ Hotel Booked Successfully</h2>
+
+    <p><b>Hotel:</b> {{ hotel.name }}</p>
+    <p><b>Destination:</b> {{ destination.name }}</p>
+
+    <hr>
+
+    <div class="option">
+        📘 <b>View Information</b><br>
+        <a class="btn" href="/guide/{{ destination.name }}">View Guide</a>
+    </div>
+
+    <div class="option">
+        🚍 🚆 ✈️ <b>Book Transport</b><br>
+       <a class="btn" href="/transport-choice/{{ destination.name }}">
+  Book Transport
+</a>
+
+    </div>
+
+    <div class="option">
+        📍 <b>Explore Hype Spots</b><br>
+        <a class="btn" href="/hype-spots/{{ destination.id }}">View Spots</a>
+    </div>
+
+    <div class="option">
+        ⏭️ <b>Skip Everything</b><br>
+        <a class="btn skip" href="/my-bookings">Go to My Bookings</a>
+    </div>
+</div>
+
+</body>
+</html>

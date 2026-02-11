@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Hotel</title>
+</head>
+<body>
+
+<h2>{{ hotel.name }}</h2>
+<p>⭐ {{ hotel.stars }} Stars</p>
+<p>💰 Price per person: ₹{{ hotel.starting_price }}</p>
+
+<form method="post">
+    <label>Persons</label>
+    <input type="number" name="persons" required>
+
+    <label>Check-in Date</label>
+    <input type="date" name="checkin" required>
+
+    <label>Number of Days</label>
+    <input type="number" name="days" required>
+
+    <button type="submit">Confirm Booking</button>
+</form>
+
+</body>
+</html>
