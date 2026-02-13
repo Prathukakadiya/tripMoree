@@ -1,0 +1,56 @@
+.navbar {
+    position: fixed;
+    top: 10px;
+    left: 0;
+    width: 1400px;
+    height: 60px;              /* IMPORTANT */
+    background: rgba(0,0,0,0.9);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+}
+
+
+/* Hamburger */
+.hamburger {
+    color: white;
+    font-size: 20px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+/* Logo */
+.logo {
+    color: gold;
+    font-size: 22px;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+/* Links */
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links a {
+    color: white;
+    margin-left: 25px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: gold;
+}
+
+/* Book Button */
+.nav-book-btn {
+    background: gold;
+    color: black !important;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}

@@ -6,7 +6,6 @@ import math
 from flask import url_for
 
 from sqlalchemy import func, text
-import math
 
 app = Flask(__name__)
 app.secret_key = "tripmoreee"
@@ -59,7 +58,7 @@ class Hotel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
 
-    # ✅ FIXED FOREIGN KEY (ONLY CHANGE)
+   
     destination_id = db.Column(
         db.Integer,
         db.ForeignKey("destination.id")
@@ -72,7 +71,7 @@ class Hotel(db.Model):
 
     amenities = db.relationship("Amenity", secondary=hotel_amenities)
     rooms = db.relationship("Room", backref="hotel")
-    images = db.relationship("HotelImage", backref="hotel")
+   
 
 
 class Amenity(db.Model):
@@ -95,11 +94,6 @@ class Room(db.Model):
         return self.total_rooms - self.booked_rooms
 
 
-class HotelImage(db.Model):
-    __tablename__ = "hotel_image"
-    id = db.Column(db.Integer, primary_key=True)
-    hotel_id = db.Column(db.Integer, db.ForeignKey("hotel.id"))
-    image_url = db.Column(db.String(300))
 
 # ================= GUIDE / SPOTS =================
 
@@ -250,6 +244,7 @@ class HotelBooking(db.Model):
     price = db.Column(db.Integer)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
 class BookingHypeSpot(db.Model):
     __tablename__ = "booking_hype_spots"
 
@@ -269,9 +264,18 @@ def home():
 def destinations_page():
     return render_template("destinations.html")
 
-
 @app.route("/api/destinations")
 def get_destinations():
+
+    vacation_type = request.args.get("type")
+
+    query = Destination.query
+
+    if vacation_type:
+        query = query.filter_by(vacation_type=vacation_type)
+
+    destinations = query.all()
+
     return jsonify([
         {
             "id": d.id,
@@ -283,26 +287,43 @@ def get_destinations():
             "country_type": d.country_type,
             "vacation_type": d.vacation_type
         }
-        for d in Destination.query.all()
+        for d in destinations
     ])
-
 @app.route("/api/hotels/<int:destination_id>")
 def api_hotels(destination_id):
-    hotels = Hotel.query.filter_by(destination_id=destination_id).all()
 
+    hotels = Hotel.query.filter_by(destination_id=destination_id).all()
     data = []
+
     for h in hotels:
+
+        prices = [r.base_price for r in h.rooms if r.base_price is not None]
+
         data.append({
-            "id": h.id,                      # ✅ THIS WAS MISSING
+            "id": h.id,
             "hotel": h.name,
             "stars": h.stars,
-            "price": h.starting_price,
-            "available_rooms": sum(r.available_rooms for r in h.rooms),
+            "price": min(prices) if prices else 0,
+            "available_rooms": sum(
+                (r.total_rooms - r.booked_rooms)
+                for r in h.rooms
+                if r.total_rooms is not None and r.booked_rooms is not None
+            ),
             "amenities": [a.name for a in h.amenities],
-            "images": [img.image_url for img in h.images]
+            "rooms": [
+                {
+                    "type": r.room_type,
+                    "available": (r.total_rooms - r.booked_rooms)
+                        if r.total_rooms and r.booked_rooms is not None else 0,
+                    "price": r.base_price
+                }
+                for r in h.rooms
+            ]
         })
 
     return jsonify(data)
+
+
 
 @app.route("/book-hotel/<int:hotel_id>", methods=["GET", "POST"])
 def book_hotel(hotel_id):
@@ -317,7 +338,6 @@ def book_hotel(hotel_id):
 
         total_price = hotel.starting_price
 
-        # 1️⃣ CREATE MAIN BOOKING (TRIP)
         booking = BookingHistory(
             user_id=session["user_id"],
             destination=destination.name
@@ -325,10 +345,8 @@ def book_hotel(hotel_id):
         db.session.add(booking)
         db.session.commit()
 
-        # 🔑 VERY IMPORTANT
         session["booking_id"] = booking.id
 
-        # 2️⃣ SAVE HOTEL BOOKING
         hotel_booking = HotelBooking(
             booking_id=booking.id,
             hotel_name=hotel.name,
@@ -371,15 +389,11 @@ def login():
             return redirect("/login")
 
         session["user_id"] = user.id
-        session["is_logged_in"] = True   # ✅ THIS IS THE KEY
+        session["is_logged_in"] = True   
 
         return redirect("/")
 
     return render_template("login.html")
-
-
-
-
 
 
 @app.route("/hotels/<int:destination_id>")
@@ -392,6 +406,7 @@ def hotels_by_destination(destination_id):
         destination=destination,
         hotels=hotels
     )
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     next_page = request.args.get("next")
@@ -424,6 +439,7 @@ def signup():
         return redirect("/")
 
     return render_template("signup.html")
+
 @app.route("/my-bookings")
 def my_bookings():
 
@@ -554,19 +570,27 @@ def add_transport():
 
     db.commit()
     return {"success": True}
-
 @app.route("/hype-spots/<int:destination_id>")
 def hype_spots(destination_id):
 
-    destination = Destination.query.get_or_404(destination_id)
-    spots = BookingHypeSpot.query.filter_by(booking_id=b.id).all() or []
+    if "user_id" not in session:
+        return redirect("/login")
 
+    destination = Destination.query.get_or_404(destination_id)
+
+    # Get all hype spots for this destination
+    spots = HypeSpot.query.filter_by(destination_id=destination_id).all()
+
+    # Get current booking id from session
+    booking_id = session.get("booking_id")
 
     return render_template(
-    "hype_spots.html",
-    spots=spots,
-    destination_name=destination.name
-)
+        "hype_spots.html",
+        spots=spots,
+        destination_name=destination.name,
+        hotel_id=booking_id
+    )
+
 from math import radians, cos, sin, asin, sqrt
 from math import radians, cos, sin, asin, sqrt
 

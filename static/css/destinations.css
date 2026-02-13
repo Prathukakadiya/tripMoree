@@ -3,6 +3,7 @@ body {
     font-family: "Segoe UI", sans-serif;
     background: #f5f7fa;
     color: #222;
+    padding-top: 90px; 
 }
 
 .page-title {
@@ -118,11 +119,21 @@ body {
 }
 
 .rating {
-    background: #ffb703;
-    padding: 2px 8px;
-    border-radius: 10px;
+    background: #1f3c88;     /* deep premium blue */
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
     font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
+
+.rating::before {
+    color: #FFD700;          /* gold star */
+}
+
 
 .best-time {
     font-size: 13px;

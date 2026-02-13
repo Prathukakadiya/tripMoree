@@ -1,81 +1,55 @@
-const container = document.getElementById("destinations-container");
-const searchInput = document.getElementById("searchInput");
+const container = document.getElementById("hotelContainer");
+const destinationId = DESTINATION_ID; // pass from template
 
-/* Load all on page load */
-document.addEventListener("DOMContentLoaded", loadAllDestinations);
+fetch(`/api/hotels/${destinationId}`)
+.then(res => res.json())
+.then(data => {
 
-/* Load by vacation type */
-function loadDestinations(type) {
-    container.innerHTML = "<p class='loading'>Loading...</p>";
-
-    fetch(`/api/destinations?vacation_type=${type}`)
-        .then(res => res.json())
-        .then(renderCards);
-}
-
-/* Load all */
-function loadAllDestinations() {
-    container.innerHTML = "<p class='loading'>Loading...</p>";
-
-    fetch("/api/destinations")
-        .then(res => res.json())
-        .then(renderCards);
-}
-
-/* Search */
-function searchDestinations() {
-    const query = searchInput.value.toLowerCase();
-
-    fetch("/api/destinations")
-        .then(res => res.json())
-        .then(data => {
-            const filtered = data.filter(d =>
-                d.name.toLowerCase().includes(query)
-            );
-            renderCards(filtered);
-        });
-}
-
-/* Render cards */
-function renderCards(data) {
-    container.innerHTML = "";
-
-    if (!data.length) {
-        container.innerHTML = "<p class='no-results'>No destinations found</p>";
+    if (data.length === 0) {
+        container.innerHTML = "<p>No hotels found</p>";
         return;
     }
 
-    data.forEach(dest => {
-        const card = document.createElement("div");
-        card.className = "destination-card";
+    container.innerHTML = "";
 
-        card.style.cursor = "pointer";
-        card.addEventListener("click", () => {
-            // 🔥 ONLY LINE CHANGED HERE
-            window.location.href = `/login?next=/hotels/${dest.id}`;
-        });
+    data.forEach(hotel => {
+
+      let imageHTML = `
+    <img src="/static/images/hotel_default.jpg" 
+         class="hotel-img" 
+         alt="hotel image">
+`;
+
+        let amenitiesHTML = hotel.amenities.length > 0
+            ? hotel.amenities.join(", ")
+            : "Basic Amenities";
+
+        const card = document.createElement("div");
+        card.className = "hotel-card";
 
         card.innerHTML = `
             <div class="image-wrapper">
-                <img src="${dest.image}" alt="${dest.name}">
+                ${imageHTML}
             </div>
 
-            <div class="destination-info">
-                <div class="location">
-                    <span>📍 ${dest.name}</span>
-                    <span class="rating">⭐ ${dest.rating}</span>
-                </div>
+            <div class="hotel-info">
+                <h3>${hotel.hotel}</h3>
+                <p>⭐ ${hotel.stars} Rating</p>
+                <p>💰 ₹${hotel.price} per night</p>
+                <p>🛏 ${hotel.available_rooms} Rooms Available</p>
+                <p>🏨 ${amenitiesHTML}</p>
 
-                <div class="best-time">
-                    Best Time: ${dest.best_time}
-                </div>
-
-                <div class="tags">
-                    ${dest.category} • ${dest.country_type} • ${dest.vacation_type}
-                </div>
+                <a href="/book-hotel/${hotel.id}" class="book-btn">
+                    Book Now
+                </a>
             </div>
         `;
 
         container.appendChild(card);
     });
-}
+
+})
+.catch(err => {
+    console.error(err);
+    container.innerHTML = "<p>Error loading hotels</p>";
+});

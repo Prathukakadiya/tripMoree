@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", loadAllDestinations);
 function loadDestinations(type) {
     container.innerHTML = "<p class='loading'>Loading...</p>";
 
-    fetch(`/api/destinations?vacation_type=${type}`)
+    fetch(`/api/destinations?type=${type}`)   // ✅ CHANGE HERE
         .then(res => res.json())
         .then(renderCards);
 }
@@ -49,7 +49,6 @@ function renderCards(data) {
         const card = document.createElement("div");
         card.className = "destination-card";
 
-        /* 🔥 ONLY REQUIRED CHANGE */
         card.style.cursor = "pointer";
         card.addEventListener("click", () => {
             window.location.href = `/hotels/${dest.id}`;
@@ -79,4 +78,3 @@ function renderCards(data) {
         container.appendChild(card);
     });
 }
-    
