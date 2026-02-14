@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Train Search</title>
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -35,72 +33,73 @@
         }
     </style>
 </head>
-
 <body>
 {% include "navbar.html" %}
 <div class="container mt-5">
 
-    <div class="text-center mb-4">
-        <h2>Train Search</h2>
-        <p class="opacity-75">Safe • Fast • Comfortable Journey</p>
-    </div>
+    <h2 class="text-center mb-4">🚆 Train Search</h2>
 
-    <div class="search-box shadow-lg mb-4">
-        <form method="POST" class="row g-3">
-            <div class="col-md-4">
-                <input type="text" name="source" class="form-control" placeholder="Source Station" required>
-            </div>
+    <form method="POST" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="source" class="form-control"
+                   value="{{ session.get('source') }}" required>
+        </div>
 
-            <div class="col-md-4">
-                <input type="text" name="destination" class="form-control" placeholder="Destination Station" required>
-            </div>
+        <div class="col-md-3">
+            <input type="text" name="destination" class="form-control"
+                   value="{{ session.get('destination') }}" required>
+        </div>
 
-            <div class="col-md-2">
-                <input type="number" name="persons" class="form-control" min="1" placeholder="Persons" required>
-            </div>
+        <div class="col-md-2">
+            <input type="number" name="persons" class="form-control"
+                   value="{{ session.get('persons') }}" min="1" required>
+        </div>
 
-            <div class="col-md-2">
-                <button class="btn btn-danger w-100">Search & Book</button>
-            </div>
-        </form>
-    </div>
+        <div class="col-md-2">
+            <select name="coach_type" class="form-select">
+                <option value="Sleeper">Sleeper</option>
+                <option value="3AC">3AC</option>
+                <option value="2AC">2AC</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-danger w-100">Search</button>
+        </div>
+    </form>
 
     {% if trains %}
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>Train No</th>
-                    <th>Train Name</th>
-                    <th>Type</th>
-                    <th>Departure</th>
-                    <th>Arrival</th>
-                    <th>Fare (₹)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for t in trains %}
-                <tr>
-                    <td>{{ t.train_number }}</td>
-                    <td>{{ t.train_name }}</td>
-                    <td>{{ t.train_type }}</td>
-                    <td>{{ t.departure_time }}</td>
-                    <td>{{ t.arrival_time }}</td>
-                    <td>{{ t.price }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% elif request.method == "POST" %}
-        <p class="text-warning text-center fs-5 mt-4">No trains available</p>
-    {% endif %}
-
-    {% if message %}
-        <p class="text-success text-center fs-5">{{ message }}</p>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Train</th>
+                <th>Departure</th>
+                <th>Arrival</th>
+                <th>Type</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in trains %}
+            <tr>
+                <td>{{ t.train_name }}</td>
+                <td>{{ t.departure_time }}</td>
+                <td>{{ t.arrival_time }}</td>
+                <td>{{ t.train_type }}</td>
+                <td>₹{{ t.price }}</td>
+                <td>
+                    <a href="/book-train/{{ t.id }}"
+                       class="btn btn-success btn-sm">
+                       Select & Book
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
 
 </div>
-
 </body>
 </html>

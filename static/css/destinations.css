@@ -1,103 +1,114 @@
 body {
     margin: 0;
-    font-family: "Segoe UI", sans-serif;
-    background: #f5f7fa;
-    color: #222;
-    padding-top: 90px; 
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #ede6db, #f5efe6);
+    color: #2b2b2b;
+    padding-top: 90px;
 }
 
+/* Title */
 .page-title {
     text-align: center;
-    margin-top: 30px;
-    font-size: 32px;
+    margin-top: 40px;
+    font-size: 34px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #2b2b2b;
 }
 
 .subtitle {
     text-align: center;
-    color: #666;
-    margin-bottom: 25px;
+    color: #777;
+    margin-bottom: 35px;
 }
 
 /* Vacation buttons */
 .vacation-types {
     display: flex;
     justify-content: center;
-    gap: 18px;
+    gap: 20px;
     flex-wrap: wrap;
-    margin: 25px 0;
+    margin: 35px 0;
 }
 
 .vacation-card {
-    padding: 14px 28px;
-    background: white;
+    padding: 14px 30px;
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(12px);
     border-radius: 30px;
     cursor: pointer;
     font-weight: 600;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-    transition: all 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.05);
+    transition: 0.3s ease;
 }
 
 .vacation-card:hover {
-    background: #0077ff;
-    color: white;
-    transform: translateY(-4px);
+    background: linear-gradient(135deg, #c6a75e, #e6c77a);
+    transform: translateY(-5px);
 }
 
 /* Search */
 .search-bar {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin: 25px 0;
+    gap: 14px;
+    margin: 30px 0;
     flex-wrap: wrap;
 }
 
 .search-bar input {
-    padding: 12px 16px;
-    width: 260px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    padding: 13px 18px;
+    width: 280px;
+    border-radius: 14px;
+    border: 1px solid #ddd;
+    background: rgba(255,255,255,0.85);
 }
 
 .search-bar button {
-    padding: 12px 18px;
-    border-radius: 8px;
+    padding: 13px 24px;
+    border-radius: 30px;
     border: none;
     cursor: pointer;
-    background: #0077ff;
-    color: white;
+    background: linear-gradient(135deg, #c6a75e, #e6c77a);
+    color: #2b2b2b;
     font-weight: 600;
+    transition: 0.3s ease;
 }
 
-.search-bar .secondary {
-    background: #555;
+.search-bar button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(198,167,94,0.4);
 }
 
 /* Grid */
 #destinations-container {
     max-width: 1200px;
     margin: auto;
-    padding: 25px;
+    padding: 40px 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 35px;
 }
 
-/* Card */
+/* GLASS CARD */
 .destination-card {
-    background: white;
-    border-radius: 18px;
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(15px);
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-    transition: 0.3s;
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.08);
+    transition: 0.35s ease;
 }
 
 .destination-card:hover {
-    transform: translateY(-6px);
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.12);
 }
 
 .image-wrapper {
-    height: 190px;
+    height: 200px;
     overflow: hidden;
 }
 
@@ -105,43 +116,41 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: 0.4s ease;
+}
+
+.destination-card:hover img {
+    transform: scale(1.05);
 }
 
 .destination-info {
-    padding: 15px;
+    padding: 20px;
 }
 
 .location {
     display: flex;
     justify-content: space-between;
-    font-weight: 700;
-    color: #0077ff;
+    font-weight: 600;
+    color: #2b2b2b;
 }
 
+/* Premium Rating Badge */
 .rating {
-    background: #1f3c88;     /* deep premium blue */
-    color: #ffffff;
-    padding: 4px 10px;
+    background: linear-gradient(135deg, #3a3a3a, #555);
+    color: white;
+    padding: 5px 12px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 }
-
-.rating::before {
-    color: #FFD700;          /* gold star */
-}
-
 
 .best-time {
     font-size: 13px;
-    color: #666;
-    margin: 6px 0;
+    color: #777;
+    margin: 8px 0;
 }
 
 .tags {
     font-size: 13px;
-    color: #444;
+    color: #555;
 }

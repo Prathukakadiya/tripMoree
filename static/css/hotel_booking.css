@@ -1,0 +1,172 @@
+/* 🌟 Light Luxury Glass Booking Theme */
+
+body {
+    margin: 0;
+    padding-top: 80px;
+    font-family: 'Poppins', sans-serif;
+
+    background: url('/static/images/beige_back.jpg') no-repeat center center/cover;
+    background-attachment: fixed;
+
+    min-height: 100vh;
+}
+
+
+/* Wrapper */
+.booking-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 5%;
+}
+
+
+/* ✨ Premium Frosted Glass Card */
+.booking-card {
+    width: 100%;
+    max-width: 1050px;
+    padding: 50px;
+
+    background: rgba(255, 255, 255, 0.40);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border-radius: 25px;
+
+    border: 1px solid rgba(255,255,255,0.7);
+
+    box-shadow: 
+        0 20px 50px rgba(0,0,0,0.12),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+
+    color: #2b2b2b;
+    transition: 0.3s ease;
+}
+
+.booking-card:hover {
+    transform: translateY(-5px);
+}
+
+
+/* 🏨 Hotel Title (CENTERED) */
+.booking-card h2 {
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1f1f1f;
+    letter-spacing: 0.5px;
+}
+
+/* ⭐ Premium Rating Badge - LEFT SIDE */
+.rating {
+    display: inline-block;     /* inline so it stays left */
+    margin: 0 0 25px 0;        /* remove auto centering */
+    padding: 6px 14px;
+
+    background: linear-gradient(135deg, #d4af37, #b9935a);
+    color: #ffffff;
+
+    font-weight: 600;
+    font-size: 13px;
+
+    border-radius: 25px;
+
+    box-shadow: 0 6px 18px rgba(212,175,55,0.30);
+}
+
+
+/* Form Layout */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Labels */
+label {
+    margin-top: 18px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #444;
+}
+
+
+/* Inputs */
+input,
+select {
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.08);
+    outline: none;
+    font-size: 14px;
+
+    background: rgba(255,255,255,0.85);
+
+    transition: 0.25s ease;
+}
+
+input:focus,
+select:focus {
+    border: 1px solid #d4af37;
+    box-shadow: 0 0 0 4px rgba(212,175,55,0.15);
+    background: rgba(255,255,255,0.95);
+}
+
+
+/* 👑 Premium Gold Button */
+button {
+    margin-top: 35px;
+    padding: 15px;
+
+    background: linear-gradient(135deg, #d4af37, #b9935a);
+    color: black;
+
+    border: none;
+    border-radius: 40px;
+
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+
+    transition: 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(212,175,55,0.35);
+}
+
+
+/* ✨ Live Summary Box */
+.live-summary {
+    margin-top: 35px;
+
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    padding: 22px;
+    border-radius: 18px;
+
+    font-weight: 500;
+    color: #2b2b2b;
+
+    border: 1px solid rgba(212,175,55,0.3);
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.live-summary p {
+    margin: 8px 0;
+}
+
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+    .booking-card {
+        width: 100%;
+        padding: 25px;
+    }
+}

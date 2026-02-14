@@ -25,39 +25,75 @@
 </style>
 
 <body>
+
 {% include "navbar.html" %}
+
 <div class="container mt-5">
 
     <h2 class="text-center mb-4">🚌 Bus Search</h2>
 
+    <!-- 🔥 Search Form -->
     <form method="POST" class="row g-3 mb-4">
-        <div class="col-md-4">
-            <input type="text" name="source" class="form-control" placeholder="Source City" required>
+
+        <div class="col-md-3">
+            <input type="text" name="source"
+                   class="form-control"
+                   placeholder="Source City"
+                   required>
         </div>
 
-        <div class="col-md-4">
-            <input type="text" name="destination" class="form-control" placeholder="Destination City" required>
+        <div class="col-md-3">
+            <input type="text" name="destination"
+                   class="form-control"
+                   value="{{ destination }}"
+                   readonly>
         </div>
 
         <div class="col-md-2">
-            <input type="number" name="persons" class="form-control" min="1" placeholder="Persons" required>
+            <input type="number" name="persons"
+                   class="form-control"
+                   value="{{ persons }}"
+                   readonly>
         </div>
 
         <div class="col-md-2">
-            <button class="btn btn-success w-100">Search & Book</button>
+            <select name="ac_type" class="form-control" required>
+                <option value="">AC Type</option>
+                <option value="AC">AC</option>
+                <option value="Non-AC">Non-AC</option>
+            </select>
         </div>
+
+        <div class="col-md-2">
+            <select name="seat_type" class="form-control" required>
+                <option value="">Seat Type</option>
+                <option value="Sleeper">Sleeper</option>
+                <option value="Seater">Seater</option>
+            </select>
+        </div>
+
+        <div class="col-md-12 mt-3">
+            <button type="submit" class="btn btn-success w-100">
+                Search Buses
+            </button>
+        </div>
+
     </form>
 
+    <!-- 🔥 Bus Results -->
     {% if buses %}
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
                 <th>Bus No</th>
                 <th>Operator</th>
-                <th>Type</th>
+                <th>AC</th>
+                <th>Seat</th>
                 <th>Departure</th>
                 <th>Arrival</th>
+                <th>Available Seats</th>
                 <th>Price (₹)</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -65,18 +101,25 @@
             <tr>
                 <td>{{ b.bus_number }}</td>
                 <td>{{ b.operator }}</td>
-                <td>{{ b.bus_type }}</td>
+                <td>{{ b.ac_type }}</td>
+                <td>{{ b.seat_type }}</td>
                 <td>{{ b.departure_time }}</td>
                 <td>{{ b.arrival_time }}</td>
+                <td>{{ b.available_seats }}</td>
                 <td>{{ b.price }}</td>
+                <td>
+              <a href="{{ url_for('confirm_bus', bus_id=b.id) }}"
+   class="btn btn-primary btn-sm">
+   Confirm
+</a>
+
+
+                </td>
+
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% endif %}
-
-    {% if message %}
-        <p class="text-success text-center fs-5">{{ message }}</p>
     {% endif %}
 
 </div>

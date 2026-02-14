@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import math
 from flask import url_for
+from math import radians, cos, sin, asin, sqrt
 
 from sqlalchemy import func, text
 
@@ -159,53 +160,94 @@ class Transport(db.Model):
     vehicle_type = db.Column(db.String(50))
     ac_type = db.Column(db.String(20))
     price_per_km = db.Column(db.Integer)
+class CabBooking(db.Model):
+    __tablename__ = "cab_bookings"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    booking_id = db.Column(
+        db.Integer,
+        db.ForeignKey("booking_history.id"),
+        nullable=False
+    )
+
+    transport_id = db.Column(   # ✅ MATCH DATABASE COLUMN
+        db.Integer,
+        db.ForeignKey("transport.id"),
+        nullable=False
+    )
+
+    days = db.Column(db.Integer, nullable=False)
+    total_km = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+
+    created_at = db.Column(
+        db.DateTime,
+        server_default=db.func.now()
+    )
 
 
 # ================= TRANSPORT BOOKING MODELS =================
-
 class Bus(db.Model):
     __tablename__ = "buses"
+
     id = db.Column(db.Integer, primary_key=True)
     bus_number = db.Column(db.String(20))
     operator = db.Column(db.String(50))
+
     source = db.Column(db.String(50))
     destination = db.Column(db.String(50))
+
     departure_time = db.Column(db.String(20))
     arrival_time = db.Column(db.String(20))
-    bus_type = db.Column(db.String(20))
+
+    ac_type = db.Column(db.String(20))      # AC / Non-AC
+    seat_type = db.Column(db.String(20))    # Sleeper / Seater
+
     price = db.Column(db.Integer)
+
     total_seats = db.Column(db.Integer)
     available_seats = db.Column(db.Integer)
-
-
 class Train(db.Model):
     __tablename__ = "trains"
+
     id = db.Column(db.Integer, primary_key=True)
     train_number = db.Column(db.String(20))
     train_name = db.Column(db.String(100))
+
     source = db.Column(db.String(50))
     destination = db.Column(db.String(50))
+
     departure_time = db.Column(db.String(20))
     arrival_time = db.Column(db.String(20))
+
+    ac_type = db.Column(db.String(20))      # AC / Non-AC
+    seat_type = db.Column(db.String(20))    # Sleeper / Seater
+
     price = db.Column(db.Integer)
-    train_type = db.Column(db.String(30))
+
     total_seats = db.Column(db.Integer)
     available_seats = db.Column(db.Integer)
-
-
 class Flight(db.Model):
     __tablename__ = "flights"
+
     id = db.Column(db.Integer, primary_key=True)
     flight_number = db.Column(db.String(20))
     airline = db.Column(db.String(50))
+
     source = db.Column(db.String(50))
     destination = db.Column(db.String(50))
+
     departure_time = db.Column(db.String(20))
     arrival_time = db.Column(db.String(20))
-    duration = db.Column(db.String(20))
+
+    flight_class = db.Column(db.String(20))  # Economy / Business
+
     price = db.Column(db.Integer)
+
     total_seats = db.Column(db.Integer)
     available_seats = db.Column(db.Integer)
+
     
 class BookingHistory(db.Model):
     __tablename__ = "booking_history"
@@ -231,26 +273,37 @@ class TransportBooking(db.Model):
     price = db.Column(db.Integer)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
-
 class HotelBooking(db.Model):
     __tablename__ = "hotel_bookings"
 
     id = db.Column(db.Integer, primary_key=True)
     booking_id = db.Column(db.Integer, db.ForeignKey("booking_history.id"))
 
+    hotel_id = db.Column(db.Integer, db.ForeignKey("hotel.id"))  # ADD THIS
+
     hotel_name = db.Column(db.String(100))
-    check_in = db.Column(db.Date, nullable=True)
-    check_out = db.Column(db.Date, nullable=True)
+    check_in = db.Column(db.Date)
+    check_out = db.Column(db.Date)
     price = db.Column(db.Integer)
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 class BookingHypeSpot(db.Model):
     __tablename__ = "booking_hype_spots"
 
     id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking_history.id"))
-    spot_id = db.Column(db.Integer)
+    booking_id = db.Column(
+        db.Integer,
+        db.ForeignKey("transport_bookings.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    spot_id = db.Column(
+        db.Integer,
+        db.ForeignKey("hype_spots.id", ondelete="CASCADE"),
+        nullable=False
+    )
 
 
 # ================= ROUTES =================
@@ -323,42 +376,106 @@ def api_hotels(destination_id):
 
     return jsonify(data)
 
-
-
+from datetime import datetime
+import math
+from flask import request, redirect, url_for, render_template, session, flash
+from datetime import datetime
+import math
+import re
 @app.route("/book-hotel/<int:hotel_id>", methods=["GET", "POST"])
+@login_required
 def book_hotel(hotel_id):
 
-    if "user_id" not in session:
-        return redirect("/login")
-
     hotel = Hotel.query.get_or_404(hotel_id)
-    destination = Destination.query.get(hotel.destination_id)
 
     if request.method == "POST":
 
-        total_price = hotel.starting_price
+        room_id = request.form.get("room_id")
+        persons = request.form.get("persons")
+        checkin = request.form.get("checkin")
+        checkout = request.form.get("checkout")
+        phone = request.form.get("phone")
 
+        if not room_id or not persons or not checkin or not checkout or not phone:
+            flash("All fields are required")
+            return redirect(request.url)
+
+        room_id = int(room_id)
+        persons = int(persons)
+
+        room = Room.query.get(room_id)
+
+        if not room:
+            flash("Room not found")
+            return redirect(request.url)
+
+        checkin_date = datetime.strptime(checkin, "%Y-%m-%d")
+        checkout_date = datetime.strptime(checkout, "%Y-%m-%d")
+
+        if checkout_date <= checkin_date:
+            flash("Checkout date must be after check-in date")
+            return redirect(request.url)
+
+        if persons <= 0:
+            flash("Invalid number of persons")
+            return redirect(request.url)
+
+        required_rooms = math.ceil(persons / 2)
+
+        if room.available_rooms < required_rooms:
+            flash("Not enough rooms available")
+            return redirect(request.url)
+
+        if not re.match(r"^[6-9]\d{9}$", phone):
+            flash("Enter valid 10-digit Indian phone number")
+            return redirect(request.url)
+
+        total_nights = (checkout_date - checkin_date).days
+        total_price = total_nights * room.base_price * required_rooms
+
+        room.booked_rooms += required_rooms
+
+        # ✅ SAFE DESTINATION FETCH
+        destination_obj = Destination.query.get(hotel.destination_id)
+
+        if not destination_obj:
+            flash("Destination not found")
+            return redirect(url_for("destinations"))
+
+        # 🔥 CREATE MAIN BOOKING
         booking = BookingHistory(
             user_id=session["user_id"],
-            destination=destination.name
+            destination=destination_obj.name,
+            status="active"
         )
+
         db.session.add(booking)
         db.session.commit()
 
+        # 🔥 SAVE BOOKING ID IN SESSION
         session["booking_id"] = booking.id
 
+        # 🔥 SAVE HOTEL BOOKING
         hotel_booking = HotelBooking(
-            booking_id=booking.id,
-            hotel_name=hotel.name,
-            price=total_price
-        )
+        booking_id=booking.id,
+        hotel_id=hotel.id,   # 🔥 IMPORTANT FIX
+        hotel_name=hotel.name,
+        check_in=checkin_date,
+        check_out=checkout_date,
+        price=total_price
+)
+
+
         db.session.add(hotel_booking)
         db.session.commit()
 
-        return redirect(f"/after-hotel-booking/{hotel.id}")
+        # 🔥 STORE SESSION DATA
+        session["persons"] = persons
+        session["destination_name"] = destination_obj.name
+
+        return redirect(url_for("transport_choice", destination=destination_obj.name))
 
     return render_template("book_hotel.html", hotel=hotel)
-
 
 
 @app.route("/guide/<location>")
@@ -378,20 +495,37 @@ def guide(location):
         alerts=alerts,
         essentials=essentials
     )
+from werkzeug.security import check_password_hash
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
+    next_page = request.args.get("next")
+
     if request.method == "POST":
+
         email = request.form.get("email")
         password = request.form.get("password")
 
+        if not email or not password:
+            return "Email and password required"
+
         user = User.query.filter_by(email=email).first()
-        if not user or not check_password_hash(user.password, password):
-            return redirect("/login")
 
+        if not user:
+            return "User not found"
+
+        if not check_password_hash(user.password, password):
+            return "Incorrect password"
+
+        # 🔥 LOGIN SUCCESS
         session["user_id"] = user.id
-        session["is_logged_in"] = True   
+        session["is_logged_in"] = True
 
-        return redirect("/")
+        if next_page:
+            return redirect(next_page)
+
+        return redirect(url_for("home"))
 
     return render_template("login.html")
 
@@ -406,20 +540,39 @@ def hotels_by_destination(destination_id):
         destination=destination,
         hotels=hotels
     )
+from werkzeug.security import generate_password_hash
+import re
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     next_page = request.args.get("next")
 
     if request.method == "POST":
+
         name = request.form.get("name")
         email = request.form.get("email")
         password = request.form.get("password")
 
+        # 🔥 BASIC VALIDATION
+        if not name or not email or not password:
+            return "All fields are required"
+
+        # 🔥 PASSWORD RULES
+        if len(password) < 6:
+            return "Password must be at least 6 characters"
+
+        if not any(char.isdigit() for char in password):
+            return "Password must contain at least 1 number"
+
+        if not any(char.isupper() for char in password):
+            return "Password must contain at least 1 uppercase letter"
+
+        # 🔥 CHECK EMAIL EXISTS
         user = User.query.filter_by(email=email).first()
         if user:
-            return redirect(url_for("login", next=next_page))
+            return "Email already registered"
 
+        # 🔥 HASH PASSWORD
         hashed_password = generate_password_hash(password)
 
         new_user = User(
@@ -431,20 +584,19 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        # 🔥 AUTO LOGIN AFTER SIGNUP
         session["user_id"] = new_user.id
 
+        # 🔥 SAFE REDIRECT
         if next_page:
             return redirect(next_page)
 
-        return redirect("/")
+        return redirect(url_for("home"))
 
     return render_template("signup.html")
-
 @app.route("/my-bookings")
+@login_required
 def my_bookings():
-
-    if "user_id" not in session:
-        return redirect("/login")
 
     bookings = BookingHistory.query.filter_by(
         user_id=session["user_id"]
@@ -453,18 +605,38 @@ def my_bookings():
     result = []
 
     for b in bookings:
-        hotel = HotelBooking.query.filter_by(booking_id=b.id).first()
-        transport = TransportBooking.query.filter_by(booking_id=b.id).first()
-        spots = BookingHypeSpot.query.filter_by(booking_id=b.id).all()
+
+        # 🏨 Hotel
+        hotel = HotelBooking.query.filter_by(
+            booking_id=b.id
+        ).first()
+
+        # 🚌 Main Transport (Bus / Train / Flight only)
+        transport = TransportBooking.query.filter(
+            TransportBooking.booking_id == b.id,
+            TransportBooking.transport_type != "cab"
+        ).first()
+
+        # 🚖 Local Cab (NEW TABLE)
+        cab = CabBooking.query.filter_by(
+            booking_id=b.id
+        ).first()
+
+        # 📍 Selected Spots
+        spots = BookingHypeSpot.query.filter_by(
+            booking_id=b.id
+        ).all()
 
         result.append({
             "booking": b,
             "hotel": hotel,
             "transport": transport,
+            "cab": cab,
             "spots": spots
         })
 
     return render_template("my_bookings.html", data=result)
+
 
 @app.route("/after-hotel-booking/<int:hotel_id>")
 def after_hotel_booking(hotel_id):
@@ -490,187 +662,423 @@ def transport_choice(destination):
 @app.route("/flight/<destination>", methods=["GET", "POST"])
 def flight(destination):
 
+    persons = session.get("persons", 1)
+
     if request.method == "POST":
 
-        transport = TransportBooking(
-            booking_id=session["booking_id"],
-            transport_type="flight",
-            source=request.form["source"],
-            destination=request.form["destination"],
-            persons=int(request.form["persons"]),
-            price=5000
+        source = request.form["source"]
+        flight_class = request.form["flight_class"]
+
+        flights = Flight.query.filter_by(
+            source=source,
+            destination=destination,
+            flight_class=flight_class
+        ).all()
+
+        return render_template(
+            "flight.html",
+            destination=destination,
+            flights=flights,
+            persons=persons,
+            source=source
         )
 
-        db.session.add(transport)
-        db.session.commit()
+    return render_template(
+        "flight.html",
+        destination=destination,
+        persons=persons
+    )
+@app.route("/confirm-flight/<int:flight_id>")
+def confirm_flight(flight_id):
 
-        dest = Destination.query.filter_by(name=destination).first()
-        return redirect(url_for("hype_spots", destination_id=dest.id))
+    flight = Flight.query.get_or_404(flight_id)
+    persons = session.get("persons", 1)
 
+    if flight.available_seats < persons:
+        return "Not enough seats available"
 
-    return render_template("flight.html", destination=destination)
+    flight.available_seats -= persons
+
+    transport = TransportBooking(
+        booking_id=session["booking_id"],
+        transport_type="flight",
+        source=flight.source,
+        destination=flight.destination,
+        persons=persons,
+        price=flight.price * persons
+    )
+
+    db.session.add(transport)
+    db.session.commit()
+
+    dest = Destination.query.filter_by(name=flight.destination).first()
+
+    return redirect(url_for("hype_spots", hotel_booking_id=booking.id))
+# ================= BUS =================
+
 @app.route("/bus/<destination>", methods=["GET", "POST"])
+@login_required
 def bus(destination):
 
+    booking_id = session.get("booking_id")
+
+    if not booking_id:
+        return redirect(url_for("home"))
+
+    persons = session.get("persons", 1)
+
+    buses = []
+
     if request.method == "POST":
+        source = request.form.get("source")
+        ac_type = request.form.get("ac_type")
+        seat_type = request.form.get("seat_type")
 
-        transport = TransportBooking(
-            booking_id=session["booking_id"],
-            transport_type="bus",
-            source=request.form["source"],
-            destination=request.form["destination"],
-            persons=int(request.form["persons"]),
-            price=1200
-        )
+        buses = Bus.query.filter_by(
+            source=source,
+            destination=destination,
+            ac_type=ac_type,
+            seat_type=seat_type
+        ).all()
 
-        db.session.add(transport)
-        db.session.commit()
+    return render_template(
+        "bus.html",
+        destination=destination,
+        persons=persons,
+        buses=buses
+    )
+@app.route("/confirm-bus/<int:bus_id>")
+@login_required
+def confirm_bus(bus_id):
 
-        dest = Destination.query.filter_by(name=destination).first()
-        return redirect(url_for("hype_spots", destination_id=dest.id))
+    booking_id = session.get("booking_id")
 
+    if not booking_id:
+        return redirect(url_for("home"))
 
-    return render_template("bus.html", destination=destination)
+    bus = Bus.query.get_or_404(bus_id)
+    persons = session.get("persons", 1)
+
+    if bus.available_seats < persons:
+        return "Not enough seats available"
+
+    bus.available_seats -= persons
+
+    transport = TransportBooking(
+        booking_id=booking_id,
+        transport_type="bus",
+        source=bus.source,
+        destination=bus.destination,
+        persons=persons,
+        price=bus.price * persons
+    )
+
+    db.session.add(transport)
+    db.session.commit()
+
+    hotel_booking = HotelBooking.query.filter_by(
+        booking_id=booking_id
+    ).first()
+    flash("Bus booked successfully!", "success")
+    return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
+
 @app.route("/train/<destination>", methods=["GET", "POST"])
 def train(destination):
 
+    persons = session.get("persons", 1)
+
     if request.method == "POST":
 
-        transport = TransportBooking(
-            booking_id=session["booking_id"],
-            transport_type="train",
-            source=request.form["source"],
-            destination=request.form["destination"],
-            persons=int(request.form["persons"]),
-            price=800
+        source = request.form["source"]
+        ac_type = request.form["ac_type"]
+        seat_type = request.form["seat_type"]
+
+        trains = Train.query.filter_by(
+            source=source,
+            destination=destination,
+            ac_type=ac_type,
+            seat_type=seat_type
+        ).all()
+
+        return render_template(
+            "train.html",
+            destination=destination,
+            trains=trains,
+            persons=persons,
+            source=source
         )
-
-        db.session.add(transport)
-        db.session.commit()
-
-        dest = Destination.query.filter_by(name=destination).first()
-        return redirect(url_for("hype_spots", destination_id=dest.id))
-
-    return render_template("train.html", destination=destination)
-
-
-@app.route("/add-transport", methods=["POST"])
-def add_transport():
-    data = request.json
-
-    booking_id = data["booking_id"]
-    transport_type = data["transport_type"]
-    cab_id = data["cab_id"]
-
-    cursor.execute("""
-      INSERT INTO transport_bookings
-      (booking_id, transport_type, provider, price, status)
-      VALUES (%s, %s, %s, %s, 'confirmed')
-    """, (booking_id, "cab", "local cab", 1500))
-
-    db.commit()
-    return {"success": True}
-@app.route("/hype-spots/<int:destination_id>")
-def hype_spots(destination_id):
-
-    if "user_id" not in session:
-        return redirect("/login")
-
-    destination = Destination.query.get_or_404(destination_id)
-
-    # Get all hype spots for this destination
-    spots = HypeSpot.query.filter_by(destination_id=destination_id).all()
-
-    # Get current booking id from session
-    booking_id = session.get("booking_id")
 
     return render_template(
-        "hype_spots.html",
-        spots=spots,
-        destination_name=destination.name,
-        hotel_id=booking_id
+        "train.html",
+        destination=destination,
+        persons=persons
+    )
+@app.route("/confirm-train/<int:train_id>")
+def confirm_train(train_id):
+
+    train = Train.query.get_or_404(train_id)
+    persons = session.get("persons", 1)
+
+    if train.available_seats < persons:
+        return "Not enough seats available"
+
+    train.available_seats -= persons
+
+    transport = TransportBooking(
+        booking_id=session["booking_id"],
+        transport_type="train",
+        source=train.source,
+        destination=train.destination,
+        persons=persons,
+        price=train.price * persons
     )
 
-from math import radians, cos, sin, asin, sqrt
-from math import radians, cos, sin, asin, sqrt
+    db.session.add(transport)
+    db.session.commit()
 
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Earth radius in KM
-    dlat = radians(lat2 - lat1)
-    dlon = radians(lon2 - lon1)
+    dest = Destination.query.filter_by(name=train.destination).first()
 
-    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
-    c = 2 * asin(sqrt(a))
-    return R * c
+    hotel_booking = HotelBooking.query.filter_by(
+    booking_id=session["booking_id"]).first()
 
-@app.route("/api/calculate-distance", methods=["POST"])
-def calculate_distance():
-    data = request.json
-    spot_ids = data.get("spots", [])
-
-    if not spot_ids:
-        return jsonify({"distance_km": 0})
-
-    spots = HypeSpot.query.filter(HypeSpot.id.in_(spot_ids)).all()
-    destination = Destination.query.get(spots[0].destination_id)
-
-    total_distance = 0
-    for spot in spots:
-        total_distance += haversine(
-            destination.latitude,
-            destination.longitude,
-            spot.latitude,
-            spot.longitude
-        )
-
-    return jsonify({"distance_km": round(total_distance, 2)})
+    return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
 
 
 
 @app.route("/api/calculate-transport", methods=["POST"])
+@login_required
 def calculate_transport():
+
     data = request.json
-    distance = float(data["distance"])
+
+    hotel_id = data.get("hotel_id")
+    spot_ids = data.get("spot_ids", [])
+
+    if not hotel_id or not spot_ids:
+        return jsonify([])
+
+    hotel = Hotel.query.get_or_404(hotel_id)
+
+    current_lat = float(hotel.latitude)
+    current_lon = float(hotel.longitude)
+
+    total_distance = 0
+
+    for sid in spot_ids:
+        spot = HypeSpot.query.get(int(sid))
+        if not spot:
+            continue
+
+        spot_lat = float(spot.latitude)
+        spot_lon = float(spot.longitude)
+
+        distance = haversine(
+            current_lat,
+            current_lon,
+            spot_lat,
+            spot_lon
+        )
+
+        total_distance += distance
+
+        current_lat = spot_lat
+        current_lon = spot_lon
+
+    # OPTIONAL: return to hotel distance add karo
+    return_distance = haversine(
+        current_lat,
+        current_lon,
+        float(hotel.latitude),
+        float(hotel.longitude)
+    )
+
+    total_distance += return_distance
 
     vehicles = Transport.query.all()
 
     result = []
+
     for v in vehicles:
         result.append({
             "vehicle": v.vehicle_name,
             "type": v.vehicle_type,
             "ac": v.ac_type,
-            "price": int(distance * v.price_per_km)
+            "price": round(total_distance * float(v.price_per_km), 2),
+            "cab_id": v.id,
+            "distance": round(total_distance, 2)
         })
 
     return jsonify(result)
-@app.route("/book-cab", methods=["POST"])
-def book_cab():
 
-    data = request.json
 
-    # 🔹 get hotel booking to decide persons
-    hotel_booking = HotelBooking.query.filter_by(
-        booking_id=session["booking_id"]
-    ).first()
+@app.route("/book-train/<int:id>")
+def book_train(id):
 
-    persons = 1
-    if hotel_booking:
-        persons = 2   # simple logic (future ma improve kari saksho)
+    train = Train.query.get(id)
 
-    cab = TransportBooking(
+    booking = TransportBooking(
         booking_id=session["booking_id"],
-        transport_type="cab",
-        source="hotel",
-        destination="spots",
-        persons=persons,
-        price=data["price"]
+        transport_type="train",
+        source=train.source,
+        destination=train.destination,
+        persons=session["persons"],
+        price=train.price
     )
 
-    db.session.add(cab)
+    db.session.add(booking)
     db.session.commit()
 
-    return jsonify({"success": True})
+    return redirect(url_for("hype_spots", destination_id=session["destination"]))
+@app.route("/book-flight/<int:id>")
+def book_flight(id):
+
+    flight = Flight.query.get(id)
+
+    booking = TransportBooking(
+        booking_id=session["booking_id"],
+        transport_type="flight",
+        source=flight.source,
+        destination=flight.destination,
+        persons=session["persons"],
+        price=flight.price
+    )
+
+    db.session.add(booking)
+    db.session.commit()
+
+    return redirect(url_for("hype_spots", destination_id=session["destination"]))
+
+@app.route("/book-cab/<int:hotel_booking_id>", methods=["POST"])
+@login_required
+def book_cab(hotel_booking_id):
+
+    cab_id = request.form.get("cab_id")
+    selected_spots = request.form.getlist("spot_ids")
+
+    if not cab_id:
+        flash("Please select a cab.", "danger")
+        return redirect(request.referrer)
+
+    if not selected_spots:
+        flash("Please select at least one spot.", "danger")
+        return redirect(request.referrer)
+
+    hotel_booking = HotelBooking.query.get_or_404(hotel_booking_id)
+    transport = Transport.query.get_or_404(cab_id)
+    hotel = Hotel.query.get_or_404(hotel_booking.hotel_id)
+
+    current_lat = float(hotel.latitude)
+    current_lon = float(hotel.longitude)
+
+    total_distance = 0
+
+    # 🔥 Calculate full route distance
+    for sid in selected_spots:
+        spot = HypeSpot.query.get(int(sid))
+        if not spot:
+            continue
+
+        distance = haversine(
+            current_lat,
+            current_lon,
+            float(spot.latitude),
+            float(spot.longitude)
+        )
+
+        total_distance += distance
+        current_lat = float(spot.latitude)
+        current_lon = float(spot.longitude)
+
+    # Return back to hotel
+    total_distance += haversine(
+        current_lat,
+        current_lon,
+        float(hotel.latitude),
+        float(hotel.longitude)
+    )
+
+    total_distance = round(total_distance, 2)
+    total_price = round(total_distance * float(transport.price_per_km), 2)
+
+    # ============================================
+    # 1️⃣ CREATE TRANSPORT BOOKING (CAB TYPE)
+    # ============================================
+
+    transport_booking = TransportBooking(
+        booking_id=hotel_booking.booking_id,
+        transport_type="cab",
+        source=hotel.name,
+        destination=session.get("destination_name"),
+        persons=session.get("persons", 1),
+        price=total_price
+    )
+
+    db.session.add(transport_booking)
+    db.session.commit()   # IMPORTANT → generate transport_booking.id
+
+    # ============================================
+    # 2️⃣ CREATE CAB BOOKING (VERY IMPORTANT)
+    # ============================================
+
+    cab_booking = CabBooking(
+        booking_id=hotel_booking.booking_id,
+        transport_id=transport.id,
+        days=1,
+        total_km=int(total_distance),
+        price=int(total_price)
+    )
+
+    db.session.add(cab_booking)
+
+    # ============================================
+    # 3️⃣ SAVE SELECTED SPOTS
+    # ============================================
+
+    for sid in selected_spots:
+        relation = BookingHypeSpot(
+            booking_id=transport_booking.id,   # ✅ MUST be transport_booking.id
+            spot_id=int(sid)
+        )
+        db.session.add(relation)
+
+    db.session.commit()
+
+    flash("Cab booked successfully!", "success")
+    return redirect(url_for("my_bookings"))
+
+
+
+@app.route("/hype-spots/<int:hotel_booking_id>")
+@login_required
+def hype_spots(hotel_booking_id):
+
+    hotel_booking = HotelBooking.query.get_or_404(hotel_booking_id)
+    hotel = Hotel.query.get_or_404(hotel_booking.hotel_id)
+    destination = Destination.query.get_or_404(hotel.destination_id)
+
+    spots = HypeSpot.query.filter_by(
+        destination_id=destination.id
+    ).all()
+
+    return render_template(
+        "hype_spots.html",
+        spots=spots,
+        destination_name=destination.name,
+        hotel_id=hotel.id,
+        hotel_booking_id=hotel_booking.id
+    )
+
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius in KM
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+
+    return R * c
 
 
 # ================= RUN =================

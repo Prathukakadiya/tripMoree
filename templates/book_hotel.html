@@ -1,26 +1,144 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Book Hotel</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>{{ hotel.name }}</h2>
-<p>⭐ {{ hotel.stars }} Stars</p>
-<p>💰 Price per person: ₹{{ hotel.starting_price }}</p>
+{% block title %}Hotel Booking{% endblock %}
 
-<form method="post">
-    <label>Persons</label>
-    <input type="number" name="persons" required>
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/hotel_booking.css') }}">
+{% endblock %}
 
-    <label>Check-in Date</label>
-    <input type="date" name="checkin" required>
+{% block content %}
 
-    <label>Number of Days</label>
-    <input type="number" name="days" required>
+<!-- 🔥 FLASH ALERT -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      {% for message in messages %}
+        alert("{{ message }}");
+      {% endfor %}
+    </script>
+  {% endif %}
+{% endwith %}
 
-    <button type="submit">Confirm Booking</button>
-</form>
+<div class="booking-wrapper">
 
-</body>
-</html>
+    <div class="booking-card">
+
+        <h2>{{ hotel.name }}</h2>
+        <p class="rating">⭐ {{ hotel.stars }} Rating</p>
+
+        <form method="POST" id="bookingForm">
+
+            <label>Number of Persons</label>
+            <input type="number" name="persons" id="persons" min="1" required>
+
+            <label>Select Room Type</label>
+            <select name="room_id" id="roomSelect" required>
+                {% for room in hotel.rooms %}
+                <option 
+                    value="{{ room.id }}"
+                    data-price="{{ room.base_price }}"
+                    data-available="{{ room.available_rooms }}"
+                >
+                    {{ room.room_type }} - ₹{{ room.base_price }} ({{ room.available_rooms }} Available)
+                </option>
+                {% endfor %}
+            </select>
+
+            <label>Check-in Date</label>
+            <input type="date" name="checkin" id="checkin" required>
+
+            <label>Check-out Date</label>
+            <input type="date" name="checkout" id="checkout" required>
+
+            <div class="live-summary">
+                <p>🛏 Rooms Required: <span id="roomsRequired">0</span></p>
+                <p>🌙 Nights: <span id="nights">0</span></p>
+                <p>💰 Total Price: ₹<span id="totalPrice">0</span></p>
+            </div>
+
+            <label>Full Name</label>
+            <input type="text" name="name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Phone Number</label>
+            <input type="text" name="phone" pattern="[6-9]{1}[0-9]{9}" 
+                   title="Enter valid 10 digit Indian number" required>
+
+            <button type="submit">Confirm Booking</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const personsInput = document.getElementById("persons");
+    const roomSelect = document.getElementById("roomSelect");
+    const checkinInput = document.getElementById("checkin");
+    const checkoutInput = document.getElementById("checkout");
+
+    const roomsRequiredEl = document.getElementById("roomsRequired");
+    const nightsEl = document.getElementById("nights");
+    const totalPriceEl = document.getElementById("totalPrice");
+
+    const form = document.getElementById("bookingForm");
+
+    const today = new Date().toISOString().split("T")[0];
+    checkinInput.setAttribute("min", today);
+
+    function calculateBooking() {
+
+        const persons = parseInt(personsInput.value) || 0;
+        const roomOption = roomSelect.options[roomSelect.selectedIndex];
+
+        const pricePerNight = parseInt(roomOption.dataset.price) || 0;
+
+        if (!checkinInput.value || !checkoutInput.value) {
+            nightsEl.innerText = 0;
+            totalPriceEl.innerText = 0;
+            roomsRequiredEl.innerText = 0;
+            return;
+        }
+
+        const checkin = new Date(checkinInput.value);
+        const checkout = new Date(checkoutInput.value);
+
+        if (checkout <= checkin) {
+            nightsEl.innerText = 0;
+            totalPriceEl.innerText = 0;
+            roomsRequiredEl.innerText = 0;
+            return;
+        }
+
+        const timeDiff = checkout - checkin;
+        const nights = timeDiff / (1000 * 60 * 60 * 24);
+
+        const requiredRooms = Math.ceil(persons / 2);
+        const totalPrice = nights * pricePerNight * requiredRooms;
+
+        roomsRequiredEl.innerText = requiredRooms;
+        nightsEl.innerText = nights;
+        totalPriceEl.innerText = totalPrice;
+    }
+
+    personsInput.addEventListener("input", calculateBooking);
+    roomSelect.addEventListener("change", calculateBooking);
+    checkinInput.addEventListener("change", calculateBooking);
+    checkoutInput.addEventListener("change", calculateBooking);
+
+    form.addEventListener("submit", function(e){
+        if(checkoutInput.value <= checkinInput.value){
+            alert("Checkout date must be after check-in date");
+            e.preventDefault();
+        }
+    });
+
+});
+</script>
+
+{% endblock %}

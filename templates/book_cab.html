@@ -1,0 +1,32 @@
+{% include "navbar.html" %}
+<div class="container mt-5">
+
+<h2 class="text-center mb-4">🚖 Book Local Cab</h2>
+
+<form method="POST">
+
+    <div class="mb-3">
+        <label>Select Cab</label>
+        <select name="cab_id" class="form-control" required>
+            {% for c in cabs %}
+            <option value="{{ c.id }}">
+                {{ c.vehicle_name }} ({{ c.ac_type }}) - ₹{{ c.price_per_km }}/km
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Number of Days</label>
+        <input type="number" name="days" class="form-control" min="1" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Total KM</label>
+        <input type="number" name="total_km" class="form-control" min="1" required>
+    </div>
+
+    <button class="btn btn-success w-100">Confirm Cab Booking</button>
+
+</form>
+</div>

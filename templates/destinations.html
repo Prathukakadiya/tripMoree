@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Explore Destinations</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/destinations.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
 
-{% include "navbar.html" %}
+{% block title %}Explore Destinations{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/destinations.css') }}">
+{% endblock %}
+
+{% block content %}
 
 <h1 class="page-title">What kind of vacation are you planning?</h1>
 <p class="subtitle">Select a vacation type or search destinations</p>
 
-<!-- Vacation Types -->
 <div class="vacation-types">
     <div class="vacation-card" onclick="loadDestinations('honeymoon')">Honeymoon</div>
     <div class="vacation-card" onclick="loadDestinations('family')">Family</div>
@@ -22,7 +19,6 @@
     <div class="vacation-card" onclick="loadDestinations('solo')">Solo</div>
 </div>
 
-<!-- Search -->
 <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search destination (Goa, Paris...)">
     <button onclick="searchDestinations()">Search</button>
@@ -31,10 +27,8 @@
 
 <hr>
 
-<!-- Destinations -->
 <div id="destinations-container"></div>
 
 <script src="{{ url_for('static', filename='js/destinations.js') }}"></script>
 
-</body>
-</html>
+{% endblock %}

@@ -5,84 +5,114 @@
 
     <style>
         body {
-            font-family: Arial;
-            background:#f5f5f5;
+            font-family: 'Segoe UI', sans-serif;
             margin:0;
+            background: linear-gradient(135deg,#1e3c72,#2a5298);
+            min-height:100vh;
         }
 
         .hero {
             background: linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.6)),
             url("https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg");
             background-size:cover;
-            padding:60px;
+            background-position:center;
+            padding:70px;
             color:white;
             text-align:center;
         }
 
+        .hero h1 { font-size:40px; margin-bottom:10px; }
+        .hero p { opacity:.9; font-size:18px; }
+
         .container {
-            padding:30px;
+            padding:40px;
+            max-width:1000px;
+            margin:auto;
         }
 
         .spot {
-            background:white;
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.15);
             padding:15px;
-            margin:10px 0;
-            border-radius:8px;
-            box-shadow:0 0 8px rgba(0,0,0,.1);
+            margin:12px 0;
+            border-radius:12px;
+            color:white;
+            border:1px solid rgba(255,255,255,0.2);
+            transition:.3s;
+        }
+
+        .spot:hover {
+            transform:scale(1.02);
+            background: rgba(255,255,255,0.25);
         }
 
         #transport {
             display:none;
-            background:white;
-            padding:20px;
-            margin-top:30px;
-            border-radius:10px;
-            box-shadow:0 0 12px rgba(0,0,0,.15);
+            margin-top:40px;
+            backdrop-filter: blur(15px);
+            background: rgba(255,255,255,0.15);
+            padding:25px;
+            border-radius:15px;
+            border:1px solid rgba(255,255,255,0.3);
+            color:white;
         }
 
         .distance-badge {
-            background:#ffe9d6;
-            padding:8px 12px;
-            border-radius:20px;
+            background: rgba(255,255,255,0.2);
+            padding:8px 14px;
+            border-radius:30px;
             display:inline-block;
-            margin-bottom:15px;
+            margin-bottom:20px;
             font-weight:bold;
-            color:#ff6b00;
         }
 
         .cabs {
             display:grid;
             grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
             gap:20px;
-            margin-top:20px;
         }
 
         .cab-card {
-            background:white;
-            padding:15px;
-            border-radius:12px;
-            box-shadow:0 6px 20px rgba(0,0,0,.15);
+            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.2);
+            padding:18px;
+            border-radius:15px;
+            border:1px solid rgba(255,255,255,0.3);
             cursor:pointer;
-            transform: translateY(20px);
-            opacity:0;
-            animation: fadeUp .4s ease forwards;
             transition:.3s;
         }
 
-        .cab-card:hover {
-            transform: scale(1.05);
-        }
+        .cab-card:hover { transform: scale(1.05); }
 
         .cab-card.active {
-            border:2px solid #ff6b00;
-            box-shadow:0 0 20px rgba(255,107,0,.6);
+            border:2px solid #ffd700;
+            box-shadow:0 0 20px rgba(255,215,0,.8);
         }
 
-        @keyframes fadeUp {
-            to {
-                transform: translateY(0);
-                opacity:1;
-            }
+        button {
+            margin-top:25px;
+            padding:12px 30px;
+            background: linear-gradient(45deg,#ff512f,#dd2476);
+            border:none;
+            border-radius:30px;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        button:hover {
+            transform:scale(1.08);
+            box-shadow:0 0 20px rgba(255,0,120,.6);
+        }
+
+        footer {
+            margin-top:60px;
+            padding:20px;
+            text-align:center;
+            color:white;
+            background:rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
@@ -91,7 +121,7 @@
 
 <div class="hero">
     <h1>🔥 Hype Spots in {{ destination_name }}</h1>
-    <p>Select places you want to visit</p>
+    <p>Select places you want to explore</p>
 </div>
 
 <div class="container">
@@ -99,84 +129,99 @@
     {% for s in spots %}
     <div class="spot">
         <label>
-            <input type="checkbox" class="spot-check" data-id="{{ s.id }}">
+            <input type="checkbox" class="spot-check" value="{{ s.id }}">
             <strong>{{ s.spot_name }}</strong>
         </label>
     </div>
     {% endfor %}
 
-    <div id="transport">
-        <h2>🚕 Select Transportation</h2>
-        <div id="distanceInfo" class="distance-badge"></div>
-        <div id="cabList" class="cabs"></div>
+   <form method="POST"
+      action="{{ url_for('book_cab', hotel_booking_id=hotel_booking_id) }}"
+      id="cabForm">
+        <div id="transport">
+            <h2>🚕 Select Transportation</h2>
+            <div id="distanceInfo" class="distance-badge"></div>
+            <div id="cabList" class="cabs"></div>
 
-        <button style="margin-top:20px;padding:10px 20px;background:#28a745;color:white;border:none;border-radius:6px;">
-            🚕 Book Cab
-        </button>
-    </div>
+            <input type="hidden" name="cab_id" id="cab_id">
+            <div id="selectedSpotsContainer"></div>
 
-    <div style="margin-top:40px;text-align:center;">
-        <a href="/my-bookings" style="text-decoration:none;font-size:18px;">
+            <button type="submit">
+                🚕 Book Cab
+            </button>
+        </div>
+    </form>
+
+    <div style="margin-top:50px;text-align:center;">
+        <a href="/my-bookings" style="color:white;font-size:18px;text-decoration:none;">
             ✅ Finish Trip & View Booking
         </a>
     </div>
 
 </div>
+
+<footer>
+    © 2026 TripMoree • Travel Smart • Explore More ✈️
+</footer>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const transportDiv = document.getElementById("transport");
     const cabList = document.getElementById("cabList");
     const distanceInfo = document.getElementById("distanceInfo");
-    const bookBtn = document.querySelector("button");
-
-    let selectedCab = null;
+    const cabInput = document.getElementById("cab_id");
+    const spotsContainer = document.getElementById("selectedSpotsContainer");
 
     document.querySelectorAll(".spot-check").forEach(cb => {
-        cb.addEventListener("change", handleSpotChange);
+        cb.addEventListener("change", updateTransport);
     });
 
-    function handleSpotChange() {
+    function updateTransport() {
 
-        const selectedSpots = [];
+        const selected = [];
+        spotsContainer.innerHTML = "";
+
         document.querySelectorAll(".spot-check:checked").forEach(cb => {
-            selectedSpots.push(cb.dataset.id);
+            selected.push(cb.value);
+
+            const hidden = document.createElement("input");
+            hidden.type = "hidden";
+            hidden.name = "spot_ids";
+            hidden.value = cb.value;
+            spotsContainer.appendChild(hidden);
         });
 
-        if (selectedSpots.length === 0) {
+        if (selected.length === 0) {
             transportDiv.style.display = "none";
-            cabList.innerHTML = "";
-            distanceInfo.innerHTML = "";
             return;
         }
 
-        fetch("/api/calculate-distance", {
+        transportDiv.style.display = "block";
+
+        fetch("/api/calculate-transport", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ spots: selectedSpots })
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                hotel_id: {{ hotel_id }},
+                spot_ids: selected
+            })
         })
-        .then(res => res.json())
-        .then(dist => {
+        .then(response => response.json())
+        .then(data => {
 
-            distanceInfo.innerText = `📍 Total Distance: ${dist.distance_km} km`;
-
-            return fetch("/api/calculate-transport", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ distance: dist.distance_km })
-            });
-        })
-        .then(res => res.json())
-        .then(cars => {
-
-            transportDiv.style.display = "block";
             cabList.innerHTML = "";
-            selectedCab = null;
 
-            cars.forEach((c, i) => {
+            if (data.length > 0) {
+                distanceInfo.innerText =
+                    "📍 Total Distance: " + data[0].distance + " km";
+            }
+
+            data.forEach(c => {
+
                 const card = document.createElement("div");
                 card.className = "cab-card";
-                card.style.animationDelay = `${i * 0.1}s`;
 
                 card.innerHTML = `
                     <h3>${c.vehicle}</h3>
@@ -184,39 +229,29 @@ document.addEventListener("DOMContentLoaded", function () {
                     <strong>₹ ${c.price}</strong>
                 `;
 
-                card.onclick = () => {
+                card.onclick = function () {
                     document.querySelectorAll(".cab-card")
                         .forEach(x => x.classList.remove("active"));
+
                     card.classList.add("active");
-                    selectedCab = c;
+                    cabInput.value = c.cab_id;
                 };
 
                 cabList.appendChild(card);
             });
         });
     }
-
-    bookBtn.onclick = function () {
-        if (!selectedCab) {
-            alert("Please select a cab first 🚕");
-            return;
-        }
-
-        fetch("/book-cab", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                price: selectedCab.price
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert("Cab booked successfully ✅");
-            window.location.href = "/my-bookings";
-        });
-    };
 });
 </script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert alert-success text-center">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
 </body>
 </html>
