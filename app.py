@@ -1098,7 +1098,34 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * asin(sqrt(a))
 
     return R * c
+@app.route("/experience/mountain")
+@login_required
+def mountain_experience():
+    return render_template("mountain_experience.html")
 
+@app.route("/experience/backwater")
+@login_required
+def backwater_experience():
+    return render_template("backwater_experience.html")
+
+@app.route("/experience/beach")
+@login_required
+def beach_experience():
+    return render_template("beach_experience.html")
+
+@app.route("/coming-soon")
+def coming_soon():
+    return """
+    <h2 style='text-align:center;margin-top:100px;font-family:Arial;'>
+    🚀 Social Media Pages Coming Soon!
+    </h2>
+    """
+@app.route("/about")
+def about():
+    return render_template("about.html")
+@app.route("/gallery")
+def gallery():
+    return render_template("gallery.html")
 
 # ================= RUN =================
 if __name__ == "__main__":

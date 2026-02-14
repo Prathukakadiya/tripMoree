@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Gallery | TripMoreee{% endblock %}
+
+{% block content %}
+
+<style>
+/* HERO */
+.gallery-hero{
+    background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
+    url("https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg") center/cover;
+    height:45vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+    margin-top:80px;
+}
+
+.gallery-hero h1{
+    font-size:48px;
+    margin-bottom:10px;
+}
+
+.gallery-hero p{
+    font-size:18px;
+    color:#ddd;
+}
+
+/* GALLERY GRID */
+.gallery-section{
+    padding:80px 50px;
+    max-width:1300px;
+    margin:auto;
+}
+
+.gallery-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap:25px;
+}
+
+.gallery-item{
+    position:relative;
+    overflow:hidden;
+    border-radius:14px;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+
+.gallery-item img{
+    width:100%;
+    height:280px;
+    object-fit:cover;
+    transition:0.6s ease;
+}
+
+.gallery-item:hover img{
+    transform:scale(1.1);
+}
+
+.gallery-overlay{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    padding:20px;
+    background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    color:white;
+    opacity:0;
+    transition:0.4s ease;
+}
+
+.gallery-item:hover .gallery-overlay{
+    opacity:1;
+}
+
+.gallery-overlay h3{
+    margin:0;
+    font-size:20px;
+}
+
+.gallery-overlay p{
+    margin-top:5px;
+    font-size:14px;
+    color:#ccc;
+}
+
+/* CTA */
+.gallery-cta{
+    background:#000;
+    color:white;
+    padding:70px 20px;
+    text-align:center;
+}
+
+.gallery-cta h2{
+    font-size:32px;
+    margin-bottom:25px;
+}
+
+.gallery-cta a{
+    background:gold;
+    color:black;
+    padding:14px 40px;
+    border-radius:30px;
+    text-decoration:none;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+.gallery-cta a:hover{
+    background:#ffd700;
+    transform:translateY(-3px);
+}
+</style>
+
+<div class="gallery-hero">
+    <div>
+        <h1>Travel Gallery</h1>
+        <p>Explore breathtaking destinations captured by our travelers.</p>
+    </div>
+</div>
+
+<div class="gallery-section">
+
+    <div class="gallery-grid">
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
+            <div class="gallery-overlay">
+                <h3>Goa Beaches</h3>
+                <p>Golden sunsets & nightlife vibes</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
+            <div class="gallery-overlay">
+                <h3>Manali Snow</h3>
+                <p>Adventure in the Himalayas</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
+            <div class="gallery-overlay">
+                <h3>Jaipur Palace</h3>
+                <p>Royal heritage experience</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
+            <div class="gallery-overlay">
+                <h3>Dubai Skyline</h3>
+                <p>Luxury & modern lifestyle</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
+            <div class="gallery-overlay">
+                <h3>Mountain Trek</h3>
+                <p>Unforgettable adventure moments</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
+            <div class="gallery-overlay">
+                <h3>Backwater Cruise</h3>
+                <p>Luxury houseboat views</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="gallery-cta">
+    <h2>Ready To Create Your Own Memories?</h2>
+    <a href="/destinations">Start Your Journey</a>
+</div>
+
+{% endblock %}

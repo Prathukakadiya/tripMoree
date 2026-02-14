@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>TripMoreee | Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         body {
             background: #ede6db;
-
             margin: 0;
             font-family: Arial, sans-serif;
         }
@@ -16,13 +16,12 @@
             position: fixed;
             top:10px;
             left: 0;
-            width: 100%;                 /* FULL SCREEN */
+            width: 100%;
             background: rgba(0, 0, 0, 0.85);
             padding: 12px 40px;
             display: flex;
             align-items: center;
             z-index: 1000;
-            border-radius: 0;            /* ROUNDED REMOVED */
             box-sizing: border-box;
         }
 
@@ -45,7 +44,7 @@
             margin-left: 25px;
             text-decoration: none;
             font-size: 17px;
-            white-space: nowrap;        /* BUTTON CUT FIX */
+            white-space: nowrap;
         }
 
         .nav-links a:hover {
@@ -93,14 +92,8 @@
         }
 
         @keyframes fadeSlide {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ---------- DESTINATIONS ---------- */
@@ -119,40 +112,74 @@
             max-width: 1100px;
             margin: auto;
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 UP + 2 DOWN */
+            grid-template-columns: repeat(2, 1fr);
             gap: 40px;
         }
 
+        /* PROFESSIONAL DESTINATION CARD */
         .card {
-            width: 100%;
-            height: 260px;               /* CARD BIG */
-            border-radius: 15px;
-            overflow: hidden;
             position: relative;
+            height: 280px;
+            border-radius: 18px;
+            overflow: hidden;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            transition: transform 0.3s;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+            transition: transform 0.4s ease;
         }
 
         .card:hover {
-            transform: scale(1.05);
+            transform: translateY(-10px);
         }
 
         .card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.6s ease;
         }
 
-        .card-text {
+        .card:hover img {
+            transform: scale(1.1);
+        }
+
+        .card-overlay {
             position: absolute;
             bottom: 0;
             width: 100%;
-            background: rgba(0,0,0,0.6);
-            color: #FFDAB9;
-            text-align: center;
-            padding: 10px;
-            font-size: 22px;
+            padding: 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4), transparent);
+            color: white;
+        }
+
+        .card-overlay h3 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .card-overlay p {
+            margin: 8px 0 0;
+            font-size: 15px;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+
+        .book-btn-card {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: gold;
+            color: black;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+
+        .card:hover .card-overlay p,
+        .card:hover .book-btn-card {
+            opacity: 1;
         }
 
         /* ---------- TOP EXPERIENCES ---------- */
@@ -173,6 +200,10 @@
             gap: 30px;
             justify-content: center;
             flex-wrap: wrap;
+        }
+
+        .experience-link {
+            text-decoration: none;
         }
 
         .experience-card {
@@ -211,155 +242,331 @@
             color: #e0e0e0;
         }
 
-       /* ---------- CTA ---------- */
-.cta-section {
-    margin: 80px auto;
-    width: 90%;
-    padding: 60px 20px;              /* spacing balanced */
-    text-align: center;
-    background: linear-gradient(to right, #000, #111);
-    border: 2px solid gold;
-    border-radius: 20px;
-    color: #FFDAB9;
-}
+        /* ---------- CTA ---------- */
+        .cta-section {
+            margin: 80px auto;
+            width: 90%;
+            padding: 60px 20px;
+            text-align: center;
+            background: linear-gradient(to right, #000, #111);
+            border: 2px solid gold;
+            border-radius: 20px;
+            color: #FFDAB9;
+        }
 
-.cta-section h2 {
-    font-size: 30px;
-    margin-bottom: 18px;             /* heading & text gap */
-    color: #FFDAB9;
-}
+        .cta-btn {
+            background: gold;
+            color: black;
+            padding: 14px 38px;
+            text-decoration: none;
+            font-size: 18px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
 
-.cta-section p {
-    font-size: 18px;
-    margin-bottom: 35px;             /* text & button gap */
-}
-
-.cta-btn {
-    background: gold;
-    color: black;
-    padding: 14px 38px;              /* button looks balanced */
-    text-decoration: none;
-    font-size: 18px;
-    border-radius: 30px;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-.cta-btn:hover {
-    background: #ffcc66;
-}
-
-        /* ---------- FOOTER ---------- */
         .footer-bottom {
             text-align: center;
             color: #aaa;
             padding: 20px;
             font-size: 14px;
         }
+/* ================= FOOTER ================= */
 
-        @media (max-width: 768px) {
-            .cards {
-                grid-template-columns: 1fr;
-            }
-        }
+/* ===== FINAL COMPACT SYMMETRIC FOOTER ===== */
+
+.main-footer{
+    background:#000;
+    color:#ccc;
+    padding:60px 20px 20px; 
+    text-align:center;
+}
+
+/* BRAND */
+.footer-brand{
+    font-size:40px;     
+    color:gold;
+    margin-bottom:12px;
+    font-weight:700;
+}
+
+.footer-tagline{
+    font-size:15px;
+    max-width:650px;
+    margin:0 auto 40px;
+    line-height:1.6;
+    color:#ddd;
+}
+
+/* 4 COLUMN CONTACT */
+
+
+.footer-contact div{
+    padding:10px 5px;
+}
+
+/* HEADINGS */
+.footer-contact{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);   /* full width 4 equal columns */
+    width:100%;
+    max-width:1200px;
+    margin:35px auto 30px;
+    text-align:center;
+    gap:20px;
+}
+
+.footer-contact h4{
+    color:gold;
+    font-size:20px;
+    margin-bottom:6px;
+    font-weight:600;
+}
+
+.footer-contact p{
+    font-size:16px;          /* phone number bigger */
+    font-weight:500;
+    color:#eee;
+    margin:0;
+}
+
+
+/* SOCIAL */
+.footer-social{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin-bottom:35px;
+}
+
+.footer-social a{
+    width:36px;
+    height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#111;
+    border-radius:50%;
+    color:white;
+    font-size:14px;
+    transition:0.3s ease;
+}
+
+.footer-social a:hover{
+    background:gold;
+    color:black;
+    transform:translateY(-2px);
+}
+
+/* BUTTON */
+.footer-cta{
+    display:inline-block;
+    background:gold;
+    color:black;
+    padding:12px 32px;
+    border-radius:25px;
+    font-weight:600;
+    text-decoration:none;
+    font-size:16px;
+    margin-bottom:35px;
+    transition:0.3s ease;
+}
+
+.footer-cta:hover{
+    background:#ffd700;
+    transform:translateY(-2px);
+}
+
+/* BOTTOM */
+.footer-bottom{
+    border-top:1px solid #222;
+    margin-top:35px;
+    padding-top:15px;
+    font-size:12px;
+    color:#777;
+}
+
+/* MOBILE */
+@media (max-width:900px){
+    .footer-contact{
+        grid-template-columns: repeat(2, 1fr);
+        row-gap:20px;
+    }
+}
+
+@media (max-width:500px){
+    .footer-contact{
+        grid-template-columns: 1fr;
+    }
+}
+
+
     </style>
 </head>
+<script>
+function showAlert(){
+    alert("🚀 Our social media pages are coming soon!");
+}
+</script>
 
 <body>
 
-<!-- ---------- NAVBAR ---------- -->
 <div class="navbar">
     <div class="hamburger">☰</div>
     <div class="logo">TripMoreee</div>
-
     <div class="nav-links">
-        <a href="#">About</a>
+        <a href="/about">About</a>
         <a href="/destinations">Destinations</a>
-        <a href="#">Gallery</a>
-        <a href="login.html">Login</a>
-        <a href="/book" class="book-btn">Book Now</a>
+        <a href="/gallery">Gallery</a>
+        <a href="/login">Login</a>
+        <a href="/destinations" class="book-btn">Book Now</a>
     </div>
 </div>
 
-<!-- ---------- HERO ---------- -->
 <div class="hero">
     <div class="hero-text">
         <h1>Discover Beautiful Destinations</h1>
-        <p>
-            From peaceful beaches to snowy mountains, explore India and international destinations
-            with comfort and confidence.
-        </p>
+        <p>From peaceful beaches to snowy mountains, explore India and international destinations with comfort and confidence.</p>
     </div>
 </div>
 
-<!-- ---------- DESTINATIONS ---------- -->
-<div class="section" >
+<div class="section">
     <h2>Popular Destinations</h2>
-
     <div class="cards">
+
         <div class="card">
             <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-            <div class="card-text">Goa</div>
+            <div class="card-overlay">
+                <h3>Goa</h3>
+                <p>Beaches • Nightlife • Water Sports</p>
+                <a href="/hotels/1" class="book-btn-card">Explore & Book</a>
+            </div>
         </div>
 
         <div class="card">
             <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
-            <div class="card-text">Manali</div>
+            <div class="card-overlay">
+                <h3>Manali</h3>
+                <p>Snow • Mountains • Adventure</p>
+                <a href="/hotels/2" class="book-btn-card">Explore & Book</a>
+            </div>
         </div>
 
         <div class="card">
             <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
-            <div class="card-text">Jaipur</div>
+            <div class="card-overlay">
+                <h3>Jaipur</h3>
+                <p>Palaces • Culture • History</p>
+                <a href="/hotels/3" class="book-btn-card">Explore & Book</a>
+            </div>
         </div>
 
         <div class="card">
             <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
-            <div class="card-text">Dubai</div>
+            <div class="card-overlay">
+                <h3>Dubai</h3>
+                <p>Luxury • Desert Safari • Skyline</p>
+                <a href="/hotels/4" class="book-btn-card">Explore & Book</a>
+            </div>
         </div>
+
     </div>
 </div>
 
-<!-- ---------- TOP EXPERIENCES ---------- -->
+<!-- TOP EXPERIENCES FULL CLICKABLE -->
 <div class="experience-section">
     <h2>Top Experiences</h2>
-
     <div class="experience-cards">
-        <div class="experience-card">
-            <img src="https://images.pexels.com/photos/572897/pexels-photo-572897.jpeg">
-            <div class="experience-content">
-                <h3>Mountain Adventures</h3>
-                <p>Trekking, paragliding, rafting and snow adventures.</p>
-            </div>
-        </div>
 
-        <div class="experience-card">
-            <img src="https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg">
-            <div class="experience-content">
-                <h3>Backwater Cruises</h3>
-                <p>Luxury houseboats and sunset views.</p>
+        <a href="/experience/mountain" class="experience-link">
+            <div class="experience-card">
+                <img src="https://images.pexels.com/photos/572897/pexels-photo-572897.jpeg">
+                <div class="experience-content">
+                    <h3>Mountain Adventures</h3>
+                    <p>Trekking, paragliding and snow adventures.</p>
+                </div>
             </div>
-        </div>
+        </a>
 
-        <div class="experience-card">
-            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-            <div class="experience-content">
-                <h3>Beaches & Nightlife</h3>
-                <p>Golden beaches and vibrant nightlife.</p>
+        <a href="/experience/backwater" class="experience-link">
+            <div class="experience-card">
+                <img src="https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg">
+                <div class="experience-content">
+                    <h3>Backwater Cruises</h3>
+                    <p>Luxury houseboats and sunset views.</p>
+                </div>
             </div>
-        </div>
+        </a>
+
+        <a href="/experience/beach" class="experience-link">
+            <div class="experience-card">
+                <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
+                <div class="experience-content">
+                    <h3>Beaches & Nightlife</h3>
+                    <p>Golden beaches and vibrant nightlife.</p>
+                </div>
+            </div>
+        </a>
+
     </div>
 </div>
+<footer class="main-footer">
 
-<!-- ---------- CTA ---------- -->
-<div class="cta-section">
-    <h2>Start Your Journey</h2>
-    <p>Plan your next adventure across India with TripMoreee.</p>
-    <a href="/book" class="cta-btn">Book Your Trip</a>
+    <div class="footer-wrapper">
+
+        <!-- BRAND -->
+        <h1 class="footer-brand">TripMoreee</h1>
+
+        <p class="footer-tagline">
+            Travel the world with comfort and confidence.
+            Your journey begins here.
+        </p>
+
+        <!-- CONTACT HORIZONTAL -->
+        <div class="footer-contact">
+<div>
+    <h4>Customer Support</h4>
+    <p>24/7 Online Assistance</p>
 </div>
 
-<div class="footer-bottom">
-    © 2025 TripMoreee | Travel with us
+            <div class="contact-box">
+                <h4>Mobile No</h4>
+                <p>+91 99250 92253</p>
+            </div>
+
+            <div class="contact-box">
+                <h4>Email</h4>
+                <p>support@tripmoreee.com</p>
+            </div>
+
+            <div class="contact-box">
+                <h4>Location</h4>
+                <p>Surat, India</p>
+            </div>
+
+        </div>
+
+        <!-- SOCIAL -->
+       <div class="footer-social">
+    <a href="#" onclick="showAlert()"><i class="fab fa-facebook-f"></i></a>
+    <a href="#" onclick="showAlert()"><i class="fab fa-instagram"></i></a>
+    <a href="#" onclick="showAlert()"><i class="fab fa-twitter"></i></a>
+    <a href="#" onclick="showAlert()"><i class="fab fa-linkedin-in"></i></a>
 </div>
+
+
+        <!-- START YOUR JOURNEY -->
+        <a href="/destinations" class="footer-cta">
+            Start Your Journey
+        </a>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2025 TripMoreee | All Rights Reserved
+    </div>
+
+</footer>
+
 
 </body>
 </html>

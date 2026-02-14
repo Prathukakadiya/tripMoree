@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>About | TripMoreee</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body{
+            margin:0;
+            font-family: Arial, sans-serif;
+            background:#f5f5f5;
+        }
+
+        /* HERO */
+        .about-hero{
+            background:linear-gradient(rgba(0,0,0,0.65),rgba(0,0,0,0.65)),
+            url("https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg") center/cover;
+            height:55vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            color:white;
+            margin-top:70px; /* navbar spacing */
+        }
+
+        .about-hero h1{
+            font-size:48px;
+            margin-bottom:10px;
+        }
+
+        .about-hero p{
+            font-size:18px;
+            color:#ddd;
+            max-width:600px;
+            margin:auto;
+        }
+
+        /* SECTION */
+        .section{
+            padding:80px 20px;
+            max-width:1100px;
+            margin:auto;
+            text-align:center;
+        }
+
+        .section h2{
+            font-size:32px;
+            margin-bottom:20px;
+        }
+
+        .section p{
+            font-size:16px;
+            line-height:1.7;
+            color:#555;
+        }
+
+        /* FEATURES */
+        .features{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+            gap:30px;
+            margin-top:50px;
+        }
+
+        .feature-box{
+            background:white;
+            padding:30px 20px;
+            border-radius:12px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.1);
+            transition:0.3s ease;
+        }
+
+        .feature-box:hover{
+            transform:translateY(-8px);
+        }
+
+        .feature-box i{
+            font-size:28px;
+            color:gold;
+            margin-bottom:15px;
+        }
+
+        .feature-box h4{
+            margin-bottom:10px;
+        }
+
+        .feature-box p{
+            font-size:14px;
+            color:#666;
+        }
+
+        /* STATS */
+        .stats{
+            background:#000;
+            color:white;
+            padding:70px 20px;
+            text-align:center;
+        }
+
+        .stats-grid{
+            display:grid;
+            grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+            gap:30px;
+            max-width:1000px;
+            margin:auto;
+        }
+
+        .stats-grid h3{
+            font-size:32px;
+            color:gold;
+        }
+
+        .stats-grid p{
+            font-size:14px;
+            color:#ccc;
+        }
+
+        /* CTA */
+        .about-cta{
+            padding:70px 20px;
+            text-align:center;
+            background:linear-gradient(to right,#000,#111);
+            color:white;
+        }
+
+        .about-cta h2{
+            font-size:30px;
+            margin-bottom:20px;
+        }
+
+        .about-cta a{
+            background:gold;
+            color:black;
+            padding:14px 40px;
+            border-radius:30px;
+            text-decoration:none;
+            font-weight:bold;
+            transition:0.3s ease;
+        }
+
+        .about-cta a:hover{
+            background:#ffd700;
+            transform:translateY(-3px);
+        }
+
+        @media(max-width:600px){
+            .about-hero h1{
+                font-size:34px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ✅ USING YOUR EXISTING NAVBAR -->
+{% include "navbar.html" %}
+
+<div class="about-hero">
+    <div>
+        <h1>About TripMoreee</h1>
+        <p>We create unforgettable travel experiences with comfort, safety and luxury in mind.</p>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Our Mission</h2>
+    <p>
+        At TripMoreee, our mission is to make travel simple, affordable and memorable.
+        From mountain adventures to luxury beach vacations, we help you explore
+        the world with confidence and comfort.
+    </p>
+</div>
+
+<div class="section">
+    <h2>Why Choose Us</h2>
+
+    <div class="features">
+        <div class="feature-box">
+            <i class="fas fa-globe"></i>
+            <h4>Wide Destinations</h4>
+            <p>Explore domestic and international destinations effortlessly.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-shield-alt"></i>
+            <h4>Safe Travel</h4>
+            <p>Your safety and comfort are always our top priority.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-star"></i>
+            <h4>Premium Experience</h4>
+            <p>Luxury stays, curated experiences and seamless bookings.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-headset"></i>
+            <h4>24/7 Support</h4>
+            <p>Customer support available anytime, anywhere.</p>
+        </div>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stats-grid">
+        <div>
+            <h3>10K+</h3>
+            <p>Happy Travelers</p>
+        </div>
+        <div>
+            <h3>50+</h3>
+            <p>Destinations</p>
+        </div>
+        <div>
+            <h3>4.8★</h3>
+            <p>Average Rating</p>
+        </div>
+        <div>
+            <h3>24/7</h3>
+            <p>Customer Support</p>
+        </div>
+    </div>
+</div>
+
+<div class="about-cta">
+    <h2>Ready To Explore With Us?</h2>
+    <a href="/destinations">Start Your Journey</a>
+</div>
+
+</body>
+</html>
