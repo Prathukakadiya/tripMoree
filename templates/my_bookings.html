@@ -5,39 +5,69 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+
 {% include "navbar.html" %}
+
 <div class="container mt-5">
     <h2 class="text-center mb-4">📜 My Bookings</h2>
 
     {% if bookings %}
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Type</th>
-                <th>Source</th>
-                <th>Destination</th>
-                <th>Persons</th>
-                <th>Total Price (₹)</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-    {% for booking in bookings %}
-    <tr>
-        <td>{{ booking.booking_type }}</td>
-        <td>{{ booking.source }}</td>
-        <td>{{ booking.destination }}</td>
-        <td>{{ booking.persons }}</td>
-        <td>₹ {{ booking.price }}</td>
-        <td>{{ booking.created_at }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
 
-    </table>
+        {% for item in bookings %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white">
+                Booking ID: {{ item.booking.id }} |
+                Destination: {{ item.booking.destination }} |
+                Status: {{ item.booking.status }}
+            </div>
+
+            <div class="card-body">
+
+                <!-- HOTEL -->
+                {% if item.hotel %}
+                <h5>🏨 Hotel Details</h5>
+                <p><strong>Hotel:</strong> {{ item.hotel.hotel_name }}</p>
+                <p><strong>Check-In:</strong> {{ item.hotel.check_in }}</p>
+                <p><strong>Check-Out:</strong> {{ item.hotel.check_out }}</p>
+                <p><strong>Hotel Price:</strong> ₹ {{ item.hotel.price }}</p>
+                <hr>
+                {% endif %}
+
+                <!-- TRANSPORT -->
+                {% for t in item.transports %}
+                <h5>🚍 Transport</h5>
+                <p><strong>Type:</strong> {{ t.transport.transport_type }}</p>
+                <p><strong>From:</strong> {{ t.transport.source }}</p>
+                <p><strong>To:</strong> {{ t.transport.destination }}</p>
+                <p><strong>Persons:</strong> {{ t.transport.persons }}</p>
+                <p><strong>Transport Price:</strong> ₹ {{ t.transport.price }}</p>
+
+                {% if t.spots %}
+                <p><strong>Selected Hype Spots:</strong></p>
+                <ul>
+                    {% for s in t.spots %}
+                        <li>Spot ID: {{ s.spot_id }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                <hr>
+                {% endfor %}
+
+                <!-- CAB -->
+                {% if item.cab %}
+                <h5>🚖 Cab Details</h5>
+                <p><strong>Total KM:</strong> {{ item.cab.total_km }}</p>
+                <p><strong>Cab Price:</strong> ₹ {{ item.cab.price }}</p>
+                {% endif %}
+
+            </div>
+        </div>
+        {% endfor %}
+
     {% else %}
         <p class="text-center fs-5">No bookings yet 😕</p>
     {% endif %}
+
 </div>
 
 </body>

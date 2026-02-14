@@ -13,12 +13,6 @@
             min-height: 100vh;
         }
 
-        .search-box {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 14px;
-            padding: 30px;
-        }
-
         table {
             background: #fff;
         }
@@ -26,29 +20,39 @@
 </head>
 
 <body>
+
 {% include "navbar.html" %}
+
 <div class="container mt-5">
 
     <h2 class="text-center mb-4">✈️ Flight Search</h2>
 
     <form method="POST" class="row g-3 mb-4">
+
         <div class="col-md-3">
-            <input type="text" name="source" class="form-control"
-                   value="{{ session.get('source') }}" required>
+            <input type="text" name="source"
+                   class="form-control"
+                   placeholder="Source"
+                   required>
         </div>
 
         <div class="col-md-3">
-            <input type="text" name="destination" class="form-control"
-                   value="{{ session.get('destination') }}" required>
+            <input type="text" name="destination"
+                   class="form-control"
+                   value="{{ destination }}"
+                   readonly>
         </div>
 
         <div class="col-md-2">
-            <input type="number" name="persons" class="form-control"
-                   value="{{ session.get('persons') }}" min="1" required>
+            <input type="number" name="persons"
+                   class="form-control"
+                   value="{{ persons }}"
+                   readonly>
         </div>
 
         <div class="col-md-2">
-            <select name="class_type" class="form-select">
+            <select name="flight_class" class="form-select" required>
+                <option value="">Class</option>
                 <option value="Economy">Economy</option>
                 <option value="Business">Business</option>
             </select>
@@ -57,16 +61,19 @@
         <div class="col-md-2">
             <button class="btn btn-primary w-100">Search</button>
         </div>
+
     </form>
 
     {% if flights %}
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
-                <th>Flight</th>
+                <th>Flight No</th>
                 <th>Airline</th>
                 <th>Departure</th>
                 <th>Arrival</th>
+                <th>Class</th>
+                <th>Available Seats</th>
                 <th>Price</th>
                 <th>Action</th>
             </tr>
@@ -78,11 +85,13 @@
                 <td>{{ f.airline }}</td>
                 <td>{{ f.departure_time }}</td>
                 <td>{{ f.arrival_time }}</td>
+                <td>{{ f.flight_class }}</td>
+                <td>{{ f.available_seats }}</td>
                 <td>₹{{ f.price }}</td>
                 <td>
-                    <a href="/book-flight/{{ f.id }}"
-                       class="btn btn-success btn-sm">
-                       Select & Book
+                    <a href="{{ url_for('confirm_flight', flight_id=f.id) }}"
+                       class="btn btn-primary btn-sm">
+                       Confirm
                     </a>
                 </td>
             </tr>
@@ -92,5 +101,6 @@
     {% endif %}
 
 </div>
+
 </body>
 </html>

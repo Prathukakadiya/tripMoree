@@ -221,11 +221,10 @@ class Train(db.Model):
     departure_time = db.Column(db.String(20))
     arrival_time = db.Column(db.String(20))
 
-    ac_type = db.Column(db.String(20))      # AC / Non-AC
-    seat_type = db.Column(db.String(20))    # Sleeper / Seater
+    ac_type = db.Column(db.String(20))      # ADD
+    seat_type = db.Column(db.String(20))    # ADD
 
     price = db.Column(db.Integer)
-
     total_seats = db.Column(db.Integer)
     available_seats = db.Column(db.Integer)
 class Flight(db.Model):
@@ -241,12 +240,12 @@ class Flight(db.Model):
     departure_time = db.Column(db.String(20))
     arrival_time = db.Column(db.String(20))
 
-    flight_class = db.Column(db.String(20))  # Economy / Business
+    flight_class = db.Column(db.String(20))   # MUST EXIST
 
     price = db.Column(db.Integer)
-
     total_seats = db.Column(db.Integer)
     available_seats = db.Column(db.Integer)
+
 
     
 class BookingHistory(db.Model):
@@ -606,37 +605,43 @@ def my_bookings():
 
     for b in bookings:
 
-        # 🏨 Hotel
+        # 🏨 Hotel Booking
         hotel = HotelBooking.query.filter_by(
             booking_id=b.id
         ).first()
 
-        # 🚌 Main Transport (Bus / Train / Flight only)
-        transport = TransportBooking.query.filter(
-            TransportBooking.booking_id == b.id,
-            TransportBooking.transport_type != "cab"
-        ).first()
+        # 🚌 Transport Booking (Bus / Train / Flight / Cab)
+        transports = TransportBooking.query.filter_by(
+            booking_id=b.id
+        ).all()
 
-        # 🚖 Local Cab (NEW TABLE)
+        transport_data = []
+
+        for t in transports:
+
+            # 🔹 Get spots linked to THIS transport
+            spots = BookingHypeSpot.query.filter_by(
+                booking_id=t.id
+            ).all()
+
+            transport_data.append({
+                "transport": t,
+                "spots": spots
+            })
+
+        # 🚖 Cab Booking (if exists)
         cab = CabBooking.query.filter_by(
             booking_id=b.id
         ).first()
 
-        # 📍 Selected Spots
-        spots = BookingHypeSpot.query.filter_by(
-            booking_id=b.id
-        ).all()
-
         result.append({
             "booking": b,
             "hotel": hotel,
-            "transport": transport,
-            "cab": cab,
-            "spots": spots
+            "transports": transport_data,
+            "cab": cab
         })
 
-    return render_template("my_bookings.html", data=result)
-
+    return render_template("my_bookings.html", bookings=result)
 
 @app.route("/after-hotel-booking/<int:hotel_id>")
 def after_hotel_booking(hotel_id):
@@ -660,14 +665,20 @@ def transport_choice(destination):
         destination=destination
     )
 @app.route("/flight/<destination>", methods=["GET", "POST"])
+@login_required
 def flight(destination):
 
     persons = session.get("persons", 1)
+    booking_id = session.get("booking_id")
+
+    if not booking_id:
+        return redirect(url_for("home"))
+
+    flights = []
 
     if request.method == "POST":
-
-        source = request.form["source"]
-        flight_class = request.form["flight_class"]
+        source = request.form.get("source")
+        flight_class = request.form.get("flight_class")
 
         flights = Flight.query.filter_by(
             source=source,
@@ -675,32 +686,32 @@ def flight(destination):
             flight_class=flight_class
         ).all()
 
-        return render_template(
-            "flight.html",
-            destination=destination,
-            flights=flights,
-            persons=persons,
-            source=source
-        )
-
     return render_template(
-        "flight.html",
+        "flights.html",
         destination=destination,
-        persons=persons
+        persons=persons,
+        flights=flights
     )
+
 @app.route("/confirm-flight/<int:flight_id>")
+@login_required
 def confirm_flight(flight_id):
 
-    flight = Flight.query.get_or_404(flight_id)
+    booking_id = session.get("booking_id")
     persons = session.get("persons", 1)
+
+    if not booking_id:
+        return redirect(url_for("home"))
+
+    flight = Flight.query.get_or_404(flight_id)
 
     if flight.available_seats < persons:
         return "Not enough seats available"
 
     flight.available_seats -= persons
 
-    transport = TransportBooking(
-        booking_id=session["booking_id"],
+    transport_booking = TransportBooking(
+        booking_id=booking_id,
         transport_type="flight",
         source=flight.source,
         destination=flight.destination,
@@ -708,12 +719,16 @@ def confirm_flight(flight_id):
         price=flight.price * persons
     )
 
-    db.session.add(transport)
+    db.session.add(transport_booking)
     db.session.commit()
 
-    dest = Destination.query.filter_by(name=flight.destination).first()
+    hotel_booking = HotelBooking.query.filter_by(
+        booking_id=booking_id
+    ).first()
 
-    return redirect(url_for("hype_spots", hotel_booking_id=booking.id))
+    return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
+
+
 # ================= BUS =================
 
 @app.route("/bus/<destination>", methods=["GET", "POST"])
@@ -781,17 +796,22 @@ def confirm_bus(bus_id):
     ).first()
     flash("Bus booked successfully!", "success")
     return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
-
 @app.route("/train/<destination>", methods=["GET", "POST"])
+@login_required
 def train(destination):
 
     persons = session.get("persons", 1)
+    booking_id = session.get("booking_id")
+
+    if not booking_id:
+        return redirect(url_for("home"))
+
+    trains = []
 
     if request.method == "POST":
-
-        source = request.form["source"]
-        ac_type = request.form["ac_type"]
-        seat_type = request.form["seat_type"]
+        source = request.form.get("source")
+        ac_type = request.form.get("ac_type")
+        seat_type = request.form.get("seat_type")
 
         trains = Train.query.filter_by(
             source=source,
@@ -800,32 +820,33 @@ def train(destination):
             seat_type=seat_type
         ).all()
 
-        return render_template(
-            "train.html",
-            destination=destination,
-            trains=trains,
-            persons=persons,
-            source=source
-        )
-
     return render_template(
         "train.html",
         destination=destination,
-        persons=persons
+        persons=persons,
+        trains=trains
     )
+
+
 @app.route("/confirm-train/<int:train_id>")
+@login_required
 def confirm_train(train_id):
 
-    train = Train.query.get_or_404(train_id)
+    booking_id = session.get("booking_id")
     persons = session.get("persons", 1)
+
+    if not booking_id:
+        return redirect(url_for("home"))
+
+    train = Train.query.get_or_404(train_id)
 
     if train.available_seats < persons:
         return "Not enough seats available"
 
     train.available_seats -= persons
 
-    transport = TransportBooking(
-        booking_id=session["booking_id"],
+    transport_booking = TransportBooking(
+        booking_id=booking_id,
         transport_type="train",
         source=train.source,
         destination=train.destination,
@@ -833,16 +854,14 @@ def confirm_train(train_id):
         price=train.price * persons
     )
 
-    db.session.add(transport)
+    db.session.add(transport_booking)
     db.session.commit()
 
-    dest = Destination.query.filter_by(name=train.destination).first()
-
     hotel_booking = HotelBooking.query.filter_by(
-    booking_id=session["booking_id"]).first()
+        booking_id=booking_id
+    ).first()
 
     return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
-
 
 
 @app.route("/api/calculate-transport", methods=["POST"])
