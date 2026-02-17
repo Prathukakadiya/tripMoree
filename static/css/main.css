@@ -1,0 +1,17 @@
+/* GLOBAL FONT */
+body{
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding-top: 80px;   /* if navbar is fixed */
+    background-color: #f8f5ef;
+}
+
+/* Remove link underlines */
+a{
+    text-decoration: none;
+}
+
+/* Smooth transitions */
+*{
+    box-sizing: border-box;
+}

@@ -25,8 +25,22 @@ def login_required(f):
             return redirect(url_for("login"))
         return f(*args, **kwargs)
     return decorated_function
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "admin_id" not in session:
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 # ================= MAIN MODELS =================
+class Admin(db.Model):
+    __tablename__ = "admins"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
 
 class User(db.Model):
     __tablename__ = "users"
@@ -34,6 +48,8 @@ class User(db.Model):
     name = db.Column(db.String(100))
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    phone = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 class Destination(db.Model):
     __tablename__ = "destination"
@@ -306,6 +322,115 @@ class BookingHypeSpot(db.Model):
 
 
 # ================= ROUTES =================
+# ================= ADMIN MANAGE USERS =================
+
+@app.route("/admin/users")
+@admin_required
+def admin_users():
+
+    search = request.args.get("search")
+
+    if search:
+        users = User.query.filter(
+            (User.name.ilike(f"%{search}%")) |
+            (User.email.ilike(f"%{search}%"))
+        ).all()
+    else:
+        users = User.query.order_by(User.created_at.desc()).all()
+
+    return render_template("admin_users.html", users=users)
+
+
+@app.route("/admin/delete-user/<int:user_id>")
+@admin_required
+def admin_delete_user(user_id):
+
+    user = User.query.get_or_404(user_id)
+
+    # OPTIONAL: prevent deleting yourself if admin email same
+    db.session.delete(user)
+    db.session.commit()
+
+    return redirect(url_for("admin_users"))
+
+# ================= ADMIN =================
+from flask import render_template, request, redirect, session, flash, url_for
+from werkzeug.security import check_password_hash
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+
+    # Already logged in hoy to dashboard par moklo
+    if session.get("admin_id"):
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if not username or not password:
+            flash("Please enter username and password", "danger")
+            return redirect(url_for("admin_login"))
+
+        admin = Admin.query.filter_by(username=username).first()
+
+        # 🔐 SECURE PASSWORD CHECK
+        if admin and admin.password == password:
+
+            session["admin_id"] = admin.id
+            session["admin_logged_in"] = True
+
+            flash("Login Successful!", "success")
+            return redirect(url_for("admin_dashboard"))
+
+        else:
+            flash("Invalid Username or Password", "danger")
+            return redirect(url_for("admin_login"))
+
+    return render_template("admin_login.html")
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin_id", None)
+    return redirect("/admin/login")
+
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+
+    if "admin_id" not in session:
+        return redirect("/admin/login")
+
+    total_users = User.query.count()
+    total_hotels = Hotel.query.count()
+    total_bookings = BookingHistory.query.count()
+
+    hotel_revenue = db.session.query(func.sum(HotelBooking.price)).scalar() or 0
+    transport_revenue = db.session.query(func.sum(TransportBooking.price)).scalar() or 0
+    cab_revenue = db.session.query(func.sum(CabBooking.price)).scalar() or 0
+
+    total_revenue = hotel_revenue + transport_revenue + cab_revenue
+
+    active = BookingHistory.query.filter_by(status="active").count()
+    completed = BookingHistory.query.filter_by(status="completed").count()
+
+    top_destinations = db.session.query(
+        BookingHistory.destination,
+        func.count(BookingHistory.id)
+    ).group_by(BookingHistory.destination).all()
+
+    return render_template(
+        "admin_dashboard.html",
+        users=total_users,
+        hotels=total_hotels,
+        bookings=total_bookings,
+        revenue=total_revenue,
+        active=active,
+        completed=completed,
+        top_destinations=top_destinations
+    )
 
 @app.route("/")
 def home():

@@ -2,7 +2,7 @@
     position: fixed;
     top: 10px;
     left: 0;
-    width: 1400px;
+    width: 100%;
     height: 60px;              /* IMPORTANT */
     background: rgba(0,0,0,0.9);
     padding: 0 40px;

@@ -1,0 +1,55 @@
+.admin-section{
+    padding:120px 60px 60px;
+    min-height:100vh;
+    background:linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
+    url("https://images.unsplash.com/photo-1506929562872-bb421503ef21") center/cover;
+    color:white;
+}
+
+.admin-title{
+    text-align:center;
+    font-size:40px;
+    color:gold;
+    margin-bottom:50px;
+    animation:fadeDown 1s ease;
+}
+
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+
+.admin-card{
+    background:rgba(0,0,0,0.9);
+    padding:35px;
+    border-radius:18px;
+    text-align:center;
+    box-shadow:0 15px 35px rgba(0,0,0,0.6);
+    transition:0.4s;
+    animation:fadeUp 1s ease;
+}
+
+.admin-card:hover{
+    transform:translateY(-8px);
+    background:rgba(255,215,0,0.1);
+}
+
+.admin-card h3{
+    color:gold;
+}
+
+.admin-card p{
+    font-size:24px;
+    font-weight:600;
+}
+
+@keyframes fadeDown{
+    from{opacity:0;transform:translateY(-20px);}
+    to{opacity:1;transform:translateY(0);}
+}
+
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(30px);}
+    to{opacity:1;transform:translateY(0);}
+}

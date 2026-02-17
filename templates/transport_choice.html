@@ -1,15 +1,171 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Select Transport</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-<h2>Select Transport for {{ destination }}</h2>
+{% block title %}Select Transport | TripMoreee{% endblock %}
 
-<a href="/bus/{{ destination }}" class="btn">🚌 Bus</a><br><br>
-<a href="/train/{{ destination }}" class="btn">🚆 Train</a><br><br>
-<a href="/flight/{{ destination }}" class="btn">✈️ Flight</a>
+{% block content %}
 
-</body>
-</html>
+<style>
+
+/* ===== HERO SECTION ===== */
+.transport-hero{
+    background: linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
+    url("https://images.pexels.com/photos/21014/pexels-photo.jpg") center/cover no-repeat;
+    height:55vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:white;
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+.transport-hero h1{
+    font-size:48px;
+    font-weight:700;
+    animation: slideDown 1s ease forwards;
+}
+
+.transport-hero p{
+    margin-top:15px;
+    color:#ddd;
+    font-size:18px;
+    animation: fadeIn 2s ease;
+}
+
+/* ===== TRANSPORT SECTION ===== */
+.transport-section{
+    padding:100px 20px;
+    background:#f8f5ef;
+    text-align:center;
+}
+
+.transport-container{
+    max-width:1100px;
+    margin:auto;
+}
+
+.transport-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap:40px;
+    margin-top:50px;
+}
+
+/* ===== CARD ===== */
+.transport-card{
+    background:white;
+    padding:50px 20px;
+    border-radius:20px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.1);
+    text-decoration:none;
+    color:black;
+    transition:0.4s ease;
+    position:relative;
+    overflow:hidden;
+    animation: fadeUp 1.2s ease forwards;
+}
+
+.transport-card:hover{
+    transform:translateY(-15px) scale(1.03);
+    box-shadow:0 30px 60px rgba(0,0,0,0.2);
+}
+
+.transport-icon{
+    font-size:50px;
+    margin-bottom:20px;
+    display:block;
+    transition:0.4s;
+}
+
+.transport-card:hover .transport-icon{
+    transform:rotate(10deg) scale(1.2);
+}
+
+.transport-card h3{
+    font-size:24px;
+    margin-bottom:10px;
+}
+
+.transport-card p{
+    font-size:14px;
+    color:#666;
+}
+
+/* Gold Hover Glow */
+.transport-card::before{
+    content:"";
+    position:absolute;
+    top:-100%;
+    left:0;
+    width:100%;
+    height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,215,0,0.4), transparent);
+    transition:0.6s;
+}
+
+.transport-card:hover::before{
+    top:100%;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes slideDown{
+    from{opacity:0; transform:translateY(-40px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(40px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@media(max-width:768px){
+    .transport-hero h1{
+        font-size:32px;
+    }
+}
+
+</style>
+
+<!-- HERO -->
+<div class="transport-hero">
+    <div>
+        <h1>Select Your Transport</h1>
+        <p>Choose how you want to travel to {{ destination }}</p>
+    </div>
+</div>
+
+<!-- OPTIONS -->
+<div class="transport-section">
+    <div class="transport-container">
+
+        <div class="transport-grid">
+
+            <a href="/bus/{{ destination }}" class="transport-card">
+                <span class="transport-icon">🚌</span>
+                <h3>Bus</h3>
+                <p>Comfortable and affordable road travel experience.</p>
+            </a>
+
+            <a href="/train/{{ destination }}" class="transport-card">
+                <span class="transport-icon">🚆</span>
+                <h3>Train</h3>
+                <p>Scenic rail journeys with premium seat options.</p>
+            </a>
+
+            <a href="/flight/{{ destination }}" class="transport-card">
+                <span class="transport-icon">✈️</span>
+                <h3>Flight</h3>
+                <p>Fastest way to reach your dream destination.</p>
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,106 +1,183 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Flight Search</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+{% extends "base.html" %}
+{% block title %}Flight Search | TripMoreee{% endblock %}
 
-    <style>
-        body {
-            background-image: url("https://images.unsplash.com/photo-1500835556837-99ac94a94552");
-            background-size: cover;
-            background-position: center;
-            min-height: 100vh;
-        }
+{% block content %}
 
-        table {
-            background: #fff;
-        }
-    </style>
-</head>
+<style>
 
-<body>
+.transport-hero{
+    background: linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
+    url("https://images.unsplash.com/photo-1500835556837-99ac94a94552") center/cover;
+    height:50vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+    animation: fadeIn 1s ease;
+}
 
-{% include "navbar.html" %}
+.transport-hero h1{
+    font-size:42px;
+}
 
-<div class="container mt-5">
+.search-section{
+    padding:80px 20px;
+    background:#f8f5ef;
+}
 
-    <h2 class="text-center mb-4">✈️ Flight Search</h2>
+.search-box{
+    max-width:1100px;
+    margin:auto;
+    background:white;
+    padding:40px;
+    border-radius:18px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.1);
+    animation: slideUp 0.8s ease;
+}
 
-    <form method="POST" class="row g-3 mb-4">
+.search-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+    gap:20px;
+}
 
-        <div class="col-md-3">
-            <input type="text" name="source"
-                   class="form-control"
-                   placeholder="Source"
-                   required>
-        </div>
+.search-box input,
+.search-box select{
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ddd;
+}
 
-        <div class="col-md-3">
-            <input type="text" name="destination"
-                   class="form-control"
-                   value="{{ destination }}"
-                   readonly>
-        </div>
+.search-btn{
+    background:gold;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
 
-        <div class="col-md-2">
-            <input type="number" name="persons"
-                   class="form-control"
-                   value="{{ persons }}"
-                   readonly>
-        </div>
+.search-btn:hover{
+    background:#ffd700;
+}
 
-        <div class="col-md-2">
-            <select name="flight_class" class="form-select" required>
+.alert-box{
+    margin-top:30px;
+    padding:15px;
+    background:#ffdddd;
+    color:#900;
+    border-radius:8px;
+    text-align:center;
+    animation: fadeIn 1s ease;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:40px;
+    background:white;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+    text-align:center;
+}
+
+th{
+    background:black;
+    color:white;
+}
+
+tr:hover{
+    background:#f3f3f3;
+}
+
+.confirm-btn{
+    background:black;
+    color:white;
+    padding:6px 14px;
+    border-radius:6px;
+    text-decoration:none;
+    transition:0.3s;
+}
+
+.confirm-btn:hover{
+    background:gold;
+    color:black;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes slideUp{
+    from{opacity:0; transform:translateY(40px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+</style>
+
+<div class="transport-hero">
+    <h1>✈️ Flight Search</h1>
+</div>
+
+<div class="search-section">
+    <div class="search-box">
+
+        <form method="POST" class="search-grid">
+            <input type="text" name="source" placeholder="Source" required>
+            <input type="text" name="destination" value="{{ destination }}" readonly>
+            <input type="number" name="persons" value="{{ persons }}" readonly>
+
+            <select name="flight_class" required>
                 <option value="">Class</option>
                 <option value="Economy">Economy</option>
                 <option value="Business">Business</option>
             </select>
-        </div>
 
-        <div class="col-md-2">
-            <button class="btn btn-primary w-100">Search</button>
-        </div>
+            <button class="search-btn">Search Flights</button>
+        </form>
 
-    </form>
-
-    {% if flights %}
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
+        {% if flights %}
+        <table>
             <tr>
-                <th>Flight No</th>
+                <th>Flight</th>
                 <th>Airline</th>
-                <th>Departure</th>
-                <th>Arrival</th>
+                <th>Time</th>
                 <th>Class</th>
-                <th>Available Seats</th>
+                <th>Seats</th>
                 <th>Price</th>
                 <th>Action</th>
             </tr>
-        </thead>
-        <tbody>
+
             {% for f in flights %}
             <tr>
                 <td>{{ f.flight_number }}</td>
                 <td>{{ f.airline }}</td>
-                <td>{{ f.departure_time }}</td>
-                <td>{{ f.arrival_time }}</td>
+                <td>{{ f.departure_time }} - {{ f.arrival_time }}</td>
                 <td>{{ f.flight_class }}</td>
                 <td>{{ f.available_seats }}</td>
                 <td>₹{{ f.price }}</td>
                 <td>
-                    <a href="{{ url_for('confirm_flight', flight_id=f.id) }}"
-                       class="btn btn-primary btn-sm">
-                       Confirm
+                    <a href="{{ url_for('confirm_flight', flight_id=f.id) }}" class="confirm-btn">
+                        Confirm
                     </a>
                 </td>
             </tr>
             {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
+        </table>
 
+        {% elif request.method == "POST" %}
+        <div class="alert-box">
+            ❌ No flights available for selected route.
+        </div>
+        {% endif %}
+
+    </div>
 </div>
 
-</body>
-</html>
+{% endblock %}

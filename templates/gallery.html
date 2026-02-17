@@ -5,53 +5,66 @@
 {% block content %}
 
 <style>
-/* HERO */
+
+/* ========= HERO SECTION ========= */
 .gallery-hero{
-    background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
-    url("https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg") center/cover;
-    height:45vh;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url("https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg") center/cover no-repeat;
+    
+    height:55vh;
     display:flex;
     align-items:center;
     justify-content:center;
-    color:white;
     text-align:center;
-    margin-top:80px;
+    color:white;
+    padding-top:80px; /* navbar spacing fix */
 }
 
 .gallery-hero h1{
-    font-size:48px;
-    margin-bottom:10px;
+    font-family:;
+    font-size:52px;
+    font-weight:700;
+    letter-spacing:1px;
 }
 
 .gallery-hero p{
+    margin-top:15px;
     font-size:18px;
     color:#ddd;
 }
 
-/* GALLERY GRID */
+
+/* ========= MAIN SECTION ========= */
 .gallery-section{
-    padding:80px 50px;
+    padding:80px 40px;
+    background:#f8f5ef;
+}
+
+.gallery-container{
     max-width:1300px;
     margin:auto;
 }
 
+
+/* ========= GRID ========= */
 .gallery-grid{
     display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap:25px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap:30px;
 }
 
 .gallery-item{
     position:relative;
     overflow:hidden;
-    border-radius:14px;
+    border-radius:18px;
+    box-shadow:0 15px 35px rgba(0,0,0,0.12);
     cursor:pointer;
-    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    transition:0.4s ease;
 }
 
 .gallery-item img{
     width:100%;
-    height:280px;
+    height:300px;
     object-fit:cover;
     transition:0.6s ease;
 }
@@ -64,8 +77,8 @@
     position:absolute;
     bottom:0;
     width:100%;
-    padding:20px;
-    background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+    padding:25px;
+    background:linear-gradient(to top, rgba(0,0,0,0.9), transparent);
     color:white;
     opacity:0;
     transition:0.4s ease;
@@ -77,44 +90,54 @@
 
 .gallery-overlay h3{
     margin:0;
-    font-size:20px;
+    font-size:22px;
+    font-weight:600;
 }
 
 .gallery-overlay p{
-    margin-top:5px;
+    margin-top:8px;
     font-size:14px;
     color:#ccc;
 }
 
-/* CTA */
+
+/* ========= CTA ========= */
 .gallery-cta{
     background:#000;
     color:white;
-    padding:70px 20px;
+    padding:80px 20px;
     text-align:center;
 }
 
 .gallery-cta h2{
     font-size:32px;
-    margin-bottom:25px;
+    margin-bottom:30px;
 }
 
 .gallery-cta a{
     background:gold;
     color:black;
-    padding:14px 40px;
-    border-radius:30px;
+    padding:14px 45px;
+    border-radius:40px;
     text-decoration:none;
     font-weight:bold;
-    transition:0.3s;
+    transition:0.3s ease;
 }
 
 .gallery-cta a:hover{
     background:#ffd700;
-    transform:translateY(-3px);
+    transform:translateY(-4px);
 }
+
+@media(max-width:768px){
+    .gallery-hero h1{
+        font-size:36px;
+    }
+}
+
 </style>
 
+<!-- HERO -->
 <div class="gallery-hero">
     <div>
         <h1>Travel Gallery</h1>
@@ -122,62 +145,65 @@
     </div>
 </div>
 
+<!-- GALLERY SECTION -->
 <div class="gallery-section">
+    <div class="gallery-container">
 
-    <div class="gallery-grid">
+        <div class="gallery-grid">
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-            <div class="gallery-overlay">
-                <h3>Goa Beaches</h3>
-                <p>Golden sunsets & nightlife vibes</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Goa Beaches</h3>
+                    <p>Golden sunsets & nightlife vibes</p>
+                </div>
             </div>
-        </div>
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
-            <div class="gallery-overlay">
-                <h3>Manali Snow</h3>
-                <p>Adventure in the Himalayas</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Manali Snow</h3>
+                    <p>Adventure in the Himalayas</p>
+                </div>
             </div>
-        </div>
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
-            <div class="gallery-overlay">
-                <h3>Jaipur Palace</h3>
-                <p>Royal heritage experience</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Jaipur Palace</h3>
+                    <p>Royal heritage experience</p>
+                </div>
             </div>
-        </div>
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
-            <div class="gallery-overlay">
-                <h3>Dubai Skyline</h3>
-                <p>Luxury & modern lifestyle</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Dubai Skyline</h3>
+                    <p>Luxury & modern lifestyle</p>
+                </div>
             </div>
-        </div>
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
-            <div class="gallery-overlay">
-                <h3>Mountain Trek</h3>
-                <p>Unforgettable adventure moments</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Mountain Trek</h3>
+                    <p>Unforgettable adventure moments</p>
+                </div>
             </div>
-        </div>
 
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
-            <div class="gallery-overlay">
-                <h3>Backwater Cruise</h3>
-                <p>Luxury houseboat views</p>
+            <div class="gallery-item">
+                <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
+                <div class="gallery-overlay">
+                    <h3>Backwater Cruise</h3>
+                    <p>Luxury houseboat views</p>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
-
 </div>
 
+<!-- CTA -->
 <div class="gallery-cta">
     <h2>Ready To Create Your Own Memories?</h2>
     <a href="/destinations">Start Your Journey</a>

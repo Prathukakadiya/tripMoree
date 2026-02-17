@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Manage Users - TripMoreee</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
+    url("https://images.unsplash.com/photo-1506929562872-bb421503ef21") center/cover no-repeat;
+    color:white;
+}
+
+.navbar{
+    height:70px;
+    background:rgba(0,0,0,0.9);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 50px;
+}
+
+.logo{
+    color:gold;
+    font-weight:700;
+    font-size:22px;
+}
+
+.nav-btn{
+    background:gold;
+    color:black;
+    padding:8px 18px;
+    border-radius:8px;
+    text-decoration:none;
+}
+
+.container{
+    padding:60px;
+}
+
+h2{
+    color:gold;
+    margin-bottom:30px;
+}
+
+table{
+    width:100%;
+    background:rgba(0,0,0,0.9);
+    border-collapse:collapse;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+th,td{
+    padding:14px;
+    border-bottom:1px solid #333;
+}
+
+th{
+    background:rgba(255,215,0,0.15);
+    color:gold;
+}
+
+.delete-btn{
+    background:red;
+    color:white;
+    padding:6px 12px;
+    border-radius:6px;
+    text-decoration:none;
+}
+
+.delete-btn:hover{
+    background:darkred;
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">TripMoreee Admin</div>
+    <a href="/admin/dashboard" class="nav-btn">Dashboard</a>
+</div>
+
+<div class="container">
+    <h2>Manage Users</h2>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ user.created_at }}</td>
+            <td>
+                <a href="/admin/delete-user/{{ user.id }}"
+                   class="delete-btn"
+                   onclick="return confirm('Are you sure?')">
+                   Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+</body>
+</html>
