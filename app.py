@@ -440,7 +440,7 @@ def admin_dashboard():
     total_hotels = Hotel.query.count()
     total_bookings = BookingHistory.query.count()
 
-    hotel_revenue = db.session.query(func.sum(HotelBooking.price)).scalar() or 0
+    hotel_revenue = db.session.query(func.sum(HotelBooking.final_payable)).scalar() or 0
     transport_revenue = db.session.query(func.sum(TransportBooking.price)).scalar() or 0
     cab_revenue = db.session.query(func.sum(CabBooking.price)).scalar() or 0
 
