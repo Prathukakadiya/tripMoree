@@ -69,26 +69,27 @@ hotel_amenities = db.Table(
     db.Column("hotel_id", db.Integer, db.ForeignKey("hotel.id")),
     db.Column("amenity_id", db.Integer, db.ForeignKey("amenity.id"))
 )
-
 class Hotel(db.Model):
     __tablename__ = "hotel"
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
 
-   
-    destination_id = db.Column(
-        db.Integer,
-        db.ForeignKey("destination.id")
-    )
+    destination_id = db.Column(db.Integer, db.ForeignKey("destination.id"))
 
     stars = db.Column(db.Float)
     starting_price = db.Column(db.Integer)
+
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
+    # 🔥 ADD THESE
+    lunch_price = db.Column(db.Integer, default=500)
+    dinner_price = db.Column(db.Integer, default=600)
+    pickup_price = db.Column(db.Integer, default=800)
+
     amenities = db.relationship("Amenity", secondary=hotel_amenities)
     rooms = db.relationship("Room", backref="hotel")
-   
 
 
 class Amenity(db.Model):
@@ -292,16 +293,48 @@ class HotelBooking(db.Model):
     __tablename__ = "hotel_bookings"
 
     id = db.Column(db.Integer, primary_key=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey("booking_history.id"))
 
-    hotel_id = db.Column(db.Integer, db.ForeignKey("hotel.id"))  # ADD THIS
+    booking_id = db.Column(db.Integer)
 
-    hotel_name = db.Column(db.String(100))
+    hotel_id = db.Column(db.Integer, db.ForeignKey('hotel.id'))
+    room_id = db.Column(db.Integer)
+
+    persons = db.Column(db.Integer)
+
     check_in = db.Column(db.Date)
     check_out = db.Column(db.Date)
-    price = db.Column(db.Integer)
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    base_price = db.Column(db.Integer)
+    extra_price = db.Column(db.Integer)
+    total_price = db.Column(db.Integer)
+
+    lunch_added = db.Column(db.Boolean, default=False)
+    dinner_added = db.Column(db.Boolean, default=False)
+    pickup_added = db.Column(db.Boolean, default=False)
+
+    id_type = db.Column(db.String(20))
+    id_number = db.Column(db.String(50))
+
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    phone = db.Column(db.String(15))
+
+    coupon_code = db.Column(db.String(50))
+    coupon_discount = db.Column(db.Integer, default=0)
+
+    bank_name = db.Column(db.String(50))
+    card_number = db.Column(db.String(20))
+    bank_discount = db.Column(db.Integer, default=0)
+
+    final_payable = db.Column(db.Integer)
+
+    created_at = db.Column(db.DateTime)
+
+class Coupon(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), unique=True)
+    discount_percent = db.Column(db.Integer)
+    active = db.Column(db.Boolean, default=True)
 
 
     created_at = db.Column(db.DateTime, server_default=db.func.now())
@@ -506,100 +539,146 @@ from flask import request, redirect, url_for, render_template, session, flash
 from datetime import datetime
 import math
 import re
+
+
+
+import re
+from datetime import datetime
+from flask import flash, redirect, request, render_template
+
+import re
+from datetime import datetime
 @app.route("/book-hotel/<int:hotel_id>", methods=["GET", "POST"])
-@login_required
-def book_hotel(hotel_id):
+def hotel_booking(hotel_id):
 
     hotel = Hotel.query.get_or_404(hotel_id)
+    error = None
 
     if request.method == "POST":
+        try:
+            persons = int(request.form.get("persons", 1))
+            room_id = int(request.form.get("room_id"))
+            checkin = request.form.get("checkin")
+            checkout = request.form.get("checkout")
 
-        room_id = request.form.get("room_id")
-        persons = request.form.get("persons")
-        checkin = request.form.get("checkin")
-        checkout = request.form.get("checkout")
-        phone = request.form.get("phone")
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
+            phone = request.form.get("phone", "").strip()
 
-        if not room_id or not persons or not checkin or not checkout or not phone:
-            flash("All fields are required")
-            return redirect(request.url)
+            id_type = request.form.get("id_type")
+            id_number = request.form.get("id_number", "").strip().upper()
 
-        room_id = int(room_id)
-        persons = int(persons)
+            lunch = request.form.get("lunch")
+            dinner = request.form.get("dinner")
+            pickup = request.form.get("pickup")
 
-        room = Room.query.get(room_id)
+            bank_name = request.form.get("bank_name", "")
+            card_number = request.form.get("card_number", "").strip()
 
-        if not room:
-            flash("Room not found")
-            return redirect(request.url)
+            today = datetime.today().date()
+            checkin_date = datetime.strptime(checkin, "%Y-%m-%d").date()
+            checkout_date = datetime.strptime(checkout, "%Y-%m-%d").date()
 
-        checkin_date = datetime.strptime(checkin, "%Y-%m-%d")
-        checkout_date = datetime.strptime(checkout, "%Y-%m-%d")
+            if checkin_date < today:
+                error = "Check-in date cannot be in the past"
 
-        if checkout_date <= checkin_date:
-            flash("Checkout date must be after check-in date")
-            return redirect(request.url)
+            elif checkout_date < checkin_date:
+                error = "Check-out cannot be before Check-in"
 
-        if persons <= 0:
-            flash("Invalid number of persons")
-            return redirect(request.url)
+            elif not re.match(r"^[6-9]\d{9}$", phone):
+                error = "Invalid phone number"
 
-        required_rooms = math.ceil(persons / 2)
+            elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                error = "Invalid email address"
 
-        if room.available_rooms < required_rooms:
-            flash("Not enough rooms available")
-            return redirect(request.url)
+            elif id_type == "aadhaar" and not re.match(r"^\d{12}$", id_number):
+                error = "Aadhaar must be 12 digits"
 
-        if not re.match(r"^[6-9]\d{9}$", phone):
-            flash("Enter valid 10-digit Indian phone number")
-            return redirect(request.url)
+            elif id_type == "pan" and not re.match(r"^[A-Z]{5}[0-9]{4}[A-Z]$", id_number):
+                error = "Invalid PAN format"
 
-        total_nights = (checkout_date - checkin_date).days
-        total_price = total_nights * room.base_price * required_rooms
+            elif not re.match(r"^\d{16}$", card_number):
+                error = "Card number must be 16 digits"
 
-        room.booked_rooms += required_rooms
+            if error:
+                return render_template(
+                    "book_hotel.html",
+                    hotel=hotel,
+                    form_data=request.form,
+                    error=error
+                )
 
-        # ✅ SAFE DESTINATION FETCH
-        destination_obj = Destination.query.get(hotel.destination_id)
+            nights = (checkout_date - checkin_date).days
+            if nights == 0:
+                nights = 1
 
-        if not destination_obj:
-            flash("Destination not found")
-            return redirect(url_for("destinations"))
+            room = Room.query.get_or_404(room_id)
+            required_rooms = math.ceil(persons / 2)
 
-        # 🔥 CREATE MAIN BOOKING
-        booking = BookingHistory(
-            user_id=session["user_id"],
-            destination=destination_obj.name,
-            status="active"
-        )
+            base_price = nights * room.base_price * required_rooms
+            extra_price = 0
 
-        db.session.add(booking)
-        db.session.commit()
+            if lunch:
+                extra_price += hotel.lunch_price * persons
+            if dinner:
+                extra_price += hotel.dinner_price * persons
+            if pickup:
+                extra_price += hotel.pickup_price
 
-        # 🔥 SAVE BOOKING ID IN SESSION
-        session["booking_id"] = booking.id
+            total_price = base_price + extra_price
 
-        # 🔥 SAVE HOTEL BOOKING
-        hotel_booking = HotelBooking(
-        booking_id=booking.id,
-        hotel_id=hotel.id,   # 🔥 IMPORTANT FIX
-        hotel_name=hotel.name,
-        check_in=checkin_date,
-        check_out=checkout_date,
-        price=total_price
-)
+            bank_map = {"hdfc":10, "sbi":15, "icici":12}
+            bank_percent = bank_map.get(bank_name, 0)
 
+            bank_discount = (total_price * bank_percent) // 100
+            final_payable = total_price - bank_discount
 
-        db.session.add(hotel_booking)
-        db.session.commit()
+            booking = HotelBooking(
+                hotel_id=hotel.id,
+                room_id=room_id,
+                persons=persons,
+                check_in=checkin_date,
+                check_out=checkout_date,
+                base_price=base_price,
+                extra_price=extra_price,
+                total_price=total_price,
+                bank_name=bank_name,
+                card_number=card_number,
+                bank_discount=bank_discount,
+                final_payable=final_payable,
+                lunch_added=bool(lunch),
+                dinner_added=bool(dinner),
+                pickup_added=bool(pickup),
+                id_type=id_type,
+                id_number=id_number,
+                name=name,
+                email=email,
+                phone=phone
+            )
 
-        # 🔥 STORE SESSION DATA
-        session["persons"] = persons
-        session["destination_name"] = destination_obj.name
+            db.session.add(booking)
+            db.session.commit()
 
-        return redirect(url_for("transport_choice", destination=destination_obj.name))
+            destination = Destination.query.get(hotel.destination_id)
+
+            # 🔥 ONLY CHANGE HERE
+            return redirect(url_for(
+                "transport_choice",
+                destination=destination.name,
+                booked="1"
+            ))
+
+        except Exception:
+            return render_template(
+                "book_hotel.html",
+                hotel=hotel,
+                form_data=request.form,
+                error="Something went wrong"
+            )
 
     return render_template("book_hotel.html", hotel=hotel)
+
+
 
 
 @app.route("/guide/<location>")

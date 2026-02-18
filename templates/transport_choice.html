@@ -4,6 +4,15 @@
 
 {% block content %}
 
+{% if request.args.get('booked') == '1' %}
+<script>
+    alert("Hotel booked successfully! Now book your transport.");
+
+    // URL se ?booked=1 hata do taki refresh par popup dobara na aaye
+    window.history.replaceState({}, document.title, window.location.pathname);
+</script>
+{% endif %}
+
 <style>
 
 /* ===== HERO SECTION ===== */
