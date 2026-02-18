@@ -579,6 +579,8 @@ def hotel_booking(hotel_id):
             checkin_date = datetime.strptime(checkin, "%Y-%m-%d").date()
             checkout_date = datetime.strptime(checkout, "%Y-%m-%d").date()
 
+            # ================= VALIDATIONS =================
+
             if checkin_date < today:
                 error = "Check-in date cannot be in the past"
 
@@ -600,13 +602,47 @@ def hotel_booking(hotel_id):
             elif not re.match(r"^\d{16}$", card_number):
                 error = "Card number must be 16 digits"
 
+            # ================= IF ERROR → KEEP DISCOUNT =================
+
             if error:
+
+                bank_map = {"hdfc": 10, "sbi": 15, "icici": 12}
+                bank_percent = bank_map.get(bank_name, 0)
+
+                temp_discount = 0
+
+                try:
+                    room = Room.query.get(room_id)
+                    if room:
+                        nights = (checkout_date - checkin_date).days
+                        if nights == 0:
+                            nights = 1
+
+                        required_rooms = math.ceil(persons / 2)
+                        base_price = nights * room.base_price * required_rooms
+
+                        extra_price = 0
+                        if lunch:
+                            extra_price += hotel.lunch_price * persons
+                        if dinner:
+                            extra_price += hotel.dinner_price * persons
+                        if pickup:
+                            extra_price += hotel.pickup_price
+
+                        total_price = base_price + extra_price
+                        temp_discount = (total_price * bank_percent) // 100
+                except:
+                    temp_discount = 0
+
                 return render_template(
                     "book_hotel.html",
                     hotel=hotel,
                     form_data=request.form,
-                    error=error
+                    error=error,
+                    applied_discount=temp_discount
                 )
+
+            # ================= PRICE CALCULATION =================
 
             nights = (checkout_date - checkin_date).days
             if nights == 0:
@@ -616,8 +652,8 @@ def hotel_booking(hotel_id):
             required_rooms = math.ceil(persons / 2)
 
             base_price = nights * room.base_price * required_rooms
-            extra_price = 0
 
+            extra_price = 0
             if lunch:
                 extra_price += hotel.lunch_price * persons
             if dinner:
@@ -632,6 +668,8 @@ def hotel_booking(hotel_id):
 
             bank_discount = (total_price * bank_percent) // 100
             final_payable = total_price - bank_discount
+
+            # ================= SAVE BOOKING =================
 
             booking = HotelBooking(
                 hotel_id=hotel.id,
@@ -661,7 +699,6 @@ def hotel_booking(hotel_id):
 
             destination = Destination.query.get(hotel.destination_id)
 
-            # 🔥 ONLY CHANGE HERE
             return redirect(url_for(
                 "transport_choice",
                 destination=destination.name,
@@ -673,11 +710,11 @@ def hotel_booking(hotel_id):
                 "book_hotel.html",
                 hotel=hotel,
                 form_data=request.form,
-                error="Something went wrong"
+                error="Something went wrong",
+                applied_discount=0
             )
 
     return render_template("book_hotel.html", hotel=hotel)
-
 
 
 

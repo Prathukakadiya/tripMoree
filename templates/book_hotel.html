@@ -274,7 +274,8 @@ const lunchPrice = {{ hotel.lunch_price or 0 }};
 const dinnerPrice = {{ hotel.dinner_price or 0 }};
 const pickupPrice = {{ hotel.pickup_price or 0 }};
 
-let discountAmount = 0;
+let discountAmount = {{ applied_discount or 0 }};
+
 
 /* ================= DATE VALIDATION ================= */
 
