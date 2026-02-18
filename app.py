@@ -5,6 +5,18 @@ from functools import wraps
 import math
 from flask import url_for
 from math import radians, cos, sin, asin, sqrt
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Table, TableStyle
+import os
+import smtplib
+from email.message import EmailMessage
+from flask import Flask, render_template, request, redirect, session, jsonify, send_file
+
 
 from sqlalchemy import func, text
 
@@ -352,6 +364,35 @@ class BookingHypeSpot(db.Model):
         db.ForeignKey("hype_spots.id", ondelete="CASCADE"),
         nullable=False
     )
+class CabBookingDay(db.Model):
+    __tablename__ = "cab_booking_days"
+
+    id = db.Column(db.Integer, primary_key=True)
+    cab_booking_id = db.Column(db.Integer, db.ForeignKey("cab_bookings.id"))
+    day_number = db.Column(db.Integer)
+
+    arrival_time = db.Column(db.Time)
+    departure_time = db.Column(db.Time)
+
+    pickup_type = db.Column(db.String(50))
+    drop_type = db.Column(db.String(50))
+
+    custom_pickup = db.Column(db.String(255))
+    custom_drop = db.Column(db.String(255))
+
+    day_km = db.Column(db.Float)
+    day_price = db.Column(db.Float)
+
+
+class CabBookingDaySpot(db.Model):
+    __tablename__ = "cab_booking_day_spots"
+
+    id = db.Column(db.Integer, primary_key=True)
+    cab_booking_day_id = db.Column(
+        db.Integer,
+        db.ForeignKey("cab_booking_days.id")
+    )
+    spot_id = db.Column(db.Integer, db.ForeignKey("hype_spots.id"))
 
 
 # ================= ROUTES =================
@@ -549,6 +590,7 @@ from flask import flash, redirect, request, render_template
 import re
 from datetime import datetime
 @app.route("/book-hotel/<int:hotel_id>", methods=["GET", "POST"])
+@login_required
 def hotel_booking(hotel_id):
 
     hotel = Hotel.query.get_or_404(hotel_id)
@@ -602,44 +644,13 @@ def hotel_booking(hotel_id):
             elif not re.match(r"^\d{16}$", card_number):
                 error = "Card number must be 16 digits"
 
-            # ================= IF ERROR → KEEP DISCOUNT =================
-
             if error:
-
-                bank_map = {"hdfc": 10, "sbi": 15, "icici": 12}
-                bank_percent = bank_map.get(bank_name, 0)
-
-                temp_discount = 0
-
-                try:
-                    room = Room.query.get(room_id)
-                    if room:
-                        nights = (checkout_date - checkin_date).days
-                        if nights == 0:
-                            nights = 1
-
-                        required_rooms = math.ceil(persons / 2)
-                        base_price = nights * room.base_price * required_rooms
-
-                        extra_price = 0
-                        if lunch:
-                            extra_price += hotel.lunch_price * persons
-                        if dinner:
-                            extra_price += hotel.dinner_price * persons
-                        if pickup:
-                            extra_price += hotel.pickup_price
-
-                        total_price = base_price + extra_price
-                        temp_discount = (total_price * bank_percent) // 100
-                except:
-                    temp_discount = 0
-
                 return render_template(
                     "book_hotel.html",
                     hotel=hotel,
                     form_data=request.form,
                     error=error,
-                    applied_discount=temp_discount
+                    applied_discount=0
                 )
 
             # ================= PRICE CALCULATION =================
@@ -663,15 +674,34 @@ def hotel_booking(hotel_id):
 
             total_price = base_price + extra_price
 
-            bank_map = {"hdfc":10, "sbi":15, "icici":12}
+            bank_map = {"hdfc": 10, "sbi": 15, "icici": 12}
             bank_percent = bank_map.get(bank_name, 0)
 
             bank_discount = (total_price * bank_percent) // 100
             final_payable = total_price - bank_discount
 
-            # ================= SAVE BOOKING =================
+            # ================= CREATE BOOKING HISTORY =================
+
+            destination = Destination.query.get(hotel.destination_id)
+
+            main_booking = BookingHistory(
+                user_id=session["user_id"],
+                destination=destination.name,
+                status="active"
+            )
+
+            db.session.add(main_booking)
+            db.session.commit()   # Generate ID
+
+            # Save in session for transport
+            session["booking_id"] = main_booking.id
+            session["persons"] = persons
+            session["destination_name"] = destination.name
+
+            # ================= SAVE HOTEL BOOKING =================
 
             booking = HotelBooking(
+                booking_id=main_booking.id,
                 hotel_id=hotel.id,
                 room_id=room_id,
                 persons=persons,
@@ -691,13 +721,12 @@ def hotel_booking(hotel_id):
                 id_number=id_number,
                 name=name,
                 email=email,
-                phone=phone
+                phone=phone,
+                created_at=datetime.now()
             )
 
             db.session.add(booking)
             db.session.commit()
-
-            destination = Destination.query.get(hotel.destination_id)
 
             return redirect(url_for(
                 "transport_choice",
@@ -705,7 +734,7 @@ def hotel_booking(hotel_id):
                 booked="1"
             ))
 
-        except Exception:
+        except Exception as e:
             return render_template(
                 "book_hotel.html",
                 hotel=hotel,
@@ -834,6 +863,8 @@ def signup():
         return redirect(url_for("home"))
 
     return render_template("signup.html")
+
+
 @app.route("/my-bookings")
 @login_required
 def my_bookings():
@@ -846,43 +877,86 @@ def my_bookings():
 
     for b in bookings:
 
-        # 🏨 Hotel Booking
+        # ================= HOTEL =================
         hotel = HotelBooking.query.filter_by(
             booking_id=b.id
         ).first()
 
-        # 🚌 Transport Booking (Bus / Train / Flight / Cab)
+        hotel_total = hotel.final_payable if hotel and hotel.final_payable else 0
+
+        # ================= TRANSPORT =================
         transports = TransportBooking.query.filter_by(
             booking_id=b.id
         ).all()
 
         transport_data = []
+        transport_total = 0
 
         for t in transports:
 
-            # 🔹 Get spots linked to THIS transport
-            spots = BookingHypeSpot.query.filter_by(
-                booking_id=t.id
-            ).all()
+            transport_total += t.price or 0
 
             transport_data.append({
-                "transport": t,
-                "spots": spots
+                "transport": t
             })
 
-        # 🚖 Cab Booking (if exists)
+        # ================= CAB =================
         cab = CabBooking.query.filter_by(
             booking_id=b.id
         ).first()
+
+        cab_days = []
+        cab_total = 0
+
+        if cab:
+
+            cab_total = cab.price or 0
+
+            days = CabBookingDay.query.filter_by(
+                cab_booking_id=cab.id
+            ).order_by(CabBookingDay.day_number).all()
+
+            for d in days:
+
+                spots_rel = CabBookingDaySpot.query.filter_by(
+                    cab_booking_day_id=d.id
+                ).all()
+
+                spot_names = []
+
+                for s in spots_rel:
+                    spot = HypeSpot.query.get(s.spot_id)
+                    if spot:
+                        spot_names.append(spot.spot_name)
+
+                cab_days.append({
+                    "day": d.day_number,
+                    "arrival": d.arrival_time,
+                    "departure": d.departure_time,
+                    "pickup": d.pickup_type,
+                    "drop": d.drop_type,
+                    "spots": spot_names,
+                    "km": d.day_km,
+                    "price": d.day_price
+                })
+
+        # ================= GRAND TOTAL =================
+        grand_total = hotel_total + transport_total + cab_total
 
         result.append({
             "booking": b,
             "hotel": hotel,
             "transports": transport_data,
-            "cab": cab
+            "cab": cab,
+            "cab_days": cab_days,
+            "hotel_total": hotel_total,
+            "transport_total": transport_total,
+            "cab_total": cab_total,
+            "grand_total": grand_total
         })
 
     return render_template("my_bookings.html", bookings=result)
+
 
 @app.route("/after-hotel-booking/<int:hotel_id>")
 def after_hotel_booking(hotel_id):
@@ -1104,7 +1178,6 @@ def confirm_train(train_id):
 
     return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
 
-
 @app.route("/api/calculate-transport", methods=["POST"])
 @login_required
 def calculate_transport():
@@ -1113,6 +1186,9 @@ def calculate_transport():
 
     hotel_id = data.get("hotel_id")
     spot_ids = data.get("spot_ids", [])
+    total_days = int(data.get("total_days", 1))
+    arrival_time = data.get("arrival_time")
+    departure_time = data.get("departure_time")
 
     if not hotel_id or not spot_ids:
         return jsonify([])
@@ -1124,6 +1200,7 @@ def calculate_transport():
 
     total_distance = 0
 
+    # 🔹 HOTEL → SPOTS → HOTEL DISTANCE
     for sid in spot_ids:
         spot = HypeSpot.query.get(int(sid))
         if not spot:
@@ -1144,7 +1221,7 @@ def calculate_transport():
         current_lat = spot_lat
         current_lon = spot_lon
 
-    # OPTIONAL: return to hotel distance add karo
+    # 🔹 Return to hotel
     return_distance = haversine(
         current_lat,
         current_lon,
@@ -1154,18 +1231,47 @@ def calculate_transport():
 
     total_distance += return_distance
 
+    total_distance = round(total_distance, 2)
+
+    # 🔥 TIME CALCULATION (Optional Advanced Use)
+    total_hours = 8  # default
+
+    if arrival_time and departure_time:
+        from datetime import datetime
+
+        t1 = datetime.strptime(arrival_time, "%H:%M")
+        t2 = datetime.strptime(departure_time, "%H:%M")
+
+        diff = (t2 - t1).seconds / 3600
+        total_hours = round(diff, 2)
+
+    # 🔥 PRICING LOGIC
     vehicles = Transport.query.all()
 
     result = []
 
+    DRIVER_CHARGE_PER_DAY = 1200
+
     for v in vehicles:
+
+        distance_cost = total_distance * float(v.price_per_km)
+
+        driver_cost = DRIVER_CHARGE_PER_DAY * total_days
+
+        # optional waiting charge
+        waiting_cost = total_hours * 100
+
+        total_price = distance_cost + driver_cost + waiting_cost
+
         result.append({
             "vehicle": v.vehicle_name,
             "type": v.vehicle_type,
             "ac": v.ac_type,
-            "price": round(total_distance * float(v.price_per_km), 2),
+            "price": round(total_price, 2),
             "cab_id": v.id,
-            "distance": round(total_distance, 2)
+            "distance": total_distance,
+            "days": total_days,
+            "hours": total_hours
         })
 
     return jsonify(result)
@@ -1208,103 +1314,133 @@ def book_flight(id):
 
     return redirect(url_for("hype_spots", destination_id=session["destination"]))
 
+
 @app.route("/book-cab/<int:hotel_booking_id>", methods=["POST"])
 @login_required
 def book_cab(hotel_booking_id):
-
     cab_id = request.form.get("cab_id")
-    selected_spots = request.form.getlist("spot_ids")
 
     if not cab_id:
         flash("Please select a cab.", "danger")
         return redirect(request.referrer)
 
-    if not selected_spots:
-        flash("Please select at least one spot.", "danger")
-        return redirect(request.referrer)
+
+    from datetime import datetime
+
+    cab_id = request.form.get("cab_id")
+    total_days = int(request.form.get("total_days"))
 
     hotel_booking = HotelBooking.query.get_or_404(hotel_booking_id)
     transport = Transport.query.get_or_404(cab_id)
     hotel = Hotel.query.get_or_404(hotel_booking.hotel_id)
 
-    current_lat = float(hotel.latitude)
-    current_lon = float(hotel.longitude)
-
-    total_distance = 0
-
-    # 🔥 Calculate full route distance
-    for sid in selected_spots:
-        spot = HypeSpot.query.get(int(sid))
-        if not spot:
-            continue
-
-        distance = haversine(
-            current_lat,
-            current_lon,
-            float(spot.latitude),
-            float(spot.longitude)
-        )
-
-        total_distance += distance
-        current_lat = float(spot.latitude)
-        current_lon = float(spot.longitude)
-
-    # Return back to hotel
-    total_distance += haversine(
-        current_lat,
-        current_lon,
-        float(hotel.latitude),
-        float(hotel.longitude)
-    )
-
-    total_distance = round(total_distance, 2)
-    total_price = round(total_distance * float(transport.price_per_km), 2)
-
-    # ============================================
-    # 1️⃣ CREATE TRANSPORT BOOKING (CAB TYPE)
-    # ============================================
-
-    transport_booking = TransportBooking(
-        booking_id=hotel_booking.booking_id,
-        transport_type="cab",
-        source=hotel.name,
-        destination=session.get("destination_name"),
-        persons=session.get("persons", 1),
-        price=total_price
-    )
-
-    db.session.add(transport_booking)
-    db.session.commit()   # IMPORTANT → generate transport_booking.id
-
-    # ============================================
-    # 2️⃣ CREATE CAB BOOKING (VERY IMPORTANT)
-    # ============================================
-
     cab_booking = CabBooking(
         booking_id=hotel_booking.booking_id,
         transport_id=transport.id,
-        days=1,
-        total_km=int(total_distance),
-        price=int(total_price)
+        days=total_days,
+        total_km=0,
+        price=0
     )
 
     db.session.add(cab_booking)
+    db.session.commit()
 
-    # ============================================
-    # 3️⃣ SAVE SELECTED SPOTS
-    # ============================================
+    total_km = 0
+    total_price = 0
 
-    for sid in selected_spots:
-        relation = BookingHypeSpot(
-            booking_id=transport_booking.id,   # ✅ MUST be transport_booking.id
-            spot_id=int(sid)
+    CUSTOM_CHARGE = 500
+    AIRPORT_CHARGE = 300
+
+    for day in range(1, total_days+1):
+
+        arrival = request.form.get(f"arrival_time_{day}")
+        departure = request.form.get(f"departure_time_{day}")
+
+        pickup_type = request.form.get(f"pickup_type_{day}")
+        drop_type = request.form.get(f"drop_type_{day}")
+
+        custom_pickup = request.form.get(f"custom_pickup_{day}")
+        custom_drop = request.form.get(f"custom_drop_{day}")
+
+        spot_ids = request.form.getlist(f"day_{day}_spots")
+
+        current_lat = float(hotel.latitude)
+        current_lon = float(hotel.longitude)
+
+        day_km = 0
+
+        for sid in spot_ids:
+            spot = HypeSpot.query.get(int(sid))
+            if not spot:
+                continue
+
+            distance = haversine(
+                current_lat,
+                current_lon,
+                float(spot.latitude),
+                float(spot.longitude)
+            )
+
+            day_km += distance
+            current_lat = float(spot.latitude)
+            current_lon = float(spot.longitude)
+
+        day_km += haversine(
+            current_lat,
+            current_lon,
+            float(hotel.latitude),
+            float(hotel.longitude)
         )
-        db.session.add(relation)
 
+        day_km = round(day_km,2)
+
+        day_price = day_km * float(transport.price_per_km)
+
+        if pickup_type == "custom":
+            day_price += CUSTOM_CHARGE
+        if drop_type == "custom":
+            day_price += CUSTOM_CHARGE
+        if pickup_type == "airport":
+            day_price += AIRPORT_CHARGE
+        if drop_type == "airport":
+            day_price += AIRPORT_CHARGE
+
+        day_price = round(day_price,2)
+
+        total_km += day_km
+        total_price += day_price
+
+        booking_day = CabBookingDay(
+            cab_booking_id=cab_booking.id,
+            day_number=day,
+            arrival_time=datetime.strptime(arrival,"%H:%M").time(),
+            departure_time=datetime.strptime(departure,"%H:%M").time(),
+            pickup_type=pickup_type,
+            drop_type=drop_type,
+            custom_pickup=custom_pickup,
+            custom_drop=custom_drop,
+            day_km=day_km,
+            day_price=day_price
+        )
+
+        db.session.add(booking_day)
+        db.session.commit()
+
+        for sid in spot_ids:
+            db.session.add(
+                CabBookingDaySpot(
+                    cab_booking_day_id=booking_day.id,
+                    spot_id=int(sid)
+                )
+            )
+
+    cab_booking.total_km = total_km
+    cab_booking.price = total_price
     db.session.commit()
 
     flash("Cab booked successfully!", "success")
     return redirect(url_for("my_bookings"))
+
 
 
 
@@ -1320,13 +1456,17 @@ def hype_spots(hotel_booking_id):
         destination_id=destination.id
     ).all()
 
+    transports = Transport.query.all()
+
     return render_template(
-        "hype_spots.html",
-        spots=spots,
-        destination_name=destination.name,
-        hotel_id=hotel.id,
-        hotel_booking_id=hotel_booking.id
-    )
+    "hype_spots.html",
+    spots=spots,
+    transports=transports,  
+    destination_name=destination.name,
+    hotel_id=hotel.id,
+    hotel_booking_id=hotel_booking.id
+)
+
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -1367,6 +1507,235 @@ def about():
 @app.route("/gallery")
 def gallery():
     return render_template("gallery.html")
+
+@app.route("/download-invoice/<int:booking_id>")
+@login_required
+def download_invoice(booking_id):
+
+    booking = BookingHistory.query.get_or_404(booking_id)
+
+    if booking.user_id != session["user_id"]:
+        return "Unauthorized", 403
+
+    file_path = generate_invoice_pdf(booking_id)
+
+    return send_file(file_path, as_attachment=True)
+
+
+from email.message import EmailMessage
+import smtplib
+@app.route("/send-invoice/<int:booking_id>")
+@login_required
+def send_invoice_email(booking_id):
+
+    booking = BookingHistory.query.get_or_404(booking_id)
+
+    if booking.user_id != session["user_id"]:
+        return "Unauthorized", 403
+
+    user = User.query.get(session["user_id"])
+
+    file_path = generate_invoice_pdf(booking_id)
+
+    msg = EmailMessage()
+    msg["Subject"] = f"TripMoreee Invoice #{booking_id}"
+    msg["From"] = "prathukakadiya7x@gmail.com"
+    msg["To"] = user.email
+
+    msg.set_content("Thank you for booking with TripMoreee. Invoice attached.")
+
+    with open(file_path, "rb") as f:
+        msg.add_attachment(
+            f.read(),
+            maintype="application",
+            subtype="pdf",
+            filename=f"Invoice_{booking_id}.pdf"
+        )
+
+    smtp = smtplib.SMTP("smtp.gmail.com", 587)
+    smtp.starttls()
+
+    # 🔥 AHIA PASSWORD MUKVO
+    smtp.login("prathukakadiya7x@gmail.com", "csftedtyotxuwxgu")
+
+    smtp.send_message(msg)
+    smtp.quit()
+
+    os.remove(file_path)
+
+    return "Invoice Sent Successfully!"
+
+
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import Table, TableStyle
+import os
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from datetime import datetime
+import random
+
+
+def generate_invoice_pdf(booking_id):
+
+    booking = BookingHistory.query.get_or_404(booking_id)
+    hotel_booking = HotelBooking.query.filter_by(booking_id=booking.id).first()
+    cab = CabBooking.query.filter_by(booking_id=booking.id).first()
+    transport_list = TransportBooking.query.filter_by(booking_id=booking.id).all()
+
+    file_path = f"invoice_{booking_id}.pdf"
+    doc = SimpleDocTemplate(file_path, pagesize=A4)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # ================= HEADER =================
+    big_title = ParagraphStyle(
+        'BigTitle',
+        parent=styles['Title'],
+        fontSize=30,
+        spaceAfter=10
+    )
+
+    elements.append(Paragraph("<b>TRIPMOREEE</b>", big_title))
+    elements.append(Paragraph("---------------------------------------Explore Beautiful Destinations with us !-------------------------------", styles["Normal"]))
+    elements.append(Paragraph("TripMoreee Travel Pvt Ltd", styles["Normal"]))
+    elements.append(Paragraph("Surat, Gujarat, India", styles["Normal"]))
+    elements.append(Paragraph("Contact: +91 98765 43210", styles["Normal"]))
+    elements.append(Paragraph("Email: support@tripmoreee.com", styles["Normal"]))
+    elements.append(Spacer(1, 0.3 * inch))
+
+    # Divider
+    elements.append(Table([[""]], colWidths=[500], rowHeights=[2],
+                          style=TableStyle([('BACKGROUND',(0,0),(-1,-1),colors.black)])))
+    elements.append(Spacer(1, 0.3 * inch))
+
+    # ================= BASIC INFO =================
+    elements.append(Paragraph(f"<b>Invoice ID:</b> {booking.id}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Date:</b> {datetime.now().strftime('%d-%m-%Y')}", styles["Normal"]))
+    elements.append(Paragraph(f"<b>Destination:</b> {booking.destination}", styles["Normal"]))
+    elements.append(Spacer(1, 0.3 * inch))
+
+    total_amount = 0
+
+    # ================= HOTEL SECTION =================
+    if hotel_booking:
+
+        hotel = Hotel.query.get(hotel_booking.hotel_id)
+        room = Room.query.get(hotel_booking.room_id)
+
+        random_room_number = random.randint(100, 999)
+
+        elements.append(Paragraph("<b>Hotel Details</b>", styles["Heading3"]))
+        elements.append(Spacer(1, 0.2 * inch))
+
+        hotel_data = [
+            ["Hotel Name", hotel.name if hotel else "N/A"],
+            ["Room Type", room.room_type if room else "N/A"],
+            ["Room Number", str(random_room_number)],
+            ["Guest Name", hotel_booking.name],
+            ["ID Type", hotel_booking.id_type],
+            ["ID Number", hotel_booking.id_number],
+            ["Persons", str(hotel_booking.persons)],
+            ["Check-In", str(hotel_booking.check_in)],
+            ["Check-Out", str(hotel_booking.check_out)],
+            ["Hotel Amount", f"Rs. {hotel_booking.final_payable}"]
+        ]
+
+        table = Table(hotel_data, colWidths=[250, 250])
+        table.setStyle(TableStyle([
+            ('GRID',(0,0),(-1,-1),1,colors.grey),
+            ('BACKGROUND',(0,0),(-1,0),colors.whitesmoke),
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.4 * inch))
+
+        total_amount += hotel_booking.final_payable
+
+    # ================= TRANSPORT SECTION =================
+    for t in transport_list:
+        elements.append(Paragraph("<b>Transport Details</b>", styles["Heading3"]))
+        elements.append(Spacer(1, 0.2 * inch))
+
+        transport_data = [
+            ["Transport Type", t.transport_type.capitalize()],
+            ["From", t.source],
+            ["To", t.destination],
+            ["Passengers", str(t.persons)],
+            ["Amount", f"Rs. {t.price}"]
+        ]
+
+        table = Table(transport_data, colWidths=[250, 250])
+        table.setStyle(TableStyle([
+            ('GRID',(0,0),(-1,-1),1,colors.grey),
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.4 * inch))
+
+        total_amount += t.price
+
+    # ================= CAB SECTION =================
+    if cab:
+        vehicle = Transport.query.get(cab.transport_id)
+
+        elements.append(Paragraph("<b>Cab Details</b>", styles["Heading3"]))
+        elements.append(Spacer(1, 0.2 * inch))
+
+        cab_data = [
+            ["Vehicle Name", vehicle.vehicle_name if vehicle else "N/A"],
+            ["Total KM", str(cab.total_km)],
+            ["Total Days", str(cab.days)],
+            ["Cab Amount", f"₹ {cab.price}"]
+        ]
+
+        table = Table(cab_data, colWidths=[250, 250])
+        table.setStyle(TableStyle([
+            ('GRID',(0,0),(-1,-1),1,colors.grey),
+        ]))
+
+        elements.append(table)
+        elements.append(Spacer(1, 0.4 * inch))
+
+        total_amount += cab.price
+
+    # ================= GRAND TOTAL =================
+    elements.append(Spacer(1, 0.5 * inch))
+
+    grand_total_table = [
+        ["Grand Total", f"Rs. {total_amount}"]
+    ]
+
+    table = Table(grand_total_table, colWidths=[300, 200])
+    table.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,-1),colors.black),
+        ('TEXTCOLOR',(0,0),(-1,-1),colors.white),
+        ('ALIGN',(1,0),(1,0),'RIGHT'),
+        ('FONTSIZE',(0,0),(-1,-1),14),
+    ]))
+
+    elements.append(table)
+
+    elements.append(Spacer(1, 0.5 * inch))
+
+    elements.append(Paragraph(
+        "This is a computer generated invoice. No signature required.",
+        styles["Normal"]
+    ))
+
+    doc.build(elements)
+
+    return file_path
+
+
+
 
 # ================= RUN =================
 if __name__ == "__main__":

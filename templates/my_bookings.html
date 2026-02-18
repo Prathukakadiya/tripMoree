@@ -4,7 +4,6 @@
 {% block content %}
 
 <style>
-
 .page-hero{
     background: linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)),
     url("https://images.unsplash.com/photo-1502920917128-1aa500764cbd") center/cover;
@@ -15,10 +14,7 @@
     color:white;
     text-align:center;
 }
-
-.page-hero h1{
-    font-size:42px;
-}
+.page-hero h1{ font-size:42px; }
 
 .booking-section{
     background:#f8f5ef;
@@ -32,7 +28,6 @@
     padding:40px;
     border-radius:18px;
     box-shadow:0 20px 50px rgba(0,0,0,0.1);
-    animation: fadeIn 1s ease;
 }
 
 .invoice-header{
@@ -46,17 +41,6 @@
     font-weight:600;
     color:gold;
 }
-
-.status{
-    padding:6px 14px;
-    border-radius:20px;
-    font-size:14px;
-    font-weight:500;
-}
-
-.status.active{ background:#d4edda; color:#155724; }
-.status.completed{ background:#d1ecf1; color:#0c5460; }
-.status.cancelled{ background:#f8d7da; color:#721c24; }
 
 .section-title{
     margin-top:30px;
@@ -94,18 +78,6 @@
     font-size:18px;
     font-weight:600;
 }
-
-.no-booking{
-    text-align:center;
-    font-size:18px;
-    margin-top:60px;
-}
-
-@keyframes fadeIn{
-    from{opacity:0;}
-    to{opacity:1;}
-}
-
 </style>
 
 <div class="page-hero">
@@ -116,98 +88,118 @@
 
 {% if bookings %}
 
-    {% for item in bookings %}
+{% for item in bookings %}
 
-    {% set total = 0 %}
+<div class="invoice">
 
-    <div class="invoice">
-
-        <div class="invoice-header">
-            <div>
-                <div class="company">TripMoreee Travel Pvt Ltd</div>
-                <div>Invoice ID: #{{ item.booking.id }}</div>
-                <div>Destination: {{ item.booking.destination }}</div>
-            </div>
-
-            <div>
-                <span class="status {{ item.booking.status }}">
-                    {{ item.booking.status|capitalize }}
-                </span>
-            </div>
+    <div class="invoice-header">
+        <div>
+            <div class="company">TripMoreee Travel Pvt Ltd</div>
+            <div>Invoice ID: #{{ item.booking.id }}</div>
+            <div>Destination: {{ item.booking.destination }}</div>
         </div>
-
-        <!-- HOTEL -->
-        {% if item.hotel %}
-        <div class="section-title">🏨 Hotel Details</div>
-        <div class="details">
-            <p><strong>Hotel:</strong> {{ item.hotel.hotel_name }}</p>
-            <p><strong>Check-In:</strong> {{ item.hotel.check_in }}</p>
-            <p><strong>Check-Out:</strong> {{ item.hotel.check_out }}</p>
-            <p><strong>Price:</strong> ₹ {{ item.hotel.price }}</p>
+        <div>
+            {{ item.booking.status|capitalize }}
         </div>
-        {% set total = total + item.hotel.price %}
-        {% endif %}
+        <a href="{{ url_for('download_invoice', booking_id=item.booking.id) }}" 
+   class="btn btn-dark">Download PDF</a>
 
-        <!-- TRANSPORT -->
-        {% for t in item.transports %}
-        <div class="section-title">🚍 Transport Details</div>
-
-        <table class="table">
-            <tr>
-                <th>Type</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Persons</th>
-                <th>Price</th>
-            </tr>
-            <tr>
-                <td>{{ t.transport.transport_type|capitalize }}</td>
-                <td>{{ t.transport.source }}</td>
-                <td>{{ t.transport.destination }}</td>
-                <td>{{ t.transport.persons }}</td>
-                <td>₹ {{ t.transport.price }}</td>
-            </tr>
-        </table>
-
-        {% set total = total + t.transport.price %}
-
-        {% if t.spots %}
-        <div class="details">
-            <p><strong>Selected Hype Spots:</strong></p>
-            <ul>
-                {% for s in t.spots %}
-                <li>Spot ID: {{ s.spot_id }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        {% endfor %}
-
-        <!-- CAB -->
-        {% if item.cab %}
-        <div class="section-title">🚖 Cab Details</div>
-        <div class="details">
-            <p><strong>Total KM:</strong> {{ item.cab.total_km }} km</p>
-            <p><strong>Price:</strong> ₹ {{ item.cab.price }}</p>
-        </div>
-        {% set total = total + item.cab.price %}
-        {% endif %}
-
-        <!-- TOTAL -->
-        <div class="total-box">
-            Grand Total: ₹ {{ total }}
-        </div>
+<a href="{{ url_for('send_invoice_email', booking_id=item.booking.id) }}" 
+   class="btn btn-success">Send to Email</a>
 
     </div>
 
+    <!-- HOTEL -->
+    {% if item.hotel %}
+    <div class="section-title">🏨 Hotel Details</div>
+    <div class="details">
+        <p><strong>Check-In:</strong> {{ item.hotel.check_in }}</p>
+        <p><strong>Check-Out:</strong> {{ item.hotel.check_out }}</p>
+        <p><strong>Hotel Amount:</strong> ₹ {{ item.hotel_total }}</p>
+    </div>
+    {% endif %}
+
+    <!-- TRANSPORT -->
+    {% if item.transports %}
+    <div class="section-title">🚍 Transport Details</div>
+
+    <table class="table">
+        <tr>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Persons</th>
+            <th>Price</th>
+        </tr>
+
+        {% for t in item.transports %}
+        <tr>
+            <td>{{ t.transport.transport_type|capitalize }}</td>
+            <td>{{ t.transport.source }}</td>
+            <td>{{ t.transport.destination }}</td>
+            <td>{{ t.transport.persons }}</td>
+            <td>₹ {{ t.transport.price }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <!-- CAB -->
+    {% if item.cab_days %}
+
+    <div class="section-title">🚖 Cab Details (Day Wise)</div>
+
+    {% for day in item.cab_days %}
+    <div style="margin-top:15px; padding:15px; background:#f9f9f9; border-radius:10px;">
+
+        <strong>Day {{ day.day }}</strong><br>
+
+        Time: {{ day.arrival }} - {{ day.departure }}<br>
+        Pickup: {{ day.pickup|capitalize }}<br>
+        Drop: {{ day.drop|capitalize }}<br>
+
+        <br>
+        <strong>Spots Covered:</strong>
+        <ul>
+        {% for s in day.spots %}
+            <li>{{ s }}</li>
+        {% endfor %}
+        </ul>
+
+        KM: {{ day.km }} km<br>
+        Price: ₹ {{ day.price }}
+
+    </div>
     {% endfor %}
+
+    <div style="margin-top:15px;">
+        <strong>Total Cab Amount: ₹ {{ item.cab_total }}</strong>
+    </div>
+
+    {% endif %}
+
+    <!-- FINAL BILL -->
+    <div class="section-title">🧾 Final Bill</div>
+
+    <div class="total-box">
+
+        Hotel Total: ₹ {{ item.hotel_total }} <br>
+        Transport Total: ₹ {{ item.transport_total }} <br>
+        Cab Total: ₹ {{ item.cab_total }} <br>
+
+        <hr>
+
+        Grand Total: ₹ {{ item.grand_total }}
+
+    </div>
+
+</div>
+
+{% endfor %}
 
 {% else %}
 
-    <div class="no-booking">
-        No bookings yet 😕
-    </div>
+<h3 style="text-align:center;">No bookings yet!</h3>
 
 {% endif %}
 
