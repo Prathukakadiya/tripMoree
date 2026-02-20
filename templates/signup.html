@@ -67,6 +67,7 @@
             margin-top: 10px;
         }
     </style>
+    
 </head>
 <body>
 
@@ -75,14 +76,15 @@
 
     <form method="post">
         Name:
-        <input type="text" name="name" placeholder="enter your name" required>
+        <input type="text" name="name" placeholder="enter your name" required value="{{ name or '' }}">
+
 
         Email:
-        <input type="email" name="email" placeholder="enter your email" required>
+        <input type="email" name="email" placeholder="enter your email" required value="{{ email or '' }}">
+
 
         Mobile No:
         <input type="text" name="mobile" placeholder="enter your mobile number" required>
-
 
         Password:
         <input type="password" name="password" placeholder="enter your password" required>
@@ -94,6 +96,43 @@
         <a href="/login">Already have account? Login</a>
     </div>
 </div>
+<!-- SweetAlert CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <script>
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: "{{ category }}",
+          title: "{{ message }}",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+          width: '340px',
+          background: "{{ '#ffe5e5' if category == 'error' else '#eaf7ea' }}",
+          color: '#2b2b2b',
+          customClass: {
+            popup: 'luxury-toast'
+          }
+        });
+      </script>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<style>
+.luxury-toast {
+    border-radius: 18px !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
+    font-family: 'Poppins', sans-serif !important;
+    font-size: 14px !important;
+    backdrop-filter: blur(10px);
+}
+</style>
+
 
 </body>
 </html>

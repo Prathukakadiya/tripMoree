@@ -1,172 +1,165 @@
-/* 🌟 Light Luxury Glass Booking Theme */
-
-body {
-    margin: 0;
-    padding-top: 80px;
-    font-family: 'Poppins', sans-serif;
-
-    background: url('/static/images/beige_back.jpg') no-repeat center center/cover;
-    background-attachment: fixed;
-
-    min-height: 100vh;
+/* ================= WRAPPER ================= */
+.booking-wrapper{
+    display:flex;
+    gap:40px;
+    margin:60px auto;
+    max-width:1400px;
+    align-items:flex-start;
+    animation: fadeUp 0.9s ease;
 }
 
-
-/* Wrapper */
-.booking-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 60px 5%;
+/* ================= LEFT CARD ================= */
+.booking-card{
+    flex:3;
+    background:#fffaf3;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 25px 60px rgba(0,0,0,0.08);
+    transform:translateX(-40px);
+    opacity:0;
+    animation: slideLeft 0.9s ease forwards;
 }
 
-
-/* ✨ Premium Frosted Glass Card */
-.booking-card {
-    width: 100%;
-    max-width: 1050px;
-    padding: 50px;
-
-    background: rgba(255, 255, 255, 0.40);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-
-    border-radius: 25px;
-
-    border: 1px solid rgba(255,255,255,0.7);
-
-    box-shadow: 
-        0 20px 50px rgba(0,0,0,0.12),
-        inset 0 1px 0 rgba(255,255,255,0.6);
-
-    color: #2b2b2b;
-    transition: 0.3s ease;
+/* ================= FORM GRID ================= */
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:22px;
 }
 
-.booking-card:hover {
-    transform: translateY(-5px);
+.full{ grid-column:span 2; }
+
+.booking-card input,
+.booking-card select{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    transition:0.3s ease;
+    background:#ffffff;
 }
 
-
-/* 🏨 Hotel Title (CENTERED) */
-.booking-card h2 {
-    text-align: center;
-    font-size: 34px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #1f1f1f;
-    letter-spacing: 0.5px;
+.booking-card input:focus,
+.booking-card select:focus{
+    outline:none;
+    border-color:#c6a75e;
+    box-shadow:0 0 0 3px rgba(198,167,94,0.15);
+    transform:scale(1.02);
 }
 
-/* ⭐ Premium Rating Badge - LEFT SIDE */
-.rating {
-    display: inline-block;     /* inline so it stays left */
-    margin: 0 0 25px 0;        /* remove auto centering */
-    padding: 6px 14px;
-
-    background: linear-gradient(135deg, #d4af37, #b9935a);
-    color: #ffffff;
-
-    font-weight: 600;
-    font-size: 13px;
-
-    border-radius: 25px;
-
-    box-shadow: 0 6px 18px rgba(212,175,55,0.30);
+/* ================= SUMMARY ================= */
+.summary-box{
+    background:#fff;
+    padding:20px;
+    border-radius:14px;
+    margin-top:15px;
+    border:1px solid #ead8c0;
+    transition:0.4s ease;
 }
 
-
-/* Form Layout */
-form {
-    display: flex;
-    flex-direction: column;
+.summary-box:hover{
+    transform:translateY(-4px);
+    box-shadow:0 15px 30px rgba(0,0,0,0.08);
 }
 
-
-/* Labels */
-label {
-    margin-top: 18px;
-    margin-bottom: 6px;
-    font-weight: 500;
-    font-size: 14px;
-    color: #444;
+/* ================= BUTTONS ================= */
+.confirm-btn{
+    grid-column:span 2;
+    margin-top:20px;
+    padding:16px;
+    background:linear-gradient(135deg,#c6a75e,#e6c77a);
+    color:#2b2b2b;
+    border:none;
+    border-radius:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.4s ease;
 }
 
-
-/* Inputs */
-input,
-select {
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(0,0,0,0.08);
-    outline: none;
-    font-size: 14px;
-
-    background: rgba(255,255,255,0.85);
-
-    transition: 0.25s ease;
+.confirm-btn:hover{
+    transform:translateY(-4px);
+    box-shadow:0 15px 30px rgba(198,167,94,0.35);
 }
 
-input:focus,
-select:focus {
-    border: 1px solid #d4af37;
-    box-shadow: 0 0 0 4px rgba(212,175,55,0.15);
-    background: rgba(255,255,255,0.95);
+.apply-btn{
+    background:#3e2a1c;
+    color:white;
+    border:none;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:5px;
+    transition:0.3s ease;
 }
 
-
-/* 👑 Premium Gold Button */
-button {
-    margin-top: 35px;
-    padding: 15px;
-
-    background: linear-gradient(135deg, #d4af37, #b9935a);
-    color: black;
-
-    border: none;
-    border-radius: 40px;
-
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 15px;
-
-    transition: 0.3s ease;
+.apply-btn:hover{
+    transform:translateY(-3px);
+    background:#5a3f2e;
 }
 
-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(212,175,55,0.35);
+/* ================= ERROR ================= */
+.error-box{
+    background:#fff0f0;
+    color:#b30000;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:15px;
 }
 
-
-/* ✨ Live Summary Box */
-.live-summary {
-    margin-top: 35px;
-
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    padding: 22px;
-    border-radius: 18px;
-
-    font-weight: 500;
-    color: #2b2b2b;
-
-    border: 1px solid rgba(212,175,55,0.3);
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+/* ================= RIGHT SIDE ================= */
+.hotel-details{
+    flex:1;
+    background:#fffaf3;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 25px 60px rgba(0,0,0,0.08);
+    font-size:14px;
+    transform:translateX(40px);
+    opacity:0;
+    animation: slideRight 0.9s ease forwards;
+    animation-delay:0.2s;
 }
 
-.live-summary p {
-    margin: 8px 0;
+.hotel-details ul{
+    list-style:none;
+    padding:0;
 }
 
+.hotel-details li{
+    padding:8px 0;
+    opacity:0;
+    transform:translateY(20px);
+    animation: fadeItem 0.6s ease forwards;
+}
 
-/* 📱 Responsive */
-@media (max-width: 600px) {
-    .booking-card {
-        width: 100%;
-        padding: 25px;
-    }
+.hotel-details li:nth-child(1){animation-delay:0.3s;}
+.hotel-details li:nth-child(2){animation-delay:0.4s;}
+.hotel-details li:nth-child(3){animation-delay:0.5s;}
+.hotel-details li:nth-child(4){animation-delay:0.6s;}
+.hotel-details li:nth-child(5){animation-delay:0.7s;}
+.hotel-details li:nth-child(6){animation-delay:0.8s;}
+.hotel-details li:nth-child(7){animation-delay:0.9s;}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:992px){
+    .booking-wrapper{flex-direction:column;}
+    .form-grid{grid-template-columns:1fr;}
+}
+
+/* ================= ANIMATIONS ================= */
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(50px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes slideLeft{
+    to{opacity:1; transform:translateX(0);}
+}
+
+@keyframes slideRight{
+    to{opacity:1; transform:translateX(0);}
+}
+
+@keyframes fadeItem{
+    to{opacity:1; transform:translateY(0);}
 }

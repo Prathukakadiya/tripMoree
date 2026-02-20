@@ -123,7 +123,18 @@ tr:hover{
     <div class="search-box">
 
         <form method="POST" class="search-grid">
-            <input type="text" name="source" placeholder="Source" required>
+             <select name="source" required>
+    <option value="">Select Source</option>
+    <option value="Ahmedabad">Ahmedabad</option>
+    <option value="Delhi">Delhi</option>
+    <option value="Mumbai">Mumbai</option>
+    <option value="Rajasthan">Rajasthan</option>
+    <option value="Hyderabad">Hyderabad</option>
+    <option value="Kolkata">Kolkata</option>
+    <option value="Chennai">Chennai</option>
+    <option value="Bangalore">Bangalore</option>
+    
+</select>
             <input type="text" name="destination" value="{{ destination }}" readonly>
             <input type="number" name="persons" value="{{ persons }}" readonly>
 

@@ -101,15 +101,18 @@
         <div>
             {{ item.booking.status|capitalize }}
         </div>
-        <a href="{{ url_for('download_invoice', booking_id=item.booking.id) }}" 
-   class="btn btn-dark">Download PDF</a>
+        <div>
+            <a href="{{ url_for('download_invoice', booking_id=item.booking.id) }}" 
+               class="btn btn-dark">Download PDF</a>
 
-<a href="{{ url_for('send_invoice_email', booking_id=item.booking.id) }}" 
-   class="btn btn-success">Send to Email</a>
-
+            <button 
+               class="btn btn-success"
+               onclick="sendInvoice({{ item.booking.id }})">
+               Send to Email
+            </button>
+        </div>
     </div>
 
-    <!-- HOTEL -->
     {% if item.hotel %}
     <div class="section-title">🏨 Hotel Details</div>
     <div class="details">
@@ -119,10 +122,8 @@
     </div>
     {% endif %}
 
-    <!-- TRANSPORT -->
     {% if item.transports %}
     <div class="section-title">🚍 Transport Details</div>
-
     <table class="table">
         <tr>
             <th>Type</th>
@@ -131,7 +132,6 @@
             <th>Persons</th>
             <th>Price</th>
         </tr>
-
         {% for t in item.transports %}
         <tr>
             <td>{{ t.transport.transport_type|capitalize }}</td>
@@ -144,53 +144,30 @@
     </table>
     {% endif %}
 
-    <!-- CAB -->
     {% if item.cab_days %}
-
-    <div class="section-title">🚖 Cab Details (Day Wise)</div>
-
+    <div class="section-title">🚖 Cab Details</div>
     {% for day in item.cab_days %}
     <div style="margin-top:15px; padding:15px; background:#f9f9f9; border-radius:10px;">
-
         <strong>Day {{ day.day }}</strong><br>
-
         Time: {{ day.arrival }} - {{ day.departure }}<br>
         Pickup: {{ day.pickup|capitalize }}<br>
         Drop: {{ day.drop|capitalize }}<br>
-
-        <br>
-        <strong>Spots Covered:</strong>
-        <ul>
-        {% for s in day.spots %}
-            <li>{{ s }}</li>
-        {% endfor %}
-        </ul>
-
         KM: {{ day.km }} km<br>
         Price: ₹ {{ day.price }}
-
     </div>
     {% endfor %}
-
     <div style="margin-top:15px;">
         <strong>Total Cab Amount: ₹ {{ item.cab_total }}</strong>
     </div>
-
     {% endif %}
 
-    <!-- FINAL BILL -->
     <div class="section-title">🧾 Final Bill</div>
-
     <div class="total-box">
-
         Hotel Total: ₹ {{ item.hotel_total }} <br>
         Transport Total: ₹ {{ item.transport_total }} <br>
         Cab Total: ₹ {{ item.cab_total }} <br>
-
         <hr>
-
         Grand Total: ₹ {{ item.grand_total }}
-
     </div>
 
 </div>
@@ -198,11 +175,26 @@
 {% endfor %}
 
 {% else %}
-
 <h3 style="text-align:center;">No bookings yet!</h3>
-
 {% endif %}
 
 </div>
+
+<script>
+function sendInvoice(bookingId){
+    fetch(`/send-invoice/${bookingId}`)
+    .then(response => response.json())
+    .then(data => {
+        if(data.success){
+            alert("✅ " + data.message);
+        } else {
+            alert("Something went wrong");
+        }
+    })
+    .catch(error => {
+        alert("Error sending invoice");
+    });
+}
+</script>
 
 {% endblock %}

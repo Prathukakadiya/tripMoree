@@ -1,55 +1,105 @@
-/* BODY */
+/* ================= BODY ================= */
 body {
     font-family: 'Poppins', sans-serif;
-    background: #ede6db;
+    background: linear-gradient(135deg,#fdf6ec,#f1e4d3);
     margin: 0;
     color: #2b2b2b;
 }
 
-/* WRAPPER */
+/* ================= WRAPPER ================= */
 .page-wrapper {
     max-width: 1200px;
     margin: 120px auto 60px auto;
     padding: 0 20px;
+    animation: fadeUp 0.8s ease;
 }
 
-/* TITLE */
+/* ================= TITLE ================= */
 h2 {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
     font-weight: 600;
     font-size: 32px;
+    color: #6b4f3b;
+    animation: fadeDown 0.8s ease;
 }
 
-/* GRID CONTAINER */
+/* ================= LOCAL GUIDE BANNER (DARK LUXURY) ================= */
+.local-guide-banner{
+    background: linear-gradient(135deg,#3e2a1c,#5a3f2e);
+    padding:30px;
+    border-radius:20px;
+    margin:25px 0 50px 0;
+    text-align:center;
+    box-shadow:0 20px 45px rgba(0,0,0,0.25);
+    border:none;                 /* remove light border */
+    position:relative;
+    animation: fadeUp 1s ease;
+}
+
+/* remove any default line */
+.local-guide-banner::before{
+    display:none;
+}
+
+.local-guide-banner h4{
+    margin-bottom:12px;
+    font-weight:600;
+    color:#f5e6d3;
+    font-size:20px;
+}
+
+.local-guide-banner p{
+    color:#e8d8c3;
+    font-size:14px;
+}
+
+/* Button */
+.guide-btn{
+    display:inline-block;
+    margin-top:18px;
+    background: linear-gradient(135deg,#c6a75e,#e6c77a);
+    color:#2b2b2b;
+    padding:12px 28px;
+    border-radius:30px;
+    text-decoration:none;
+    font-weight:600;
+    transition:0.3s ease;
+}
+
+.guide-btn:hover{
+    transform:translateY(-4px);
+    box-shadow:0 15px 30px rgba(0,0,0,0.35);
+}
+
+/* ================= GRID ================= */
 .hotel-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 40px;
 }
 
-/* CARD */
+/* ================= CARD ================= */
 .hotel-card {
-    background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(15px);
+    border-radius: 22px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: 0.3s ease;
+    transition: 0.4s ease;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: cardFade 0.8s forwards;
 }
 
 .hotel-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    transform: translateY(-10px);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.15);
 }
 
-/* IMAGE */
+/* ================= IMAGE ================= */
 .image-wrapper {
     width: 100%;
     height: 220px;
@@ -60,11 +110,16 @@ h2 {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: 0.4s ease;
 }
 
-/* INFO */
+.hotel-card:hover .hotel-img{
+    transform: scale(1.08);
+}
+
+/* ================= INFO ================= */
 .hotel-info {
-    padding: 22px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -74,22 +129,23 @@ h2 {
     font-size: 20px;
     font-weight: 600;
     margin-bottom: 12px;
+    color:#5a3f2e;
 }
 
 .hotel-info p {
     font-size: 14px;
     margin: 6px 0;
-    color: #555;
+    color: #6f6f6f;
 }
 
-/* ROOMS */
+/* ================= ROOMS ================= */
 .room-section {
     margin-top: 12px;
     margin-bottom: 20px;
     font-size: 13px;
 }
 
-/* BUTTON */
+/* ================= BUTTON ================= */
 .book-btn {
     margin-top: auto;
     background: linear-gradient(135deg, #c6a75e, #e6c77a);
@@ -104,9 +160,41 @@ h2 {
 
 .book-btn:hover {
     transform: scale(1.05);
+    box-shadow:0 12px 25px rgba(0,0,0,0.25);
 }
 
-/* RESPONSIVE */
+/* ================= ANIMATIONS ================= */
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(30px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes fadeDown{
+    from{
+        opacity:0;
+        transform:translateY(-30px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+@keyframes cardFade{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
     .hotel-container {
         grid-template-columns: 1fr;

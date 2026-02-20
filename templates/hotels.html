@@ -9,7 +9,20 @@
 {% block content %}
 
 <div class="page-wrapper">
-    <h2>Available Hotels</h2>
+    <h2>Available Hotels in {{ destination.name }}</h2>
+
+<!-- ===== LOCAL GUIDE BANNER ===== -->
+<div class="local-guide-banner">
+    <h4>🌍 Know Before You Travel</h4>
+    <p>Discover local food, safety tips, etiquettes & alerts for {{ destination.name }}</p>
+
+    <a href="{{ url_for('culture_page', location=destination.name) }}" 
+       class="guide-btn">
+       🧭 View Full Travel Guide →
+    </a>
+</div>
+
+    
     <div id="hotelContainer" class="hotel-container"></div>
 </div>
 
@@ -43,6 +56,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
             const card = document.createElement("div");
             card.className = "hotel-card";
+            card.style.animationDelay = `${data.indexOf(hotel) * 0.1}s`;
+
 
             card.innerHTML = `
                 <div class="image-wrapper">

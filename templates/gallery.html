@@ -6,79 +6,98 @@
 
 <style>
 
-/* ========= HERO SECTION ========= */
+/* ================= PAGE BACKGROUND ================= */
+body{
+    background: linear-gradient(135deg,#fdf6ec,#f1e4d3);
+    font-family:'Poppins',sans-serif;
+}
+
+/* ================= HERO ================= */
 .gallery-hero{
-    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-    url("https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg") center/cover no-repeat;
-    
-    height:55vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    padding:140px 20px 100px 20px;
     text-align:center;
-    color:white;
-    padding-top:80px; /* navbar spacing fix */
+    background:#fdf6ec;
 }
 
 .gallery-hero h1{
-    font-family:;
-    font-size:52px;
+    font-size:54px;
     font-weight:700;
-    letter-spacing:1px;
+    color:#5a3f2e;
+    animation:slideDown 1s ease;
 }
 
 .gallery-hero p{
     margin-top:15px;
     font-size:18px;
-    color:#ddd;
+    color:#7a5c43;
+    animation:fadeIn 1.5s ease;
 }
 
-
-/* ========= MAIN SECTION ========= */
+/* ================= GALLERY SECTION ================= */
 .gallery-section{
-    padding:80px 40px;
-    background:#f8f5ef;
-}
-
-.gallery-container{
     max-width:1300px;
     margin:auto;
+    padding:40px 20px 100px 20px;
 }
 
-
-/* ========= GRID ========= */
+/* ================= CREATIVE GRID ================= */
 .gallery-grid{
     display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap:30px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 250px;
+    gap:25px;
 }
 
+/* Different sizes */
+.gallery-item.large{
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.gallery-item.wide{
+    grid-column: span 2;
+}
+
+.gallery-item.tall{
+    grid-row: span 2;
+}
+
+/* ================= CARD STYLE ================= */
 .gallery-item{
     position:relative;
     overflow:hidden;
-    border-radius:18px;
-    box-shadow:0 15px 35px rgba(0,0,0,0.12);
+    border-radius:22px;
     cursor:pointer;
-    transition:0.4s ease;
+    transform-style: preserve-3d;
+    transition:0.6s ease;
+    box-shadow:0 20px 40px rgba(0,0,0,0.08);
 }
 
 .gallery-item img{
     width:100%;
-    height:300px;
+    height:100%;
     object-fit:cover;
     transition:0.6s ease;
+}
+
+/* 3D Hover */
+.gallery-item:hover{
+    transform: rotateX(4deg) rotateY(-4deg) scale(1.03);
+    box-shadow:0 30px 60px rgba(0,0,0,0.15);
 }
 
 .gallery-item:hover img{
     transform:scale(1.1);
 }
 
+/* ================= OVERLAY ================= */
 .gallery-overlay{
     position:absolute;
     bottom:0;
+    left:0;
     width:100%;
-    padding:25px;
-    background:linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    padding:30px;
+    background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
     color:white;
     opacity:0;
     transition:0.4s ease;
@@ -97,39 +116,85 @@
 .gallery-overlay p{
     margin-top:8px;
     font-size:14px;
-    color:#ccc;
+    color:#ddd;
 }
 
+/* ================= DIFFERENT ENTRY ANIMATIONS ================= */
 
-/* ========= CTA ========= */
-.gallery-cta{
-    background:#000;
-    color:white;
-    padding:80px 20px;
-    text-align:center;
+.gallery-item:nth-child(1){
+    animation:slideLeft 1s ease forwards;
+}
+.gallery-item:nth-child(2){
+    animation:slideRight 1s ease forwards;
+}
+.gallery-item:nth-child(3){
+    animation:zoomIn 1.2s ease forwards;
+}
+.gallery-item:nth-child(4){
+    animation:rotateIn 1.2s ease forwards;
+}
+.gallery-item:nth-child(5){
+    animation:slideUp 1.2s ease forwards;
+}
+.gallery-item:nth-child(6){
+    animation:fadeIn 1.5s ease forwards;
 }
 
-.gallery-cta h2{
-    font-size:32px;
-    margin-bottom:30px;
+.gallery-item{
+    opacity:0;
 }
 
-.gallery-cta a{
-    background:gold;
-    color:black;
-    padding:14px 45px;
-    border-radius:40px;
-    text-decoration:none;
-    font-weight:bold;
-    transition:0.3s ease;
+/* ================= ANIMATIONS ================= */
+
+@keyframes slideLeft{
+    from{opacity:0; transform:translateX(-80px);}
+    to{opacity:1; transform:translateX(0);}
 }
 
-.gallery-cta a:hover{
-    background:#ffd700;
-    transform:translateY(-4px);
+@keyframes slideRight{
+    from{opacity:0; transform:translateX(80px);}
+    to{opacity:1; transform:translateX(0);}
 }
 
-@media(max-width:768px){
+@keyframes zoomIn{
+    from{opacity:0; transform:scale(0.7);}
+    to{opacity:1; transform:scale(1);}
+}
+
+@keyframes rotateIn{
+    from{opacity:0; transform:rotate(-8deg) scale(0.8);}
+    to{opacity:1; transform:rotate(0) scale(1);}
+}
+
+@keyframes slideUp{
+    from{opacity:0; transform:translateY(80px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@keyframes slideDown{
+    from{opacity:0; transform:translateY(-60px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:1000px){
+    .gallery-grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:600px){
+    .gallery-grid{
+        grid-template-columns: 1fr;
+        grid-auto-rows: 220px;
+    }
+
     .gallery-hero h1{
         font-size:36px;
     }
@@ -139,74 +204,63 @@
 
 <!-- HERO -->
 <div class="gallery-hero">
-    <div>
-        <h1>Travel Gallery</h1>
-        <p>Explore breathtaking destinations captured by our travelers.</p>
-    </div>
+    <h1>Travel Gallery</h1>
+    <p>Explore breathtaking destinations captured by our travelers.</p>
 </div>
 
-<!-- GALLERY SECTION -->
+<!-- GALLERY -->
 <div class="gallery-section">
-    <div class="gallery-container">
+    <div class="gallery-grid">
 
-        <div class="gallery-grid">
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Goa Beaches</h3>
-                    <p>Golden sunsets & nightlife vibes</p>
-                </div>
+        <div class="gallery-item large">
+            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
+            <div class="gallery-overlay">
+                <h3>Goa Beaches</h3>
+                <p>Golden sunsets & nightlife vibes</p>
             </div>
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Manali Snow</h3>
-                    <p>Adventure in the Himalayas</p>
-                </div>
-            </div>
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Jaipur Palace</h3>
-                    <p>Royal heritage experience</p>
-                </div>
-            </div>
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Dubai Skyline</h3>
-                    <p>Luxury & modern lifestyle</p>
-                </div>
-            </div>
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Mountain Trek</h3>
-                    <p>Unforgettable adventure moments</p>
-                </div>
-            </div>
-
-            <div class="gallery-item">
-                <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
-                <div class="gallery-overlay">
-                    <h3>Backwater Cruise</h3>
-                    <p>Luxury houseboat views</p>
-                </div>
-            </div>
-
         </div>
-    </div>
-</div>
 
-<!-- CTA -->
-<div class="gallery-cta">
-    <h2>Ready To Create Your Own Memories?</h2>
-    <a href="/destinations">Start Your Journey</a>
+        <div class="gallery-item tall">
+            <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
+            <div class="gallery-overlay">
+                <h3>Manali Snow</h3>
+                <p>Adventure in the Himalayas</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
+            <div class="gallery-overlay">
+                <h3>Jaipur Palace</h3>
+                <p>Royal heritage experience</p>
+            </div>
+        </div>
+
+        <div class="gallery-item wide">
+            <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
+            <div class="gallery-overlay">
+                <h3>Dubai Skyline</h3>
+                <p>Luxury & modern lifestyle</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
+            <div class="gallery-overlay">
+                <h3>Mountain Trek</h3>
+                <p>Unforgettable adventure moments</p>
+            </div>
+        </div>
+
+        <div class="gallery-item">
+            <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
+            <div class="gallery-overlay">
+                <h3>Backwater Cruise</h3>
+                <p>Luxury houseboat views</p>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 {% endblock %}

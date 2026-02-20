@@ -82,9 +82,11 @@ button:hover{
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         {% for category, message in messages %}
-            <div class="alert-box">
-                {{ message }}
-            </div>
+            {% if category == "admin_error" %}
+                <div class="alert-box">
+                    {{ message }}
+                </div>
+            {% endif %}
         {% endfor %}
     {% endif %}
 {% endwith %}

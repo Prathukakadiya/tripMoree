@@ -21,12 +21,46 @@ body{
     margin: 0;
     padding-top: 80px;
 }
+.custom-popup{
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: #28a745;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 9999;
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn{
+    from{
+        opacity:0;
+        transform:translateX(50px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
 </style>
 
 </head>
 <body>
 
-    {% include "navbar.html" %}
+{% include "navbar.html" %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category == "user_success" %}
+                <div class="custom-popup">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endwith %}
 
     {% block content %}{% endblock %}
 

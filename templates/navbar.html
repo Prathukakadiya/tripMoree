@@ -4,9 +4,17 @@
 
     <div class="nav-links">
         <a href="/">Home</a>
+        <a href="/about">About</a>
         <a href="/destinations">Destinations</a>
         <a href="/gallery">Gallery</a>
-        <a href="/login">Login</a>
-        <a href="/book" class="nav-book-btn">Book Now</a>
+
+        {% if session.get("user_id") %}
+            <a href="/my-bookings">My Bookings</a>
+            <a href="/logout">Logout</a>
+        {% else %}
+            <a href="/login">Login</a>
+        {% endif %}
+
+        <a href="/admin/login" class="nav-book-btn">Admin</a>
     </div>
 </div>

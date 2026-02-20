@@ -6,238 +6,230 @@
 
 <style>
 
-/* ===== HERO ===== */
-.about-hero{
-    background:linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)),
-    url("https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg") center/cover no-repeat;
-    height:60vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+/* ================= GLOBAL ================= */
+body{
+    background: linear-gradient(135deg,#fdf6ec,#f1e4d3);
+    font-family:'Poppins',sans-serif;
+    overflow-x:hidden;
+}
+
+/* ================= BRAND HEADER ================= */
+.brand-header{
     text-align:center;
-    color:white;
+    padding:120px 20px 40px 20px;
 }
 
-.about-hero h1{
-    font-size:52px;
-    font-weight:700;
+.brand-header h1{
+    font-size:60px;
+    font-weight:800;
+    color:#5a3f2e;
+    letter-spacing:1px;
+    animation: slideDown 1s ease forwards;
 }
 
-.about-hero p{
-    margin-top:15px;
-    font-size:18px;
-    color:#ddd;
+.brand-header span{
+    color:#c6a75e;
 }
 
-
-/* ===== SECTION ===== */
-.about-section{
-    padding:90px 40px;
-    background:#f8f5ef;
+.brand-line{
+    width:0;
+    height:3px;
+    background:#c6a75e;
+    margin:20px auto 0 auto;
+    border-radius:10px;
+    animation: expandLine 1.2s ease forwards;
 }
 
-.about-container{
-    max-width:1100px;
-    margin:auto;
+/* ================= HERO MESSAGE ================= */
+.hero-message{
     text-align:center;
+    max-width:900px;
+    margin:60px auto 120px auto;
+    padding:0 20px;
+    opacity:0;
+    animation: fadeUp 1.4s ease forwards;
 }
 
-.about-section h2{
-    font-size:36px;
-    margin-bottom:25px;
-    font-weight:600;
-}
-
-.about-section p{
-    font-size:17px;
-    line-height:1.8;
-    color:#555;
-    max-width:800px;
-    margin:auto;
-}
-
-
-/* ===== FEATURES ===== */
-.features{
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap:35px;
-    margin-top:60px;
-}
-
-.feature-box{
-    background:white;
-    padding:35px 25px;
-    border-radius:18px;
-    box-shadow:0 15px 35px rgba(0,0,0,0.08);
-    transition:0.4s ease;
-}
-
-.feature-box:hover{
-    transform:translateY(-10px);
-}
-
-.feature-box i{
-    font-size:30px;
-    color:gold;
-    margin-bottom:18px;
-}
-
-.feature-box h4{
-    font-size:20px;
-    margin-bottom:12px;
-}
-
-.feature-box p{
-    font-size:14px;
-    color:#666;
-}
-
-
-/* ===== STATS ===== */
-.stats{
-    background:#000;
-    color:white;
-    padding:90px 20px;
-    text-align:center;
-}
-
-.stats-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-    gap:40px;
-    max-width:1000px;
-    margin:auto;
-}
-
-.stats-grid h3{
+.hero-message h2{
     font-size:38px;
-    color:gold;
+    color:#5a3f2e;
+    margin-bottom:20px;
 }
 
-.stats-grid p{
-    font-size:15px;
-    color:#ccc;
+.hero-message p{
+    font-size:18px;
+    line-height:1.8;
+    color:#7a5c43;
 }
 
+/* ================= FEATURE GRID ================= */
+.section-grid{
+    max-width:1200px;
+    margin:auto;
+    padding:0 20px 120px 20px;
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+    gap:40px;
+}
 
-/* ===== CTA ===== */
-.about-cta{
-    padding:90px 20px;
+/* ================= CARD ================= */
+.feature-card{
+    background:#fffaf3;
+    padding:45px 35px;
+    border-radius:30px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.06);
+    transition:0.5s ease;
+    transform:perspective(1000px) rotateY(8deg);
+    opacity:0;
+    animation: cardEnter 1s ease forwards;
+}
+
+.feature-card:nth-child(2){animation-delay:0.2s;}
+.feature-card:nth-child(3){animation-delay:0.4s;}
+.feature-card:nth-child(4){animation-delay:0.6s;}
+
+.feature-card:hover{
+    transform:perspective(1000px) rotateY(-8deg) translateY(-12px);
+    box-shadow:0 30px 60px rgba(0,0,0,0.12);
+}
+
+.feature-card h3{
+    color:#5a3f2e;
+    margin-bottom:15px;
+    font-size:22px;
+}
+
+.feature-card p{
+    color:#7a5c43;
+    line-height:1.7;
+}
+
+/* ================= SOLUTION SECTION ================= */
+.solution-strip{
+    background:#3e2a1c;
+    padding:120px 20px;
     text-align:center;
-    background:linear-gradient(to right,#000,#111);
     color:white;
 }
 
-.about-cta h2{
-    font-size:34px;
-    margin-bottom:30px;
+.solution-strip h2{
+    font-size:40px;
+    margin-bottom:25px;
+    letter-spacing:1px;
 }
 
-.about-cta a{
-    background:gold;
-    color:black;
-    padding:15px 50px;
-    border-radius:40px;
-    text-decoration:none;
-    font-weight:600;
-    transition:0.3s ease;
+.solution-strip p{
+    max-width:900px;
+    margin:auto;
+    font-size:18px;
+    line-height:1.8;
+    color:#e8d8c3;
 }
 
-.about-cta a:hover{
-    background:#ffd700;
-    transform:translateY(-4px);
+/* ================= ANIMATIONS ================= */
+
+@keyframes slideDown{
+    from{opacity:0; transform:translateY(-60px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes expandLine{
+    from{width:0;}
+    to{width:120px;}
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(60px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+@keyframes cardEnter{
+    from{
+        opacity:0;
+        transform:perspective(1000px) rotateY(20deg) translateY(60px);
+    }
+    to{
+        opacity:1;
+        transform:perspective(1000px) rotateY(8deg) translateY(0);
+    }
 }
 
 @media(max-width:768px){
-    .about-hero h1{
-        font-size:36px;
+    .brand-header h1{
+        font-size:38px;
+    }
+    .hero-message h2{
+        font-size:26px;
     }
 }
 
 </style>
 
-<!-- HERO -->
-<div class="about-hero">
-    <div>
-        <h1>About TripMoreee</h1>
-        <p>We create unforgettable travel experiences with comfort, safety and luxury in mind.</p>
-    </div>
+<!-- BRAND -->
+<div class="brand-header">
+    <h1>Trip<span>Moreee</span></h1>
+    <div class="brand-line"></div>
 </div>
 
-<!-- MISSION -->
-<div class="about-section">
-    <div class="about-container">
-        <h2>Our Mission</h2>
+<!-- HERO MESSAGE -->
+<div class="hero-message">
+    <h2>Designed to Solve Real Travel Planning Challenges</h2>
+    <p>
+        TripMoreee was built to simplify destination planning by integrating hotel discovery,
+        transparent booking information, cultural insights, and local safety guidance
+        into a single streamlined platform.
+    </p>
+</div>
+
+<!-- FEATURES -->
+<div class="section-grid">
+
+    <div class="feature-card">
+        <h3>Centralized Travel Information</h3>
         <p>
-            At TripMoreee, our mission is to make travel simple, affordable and memorable.
-            From mountain adventures to luxury beach vacations, we help you explore
-            the world with confidence and comfort.
+            Instead of switching between multiple websites, users can explore hotels,
+            hidden street food, safety zones, local etiquettes, and essential alerts
+            within one structured interface.
         </p>
     </div>
-</div>
 
-<!-- WHY CHOOSE US -->
-<div class="about-section">
-    <div class="about-container">
-        <h2>Why Choose Us</h2>
-
-        <div class="features">
-
-            <div class="feature-box">
-                <i class="fas fa-globe"></i>
-                <h4>Wide Destinations</h4>
-                <p>Explore domestic and international destinations effortlessly.</p>
-            </div>
-
-            <div class="feature-box">
-                <i class="fas fa-shield-alt"></i>
-                <h4>Safe Travel</h4>
-                <p>Your safety and comfort are always our top priority.</p>
-            </div>
-
-            <div class="feature-box">
-                <i class="fas fa-star"></i>
-                <h4>Premium Experience</h4>
-                <p>Luxury stays, curated experiences and seamless bookings.</p>
-            </div>
-
-            <div class="feature-box">
-                <i class="fas fa-headset"></i>
-                <h4>24/7 Support</h4>
-                <p>Customer support available anytime, anywhere.</p>
-            </div>
-
-        </div>
+    <div class="feature-card">
+        <h3>Integrated Safety & Local Guidance</h3>
+        <p>
+            The platform provides night safety zones, scam awareness information,
+            emergency doctor contacts, and weather alerts to help travelers
+            make informed decisions before arrival.
+        </p>
     </div>
-</div>
 
-<!-- STATS -->
-<div class="stats">
-    <div class="stats-grid">
-        <div>
-            <h3>10K+</h3>
-            <p>Happy Travelers</p>
-        </div>
-        <div>
-            <h3>50+</h3>
-            <p>Destinations</p>
-        </div>
-        <div>
-            <h3>4.8★</h3>
-            <p>Average Rating</p>
-        </div>
-        <div>
-            <h3>24/7</h3>
-            <p>Customer Support</p>
-        </div>
+    <div class="feature-card">
+        <h3>Transparent Hotel Availability</h3>
+        <p>
+            Real-time room availability, clear pricing structure,
+            and structured booking details reduce confusion and
+            eliminate uncertainty in the reservation process.
+        </p>
     </div>
+
+    <div class="feature-card">
+        <h3>Context-Aware Destination Experience</h3>
+        <p>
+            Each destination includes cultural etiquette guidance
+            and local highlights, allowing travelers to prepare
+            beyond just accommodation.
+        </p>
+    </div>
+
 </div>
 
-<!-- CTA -->
-<div class="about-cta">
-    <h2>Ready To Explore With Us?</h2>
-    <a href="/destinations">Start Your Journey</a>
+<!-- SOLUTION STRIP -->
+<div class="solution-strip">
+    <h2>A Unified Travel Planning Experience</h2>
+    <p>
+        By combining booking infrastructure with destination intelligence,
+        TripMoreee addresses the fragmentation commonly found in travel platforms.
+        The result is a cleaner, safer, and more informed planning journey.
+    </p>
 </div>
 
 {% endblock %}

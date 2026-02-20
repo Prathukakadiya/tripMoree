@@ -117,7 +117,6 @@
             gap: 40px;
         }
 
-        /* PROFESSIONAL DESTINATION CARD */
         .card {
             position: relative;
             height: 280px;
@@ -242,167 +241,18 @@
             line-height: 1.5;
             color: #e0e0e0;
         }
-
-        /* ---------- CTA ---------- */
-        .cta-section {
-            margin: 80px auto;
-            width: 90%;
-            padding: 60px 20px;
-            text-align: center;
-            background: linear-gradient(to right, #000, #111);
-            border: 2px solid gold;
-            border-radius: 20px;
-            color: #FFDAB9;
-        }
-
-        .cta-btn {
-            background: gold;
-            color: black;
-            padding: 14px 38px;
-            text-decoration: none;
-            font-size: 18px;
-            border-radius: 30px;
-            font-weight: bold;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            color: #aaa;
-            padding: 20px;
-            font-size: 14px;
-        }
-/* ================= FOOTER ================= */
-
-/* ===== FINAL COMPACT SYMMETRIC FOOTER ===== */
-
-.main-footer{
-    background:#000;
-    color:#ccc;
-    padding:60px 20px 20px; 
-    text-align:center;
-}
-
-/* BRAND */
-.footer-brand{
-    font-size:40px;     
-    color:gold;
-    margin-bottom:12px;
-    font-weight:700;
-}
-
-.footer-tagline{
-    font-size:15px;
-    max-width:650px;
-    margin:0 auto 40px;
-    line-height:1.6;
-    color:#ddd;
-}
-
-/* 4 COLUMN CONTACT */
-
-
-.footer-contact div{
-    padding:10px 5px;
-}
-
-/* HEADINGS */
-.footer-contact{
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);   /* full width 4 equal columns */
-    width:100%;
-    max-width:1200px;
-    margin:35px auto 30px;
-    text-align:center;
-    gap:20px;
-}
-
-.footer-contact h4{
-    color:gold;
-    font-size:20px;
-    margin-bottom:6px;
-    font-weight:600;
-}
-
-.footer-contact p{
-    font-size:16px;          /* phone number bigger */
-    font-weight:500;
-    color:#eee;
-    margin:0;
-}
-
-
-/* SOCIAL */
-.footer-social{
-    display:flex;
-    justify-content:center;
-    gap:18px;
-    margin-bottom:35px;
-}
-
-.footer-social a{
-    width:36px;
-    height:36px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#111;
-    border-radius:50%;
-    color:white;
-    font-size:14px;
-    transition:0.3s ease;
-}
-
-.footer-social a:hover{
-    background:gold;
-    color:black;
-    transform:translateY(-2px);
-}
-
-/* BUTTON */
-.footer-cta{
-    display:inline-block;
-    background:gold;
-    color:black;
-    padding:12px 32px;
-    border-radius:25px;
-    font-weight:600;
-    text-decoration:none;
-    font-size:16px;
-    margin-bottom:35px;
-    transition:0.3s ease;
-}
-
-.footer-cta:hover{
-    background:#ffd700;
-    transform:translateY(-2px);
-}
-
-/* BOTTOM */
-.footer-bottom{
-    border-top:1px solid #222;
-    margin-top:35px;
-    padding-top:15px;
-    font-size:12px;
-    color:#777;
-}
-
-/* MOBILE */
-@media (max-width:900px){
-    .footer-contact{
-        grid-template-columns: repeat(2, 1fr);
-        row-gap:20px;
-    }
-}
-
-@media (max-width:500px){
-    .footer-contact{
-        grid-template-columns: 1fr;
-    }
+        .nav-book-btn {
+    background: gold;
+    color: black !important;
+    padding: 6px 14px;
+    border-radius: 5px;
+    font-weight: bold;
 }
 
 
     </style>
 </head>
+
 <script>
 function showAlert(){
     alert("🚀 Our social media pages are coming soon!");
@@ -411,18 +261,7 @@ function showAlert(){
 
 <body>
 
-<div class="navbar">
-    <div class="hamburger">☰</div>
-    <div class="logo">TripMoreee</div>
-    <div class="nav-links">
-        <a href="/about">About</a>
-        <a href="/destinations">Destinations</a>
-        <a href="/gallery">Gallery</a>
-        <a href="/admin/login">admin</a>
-        <a href="/login">Login</a>
-        <a href="/destinations" class="book-btn">Book Now</a>
-    </div>
-</div>
+{% include "navbar.html" %}
 
 <div class="hero">
     <div class="hero-text">
@@ -473,102 +312,6 @@ function showAlert(){
 
     </div>
 </div>
-
-<!-- TOP EXPERIENCES FULL CLICKABLE -->
-<div class="experience-section">
-    <h2>Top Experiences</h2>
-    <div class="experience-cards">
-
-        <a href="/experience/mountain" class="experience-link">
-            <div class="experience-card">
-                <img src="https://images.pexels.com/photos/572897/pexels-photo-572897.jpeg">
-                <div class="experience-content">
-                    <h3>Mountain Adventures</h3>
-                    <p>Trekking, paragliding and snow adventures.</p>
-                </div>
-            </div>
-        </a>
-
-        <a href="/experience/backwater" class="experience-link">
-            <div class="experience-card">
-                <img src="https://images.pexels.com/photos/1001965/pexels-photo-1001965.jpeg">
-                <div class="experience-content">
-                    <h3>Backwater Cruises</h3>
-                    <p>Luxury houseboats and sunset views.</p>
-                </div>
-            </div>
-        </a>
-
-        <a href="/experience/beach" class="experience-link">
-            <div class="experience-card">
-                <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-                <div class="experience-content">
-                    <h3>Beaches & Nightlife</h3>
-                    <p>Golden beaches and vibrant nightlife.</p>
-                </div>
-            </div>
-        </a>
-
-    </div>
-</div>
-<footer class="main-footer">
-
-    <div class="footer-wrapper">
-
-        <!-- BRAND -->
-        <h1 class="footer-brand">TripMoreee</h1>
-
-        <p class="footer-tagline">
-            Travel the world with comfort and confidence.
-            Your journey begins here.
-        </p>
-
-        <!-- CONTACT HORIZONTAL -->
-        <div class="footer-contact">
-<div>
-    <h4>Customer Support</h4>
-    <p>24/7 Online Assistance</p>
-</div>
-
-            <div class="contact-box">
-                <h4>Mobile No</h4>
-                <p>+91 99250 92253</p>
-            </div>
-
-            <div class="contact-box">
-                <h4>Email</h4>
-                <p>support@tripmoreee.com</p>
-            </div>
-
-            <div class="contact-box">
-                <h4>Location</h4>
-                <p>Surat, India</p>
-            </div>
-
-        </div>
-
-        <!-- SOCIAL -->
-       <div class="footer-social">
-    <a href="#" onclick="showAlert()"><i class="fab fa-facebook-f"></i></a>
-    <a href="#" onclick="showAlert()"><i class="fab fa-instagram"></i></a>
-    <a href="#" onclick="showAlert()"><i class="fab fa-twitter"></i></a>
-    <a href="#" onclick="showAlert()"><i class="fab fa-linkedin-in"></i></a>
-</div>
-
-
-        <!-- START YOUR JOURNEY -->
-        <a href="/destinations" class="footer-cta">
-            Start Your Journey
-        </a>
-
-    </div>
-
-    <div class="footer-bottom">
-        © 2025 TripMoreee | All Rights Reserved
-    </div>
-
-</footer>
-
 
 </body>
 </html>

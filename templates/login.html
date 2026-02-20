@@ -119,7 +119,8 @@
 
         <form method="post" action="/login">
             <label>Email</label>
-            <input type="email" name="email" placeholder="Enter your email" required>
+            <input type="email" name="email" required value="{{ email or '' }}">
+
 
             <label>Password</label>
             <input type="password" name="password" placeholder="Enter your password" required>
@@ -131,6 +132,22 @@
             <a href="/signup">New user? Signup</a>
         </div>
     </div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="
+          background: #f8d7da;
+          color: #842029;
+          padding: 14px 18px;
+          border-radius: 12px;
+          margin-bottom: 20px;
+          font-weight: 500;
+      ">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
 </body>
 </html>

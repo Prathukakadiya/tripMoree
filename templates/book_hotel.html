@@ -1,97 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Hotel Booking{% endblock %}
-
 {% block extra_css %}
-<style>
-.booking-wrapper{
-    display:flex;
-    gap:40px;
-    margin:40px auto;
-    max-width:1400px;
-    align-items:flex-start;
-}
-.booking-card{
-    flex:3;
-    background:#ffffff;
-    padding:35px;
-    border-radius:14px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.08);
-}
-.form-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-}
-.full{ grid-column:span 2; }
-
-.booking-card input,
-.booking-card select{
-    width:100%;
-    padding:10px;
-    border-radius:8px;
-    border:1px solid #ddd;
-}
-
-.summary-box{
-    background:#f8f9fa;
-    padding:15px;
-    border-radius:10px;
-    margin-top:15px;
-}
-
-.confirm-btn{
-    grid-column:span 2;
-    margin-top:20px;
-    padding:14px;
-    background:#007bff;
-    color:white;
-    border:none;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.apply-btn{
-    background:#28a745;
-    color:white;
-    border:none;
-    padding:8px 12px;
-    border-radius:6px;
-    cursor:pointer;
-    margin-top:5px;
-}
-
-.error-box{
-    background:#ffe5e5;
-    color:#b30000;
-    padding:10px;
-    border-radius:6px;
-    margin-bottom:15px;
-}
-
-.hotel-details{
-    flex:1;
-    background:#ffffff;
-    padding:20px;
-    border-radius:14px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.08);
-    font-size:14px;
-}
-
-.hotel-details ul{
-    list-style:none;
-    padding:0;
-}
-.hotel-details li{
-    padding:6px 0;
-}
-
-@media(max-width:992px){
-    .booking-wrapper{flex-direction:column;}
-    .form-grid{grid-template-columns:1fr;}
-}
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/hotel_booking.css') }}">
 {% endblock %}
+
 
 {% block content %}
 
@@ -108,7 +20,8 @@
 </div>
 {% endif %}
 
-<form method="POST">
+<form method="POST" id="bookingForm">
+
 <div class="form-grid">
 
 <div>
@@ -245,10 +158,10 @@ Pickup (+ ₹{{ hotel.pickup_price or 0 }})
 
 <h3>Hotel Services</h3>
 <ul>
-<li>✔ Free WiFi</li>
+<li>✔ Complimentary breakfast</li>
+<li>✔ Room service</li>
 <li>✔ 24x7 Security</li>
 <li>✔ CCTV Surveillance</li>
-<li>✔ Gym Access</li>
 <li>✔ AC Rooms</li>
 <li>✔ Free Parking</li>
 <li>✔ Power Backup</li>

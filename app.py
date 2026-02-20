@@ -16,7 +16,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 from flask import Flask, render_template, request, redirect, session, jsonify, send_file
-
+from flask import flash
 
 from sqlalchemy import func, text
 
@@ -95,7 +95,7 @@ class Hotel(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
 
-    # 🔥 ADD THESE
+    
     lunch_price = db.Column(db.Integer, default=500)
     dinner_price = db.Column(db.Integer, default=600)
     pickup_price = db.Column(db.Integer, default=800)
@@ -200,7 +200,7 @@ class CabBooking(db.Model):
         nullable=False
     )
 
-    transport_id = db.Column(   # ✅ MATCH DATABASE COLUMN
+    transport_id = db.Column(  
         db.Integer,
         db.ForeignKey("transport.id"),
         nullable=False
@@ -455,11 +455,11 @@ def admin_login():
             session["admin_id"] = admin.id
             session["admin_logged_in"] = True
 
-            flash("Login Successful!", "success")
+            flash("Login Successful!", "admin_success")
             return redirect(url_for("admin_dashboard"))
 
         else:
-            flash("Invalid Username or Password", "danger")
+            flash("Invalid Username or Password", "admin_error")
             return redirect(url_for("admin_login"))
 
     return render_template("admin_login.html")
@@ -623,7 +623,10 @@ def hotel_booking(hotel_id):
 
             # ================= VALIDATIONS =================
 
-            if checkin_date < today:
+            if persons <= 0:
+                error = "Persons must be at least 1"
+
+            elif checkin_date < today:
                 error = "Check-in date cannot be in the past"
 
             elif checkout_date < checkin_date:
@@ -653,14 +656,35 @@ def hotel_booking(hotel_id):
                     applied_discount=0
                 )
 
+            # ================= ROOM CHECK =================
+
+            room = Room.query.get_or_404(room_id)
+
+            required_rooms = math.ceil(persons / 2)
+
+            available_rooms = room.total_rooms - room.booked_rooms
+
+            if available_rooms <= 0:
+                error = "No rooms available for this type"
+
+            elif available_rooms < required_rooms:
+                error = f"Only {available_rooms} rooms available"
+
+            if error:
+                return render_template(
+                    "book_hotel.html",
+                    hotel=hotel,
+                    form_data=request.form,
+                    error=error,
+                    applied_discount=0
+                )
+
+
             # ================= PRICE CALCULATION =================
 
             nights = (checkout_date - checkin_date).days
-            if nights == 0:
+            if nights <= 0:
                 nights = 1
-
-            room = Room.query.get_or_404(room_id)
-            required_rooms = math.ceil(persons / 2)
 
             base_price = nights * room.base_price * required_rooms
 
@@ -691,12 +715,7 @@ def hotel_booking(hotel_id):
             )
 
             db.session.add(main_booking)
-            db.session.commit()   # Generate ID
-
-            # Save in session for transport
-            session["booking_id"] = main_booking.id
-            session["persons"] = persons
-            session["destination_name"] = destination.name
+            db.session.commit()
 
             # ================= SAVE HOTEL BOOKING =================
 
@@ -726,7 +745,16 @@ def hotel_booking(hotel_id):
             )
 
             db.session.add(booking)
+
+            
+            room.booked_rooms += required_rooms
+
+
             db.session.commit()
+
+            session["hotel_booking_id"] = booking.id
+            session["booking_id"] = main_booking.id   
+        
 
             return redirect(url_for(
                 "transport_choice",
@@ -735,17 +763,25 @@ def hotel_booking(hotel_id):
             ))
 
         except Exception as e:
+            db.session.rollback()
+            print("BOOKING ERROR:", e)   
+            error_message = "Something went wrong. Please try again."
             return render_template(
                 "book_hotel.html",
                 hotel=hotel,
                 form_data=request.form,
-                error="Something went wrong",
+                error=error_message,  
                 applied_discount=0
-            )
+    )
+
 
     return render_template("book_hotel.html", hotel=hotel)
 
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
 
 @app.route("/guide/<location>")
 def guide(location):
@@ -765,7 +801,6 @@ def guide(location):
         essentials=essentials
     )
 from werkzeug.security import check_password_hash
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -777,19 +812,24 @@ def login():
         password = request.form.get("password")
 
         if not email or not password:
-            return "Email and password required"
+            flash("Email and password required", "error")
+            return render_template("login.html", email=email)
 
         user = User.query.filter_by(email=email).first()
 
         if not user:
-            return "User not found"
+            flash("User not found", "error")
+            return render_template("login.html", email=email)
 
         if not check_password_hash(user.password, password):
-            return "Incorrect password"
+            flash("Incorrect password", "error")
+            return render_template("login.html", email=email)
 
-        # 🔥 LOGIN SUCCESS
+        
         session["user_id"] = user.id
         session["is_logged_in"] = True
+
+        flash("Login Successful!", "success")
 
         if next_page:
             return redirect(next_page)
@@ -811,9 +851,9 @@ def hotels_by_destination(destination_id):
     )
 from werkzeug.security import generate_password_hash
 import re
-
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    
     next_page = request.args.get("next")
 
     if request.method == "POST":
@@ -822,26 +862,41 @@ def signup():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # 🔥 BASIC VALIDATION
+        
         if not name or not email or not password:
-            return "All fields are required"
+            flash("All fields are required", "error")
+            return render_template("signup.html",
+                                   name=name,
+                                   email=email)
 
-        # 🔥 PASSWORD RULES
+       
         if len(password) < 6:
-            return "Password must be at least 6 characters"
+            flash("Password must be at least 6 characters","error")
+            return render_template("signup.html",
+                                   name=name,
+                                   email=email)
 
         if not any(char.isdigit() for char in password):
-            return "Password must contain at least 1 number"
+            flash("Password must contain at least 1 number","error")
+            return render_template("signup.html",
+                                   name=name,
+                                   email=email)
 
         if not any(char.isupper() for char in password):
-            return "Password must contain at least 1 uppercase letter"
+            flash("Password must contain at least 1 uppercase letter","error")
+            return render_template("signup.html",
+                                   name=name,
+                                   email=email)
 
-        # 🔥 CHECK EMAIL EXISTS
+        
         user = User.query.filter_by(email=email).first()
         if user:
-            return "Email already registered"
+            flash("Email already registered","error")
+            return render_template("signup.html",
+                                   name=name,
+                                   email=email)
 
-        # 🔥 HASH PASSWORD
+        
         hashed_password = generate_password_hash(password)
 
         new_user = User(
@@ -853,10 +908,10 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        # 🔥 AUTO LOGIN AFTER SIGNUP
+        # AUTO LOGIN AFTER SIGNUP
         session["user_id"] = new_user.id
 
-        # 🔥 SAFE REDIRECT
+        # SAFE REDIRECT
         if next_page:
             return redirect(next_page)
 
@@ -984,9 +1039,9 @@ def transport_choice(destination):
 def flight(destination):
 
     persons = session.get("persons", 1)
-    booking_id = session.get("booking_id")
+    hotel_booking_id = session.get("booking_id")
 
-    if not booking_id:
+    if not hotel_booking_id:
         return redirect(url_for("home"))
 
     flights = []
@@ -1036,7 +1091,7 @@ def confirm_flight(flight_id):
 
     db.session.add(transport_booking)
     db.session.commit()
-
+    
     hotel_booking = HotelBooking.query.filter_by(
         booking_id=booking_id
     ).first()
@@ -1105,11 +1160,9 @@ def confirm_bus(bus_id):
 
     db.session.add(transport)
     db.session.commit()
-
     hotel_booking = HotelBooking.query.filter_by(
         booking_id=booking_id
     ).first()
-    flash("Bus booked successfully!", "success")
     return redirect(url_for("hype_spots", hotel_booking_id=hotel_booking.id))
 @app.route("/train/<destination>", methods=["GET", "POST"])
 @login_required
@@ -1171,7 +1224,7 @@ def confirm_train(train_id):
 
     db.session.add(transport_booking)
     db.session.commit()
-
+    flash("Transport booked successfully!", "user_success")
     hotel_booking = HotelBooking.query.filter_by(
         booking_id=booking_id
     ).first()
@@ -1221,7 +1274,7 @@ def calculate_transport():
         current_lat = spot_lat
         current_lon = spot_lon
 
-    # 🔹 Return to hotel
+    #  Return to hotel
     return_distance = haversine(
         current_lat,
         current_lon,
@@ -1233,7 +1286,7 @@ def calculate_transport():
 
     total_distance = round(total_distance, 2)
 
-    # 🔥 TIME CALCULATION (Optional Advanced Use)
+    #  TIME CALCULATION (Optional Advanced Use)
     total_hours = 8  # default
 
     if arrival_time and departure_time:
@@ -1245,7 +1298,7 @@ def calculate_transport():
         diff = (t2 - t1).seconds / 3600
         total_hours = round(diff, 2)
 
-    # 🔥 PRICING LOGIC
+    # PRICING LOGIC
     vehicles = Transport.query.all()
 
     result = []
@@ -1438,7 +1491,7 @@ def book_cab(hotel_booking_id):
     cab_booking.price = total_price
     db.session.commit()
 
-    flash("Cab booked successfully!", "success")
+    flash("cab booked successfully!", "user_success")
     return redirect(url_for("my_bookings"))
 
 
@@ -1498,7 +1551,7 @@ def beach_experience():
 def coming_soon():
     return """
     <h2 style='text-align:center;margin-top:100px;font-family:Arial;'>
-    🚀 Social Media Pages Coming Soon!
+     Social Media Pages Coming Soon!
     </h2>
     """
 @app.route("/about")
@@ -1507,6 +1560,25 @@ def about():
 @app.route("/gallery")
 def gallery():
     return render_template("gallery.html")
+
+@app.route("/culture/<location>")
+def culture_page(location):
+
+    foods = HiddenStreetFood.query.filter_by(location_name=location).all()
+    safety = NightSafetyZones.query.filter_by(location_name=location).all()
+    etiquettes = LocalEtiquettes.query.filter_by(location_name=location).all()
+    alerts = TouristAlertsTips.query.filter_by(location_name=location).all()
+    essentials = LocationEssentials.query.filter_by(location_name=location).first()
+
+    return render_template(
+        "information.html",
+        location=location,
+        foods=foods,
+        safety=safety,
+        etiquettes=etiquettes,
+        alerts=alerts,
+        essentials=essentials
+    )
 
 @app.route("/download-invoice/<int:booking_id>")
 @login_required
@@ -1555,7 +1627,7 @@ def send_invoice_email(booking_id):
     smtp = smtplib.SMTP("smtp.gmail.com", 587)
     smtp.starttls()
 
-    # 🔥 AHIA PASSWORD MUKVO
+    #  AHIA PASSWORD MUKVO
     smtp.login("prathukakadiya7x@gmail.com", "csftedtyotxuwxgu")
 
     smtp.send_message(msg)
@@ -1563,7 +1635,8 @@ def send_invoice_email(booking_id):
 
     os.remove(file_path)
 
-    return "Invoice Sent Successfully!"
+    return jsonify({"success": True, "message": "Invoice Sent Successfully!"})
+
 
 
 
@@ -1739,4 +1812,4 @@ def generate_invoice_pdf(booking_id):
 
 # ================= RUN =================
 if __name__ == "__main__":
-    app.run(debug=True)
+   app.run(debug=True, use_reloader=False)

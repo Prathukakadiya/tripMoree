@@ -6,137 +6,274 @@
 <style>
 body{
     margin:0;
-    font-family:'Segoe UI',sans-serif;
-    background:linear-gradient(135deg,#1e3c72,#2a5298);
-    color:white;
+    font-family:'Poppins',sans-serif;
+    background:linear-gradient(135deg,#fdf6ec,#f1e4d3);
+    color:#2b2b2b;
 }
+
 .container{
-    max-width:1000px;
+    max-width:1100px;
     margin:auto;
-    padding:30px;
+    padding:40px 20px;
 }
+
+/* Glass Card */
 .glass{
-    background:rgba(255,255,255,0.15);
-    backdrop-filter:blur(15px);
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:25px;
-    border:1px solid rgba(255,255,255,0.3);
+    background:#fffaf3;
+    padding:25px;
+    border-radius:20px;
+    margin-bottom:30px;
+    border:1px solid #ead8c0;
+    box-shadow:0 20px 40px rgba(0,0,0,0.06);
+    animation:fadeUp .7s ease;
 }
+
+/* Days input */
+.day-selector{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.day-selector input{
+    width:90px;
+    padding:10px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    text-align:center;
+    font-size:18px;
+}
+
+/* Preset Cards */
 .preset-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:10px;
-    margin-bottom:10px;
+    gap:12px;
+    margin-bottom:15px;
 }
+
 .preset-card{
-    background:rgba(255,255,255,0.2);
-    padding:10px;
-    border-radius:10px;
+    background:#fff;
+    padding:12px;
+    border-radius:12px;
     cursor:pointer;
     text-align:center;
     transition:.3s;
+    border:1px solid #ead8c0;
 }
+
 .preset-card:hover{
-    transform:scale(1.05);
-    background:rgba(255,255,255,0.35);
+    transform:translateY(-4px);
 }
+
 .preset-card.active{
-    border:2px solid gold;
-    box-shadow:0 0 15px gold;
+    border:2px solid #c6a75e;
+    background:linear-gradient(135deg,#fffaf3,#f5e6d3);
 }
+
+/* Spots */
 .spot-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:8px;
+    gap:10px;
 }
+
+/* Cab Cards */
+.cab-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+.cab-card{
+    padding:15px;
+    border-radius:15px;
+    border:1px solid #ead8c0;
+    cursor:pointer;
+    transition:.3s;
+    background:#fff;
+}
+
+.cab-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 15px 30px rgba(0,0,0,0.08);
+}
+
+.cab-card.active{
+    border:2px solid #c6a75e;
+    background:#fffaf3;
+}
+
+.cab-price{
+    font-weight:600;
+    color:#5a3f2e;
+}
+
+/* Button */
 button{
-    padding:12px 30px;
+    padding:14px 40px;
     border:none;
-    border-radius:30px;
-    background:linear-gradient(45deg,#ff512f,#dd2476);
-    color:white;
+    border-radius:40px;
+    background:linear-gradient(135deg,#c6a75e,#e6c77a);
+    color:#2b2b2b;
     font-size:16px;
     cursor:pointer;
+    transition:.3s;
+}
+.cab-total{
+    margin-top:6px;
+    font-weight:600;
+    color:#5a3f2e;
+    font-size:14px;
+}
+
+button:hover{
+    transform:translateY(-4px);
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(30px);}
+    to{opacity:1; transform:translateY(0);}
 }
 </style>
 </head>
+
 <body>
 
 <div class="container">
+    <div style="text-align:center; margin-bottom:30px;">
+    <h1 style="margin-bottom:10px;">Book Your Hype Spots</h1>
+    <p style="color:#6b4f3b;">
+        Plan your perfect trip by selecting the places you want to explore.
+    </p>
+</div>
+
 
 <form method="POST"
       action="{{ url_for('book_cab', hotel_booking_id=hotel_booking_id) }}">
 
+<!-- Total Days -->
 <div class="glass">
-<label><strong>Total Days:</strong></label><br>
+<div class="day-selector">
+<label><strong>Total Days:</strong></label>
 <input type="number" name="total_days" id="total_days" min="1" required>
+</div>
+</div>
+<div style="text-align:center; margin-bottom:25px;">
+    <a href="{{ url_for('my_bookings') }}"
+       style="
+        display:inline-block;
+        padding:10px 28px;
+        border-radius:30px;
+        background:#ccc;
+        text-decoration:none;
+        color:black;
+        font-weight:500;
+        transition:.3s;
+       "
+       onmouseover="this.style.background='#bbb'"
+       onmouseout="this.style.background='#ccc'">
+       Skip Cab Booking →
+    </a>
 </div>
 
 <div id="dayContainer"></div>
 
+<!-- Cab Selection -->
 <div style="text-align:center;">
-    <div class="glass">
-<h3>🚕 Select Cab</h3>
+
+<div class="glass">
+<h3>Select Cab</h3>
+
+
+<div class="cab-grid">
 
 {% for cab in transports %}
-    <label>
-        <input type="radio" name="cab_id"
-               value="{{ cab.id }}" required>
-        {{ cab.vehicle_name }}
-        (₹{{ cab.price_per_km }}/km)
-    </label><br>
-{% endfor %}
+<div class="cab-card"
+     data-price="{{ cab.price_per_km }}"
+     onclick="selectCab(this)">
+
+    <strong>{{ cab.vehicle_name }}</strong>
+
+    <div class="cab-total"></div>
+
+    <input type="radio"
+           name="cab_id"
+           value="{{ cab.id }}"
+           style="display:none;"
+           required>
 </div>
 
-<button type="submit">🚕 Confirm Booking</button>
+
+
+{% endfor %}
+
+</div>
+
+
+<br>
+<h4 id="selectedPrice" style="color:#5a3f2e;"></h4>
+
+</div>
+
+<button type="submit">Confirm Booking</button>
+
 </div>
 
 </form>
 </div>
-
 <script>
 
+/* ================= DAYS INPUT ================= */
+
 document.getElementById("total_days")
-.addEventListener("change", function(){
+.addEventListener("input", function(){
     generateDays(parseInt(this.value));
 });
 
+/* ================= DAYS GENERATOR ================= */
+
 function generateDays(days){
 
-    const container=document.getElementById("dayContainer");
-    container.innerHTML="";
+    const container = document.getElementById("dayContainer");
+    container.innerHTML = "";
 
     for(let i=1;i<=days;i++){
 
-        let div=document.createElement("div");
-        div.className="glass";
+        let div = document.createElement("div");
+        div.className = "glass";
 
-        div.innerHTML=`
-        <h3>📅 Day ${i}</h3>
+        div.innerHTML = `
+        <h3>Day ${i}</h3>
 
         <div class="preset-grid">
 
             <div class="preset-card active"
                  onclick="setTime(${i},'09:00','17:00',this)">
-            ☀ Morning<br>9AM - 5PM
+            Morning<br>9AM - 5PM
             </div>
 
             <div class="preset-card"
                  onclick="setTime(${i},'10:00','19:00',this)">
-            🌇 Full Day<br>10AM - 7PM
+            Full Day<br>10AM - 7PM
             </div>
 
             <div class="preset-card"
                  onclick="setTime(${i},'15:00','22:00',this)">
-            🌙 Evening<br>3PM - 10PM
+            Evening<br>3PM - 10PM
             </div>
 
         </div>
 
-        <!-- Hidden time inputs -->
-        <input type="hidden" name="arrival_time_${i}" id="arrival_${i}" value="09:00">
-        <input type="hidden" name="departure_time_${i}" id="departure_${i}" value="17:00">
+        <input type="hidden"
+               name="arrival_time_${i}"
+               id="arrival_${i}"
+               value="09:00">
+
+        <input type="hidden"
+               name="departure_time_${i}"
+               id="departure_${i}"
+               value="17:00">
 
         <h4>Select Spots</h4>
 
@@ -170,19 +307,17 @@ function generateDays(days){
 
         container.appendChild(div);
     }
+
+    updateAllCabPrices();
 }
+
+/* ================= TIME PRESET ================= */
 
 function setTime(day, arrival, departure, element){
 
-    document.querySelectorAll(
-        `#arrival_${day}`
-    )[0].value = arrival;
+    document.getElementById(`arrival_${day}`).value = arrival;
+    document.getElementById(`departure_${day}`).value = departure;
 
-    document.querySelectorAll(
-        `#departure_${day}`
-    )[0].value = departure;
-
-    // highlight active
     let parent = element.parentElement;
     parent.querySelectorAll(".preset-card")
           .forEach(x=>x.classList.remove("active"));
@@ -190,7 +325,72 @@ function setTime(day, arrival, departure, element){
     element.classList.add("active");
 }
 
+/* ================= CAB SELECT ================= */
+
+function selectCab(element){
+
+    document.querySelectorAll(".cab-card")
+        .forEach(card=>card.classList.remove("active"));
+
+    element.classList.add("active");
+    element.querySelector("input").checked = true;
+}
+
+/* ================= AUTO UPDATE WHEN SPOTS CHANGE ================= */
+
+document.addEventListener("change", function(e){
+    if(e.target.type === "checkbox"){
+        updateAllCabPrices();
+    }
+});
+
+/* ================= TOTAL CALCULATION ================= */
+
+function updateAllCabPrices(){
+
+    const days = parseInt(
+        document.getElementById("total_days").value
+    ) || 0;
+
+    if(days === 0){
+        clearCabTotals();
+        return;
+    }
+
+    /* Count selected spots */
+    const selectedSpots = document.querySelectorAll(
+        'input[type="checkbox"]:checked'
+    ).length;
+
+    if(selectedSpots === 0){
+        clearCabTotals();
+        return;
+    }
+
+    const kmPerSpot = 15;  // estimation per spot
+    const totalKm = selectedSpots * kmPerSpot * days;
+
+    document.querySelectorAll(".cab-card")
+    .forEach(card=>{
+
+        const pricePerKm = parseInt(card.dataset.price);
+        const totalPrice = totalKm * pricePerKm;
+
+        card.querySelector(".cab-total")
+            .innerText = "Total: ₹" + totalPrice;
+    });
+}
+
+/* ================= CLEAR FUNCTION ================= */
+
+function clearCabTotals(){
+    document.querySelectorAll(".cab-total")
+        .forEach(div=>div.innerText = "");
+}
+
 </script>
+
+
 
 </body>
 </html>
