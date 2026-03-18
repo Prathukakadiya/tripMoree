@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Explore Destinations</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/destinations.css') }}">
+</head>
+<body>
+
+<h1 class="page-title">What kind of vacation are you planning?</h1>
+<p class="subtitle">Select a vacation type and we’ll suggest destinations</p>
+
+<div class="vacation-types">
+    <div class="vacation-card" onclick="loadDestinations('honeymoon')">Honeymoon</div>
+    <div class="vacation-card" onclick="loadDestinations('family')">Family</div>
+    <div class="vacation-card" onclick="loadDestinations('adventure')">Adventure</div>
+    <div class="vacation-card" onclick="loadDestinations('spiritual')">Spiritual</div>
+</div>
+
+<hr>
+
+<!-- Destinations will appear here -->
+<div id="destinations-container"></div>
+
+<script src="{{ url_for('static', filename='js/destinations.js') }}"></script>
+
+</body>
+</html>

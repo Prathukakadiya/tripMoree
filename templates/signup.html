@@ -1,138 +1,113 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Signup | TripMoreee</title>
-    <style>
-      body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: 'Poppins', sans-serif;
+{% extends "base.html" %}
+{% block title %}Create Account — TripMore{% endblock %}
 
-            background-image: url("https://images.unsplash.com/photo-1506929562872-bb421503ef21");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+{% block content %}
+<div class="auth-layout">
 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  <div class="auth-left">
+    <div class="auth-left-grid"></div>
+    <div class="auth-left-content">
+      <a href="{{ url_for('home') }}" style="font-family:var(--font-display);font-size:1.7rem;font-weight:600;color:var(--white);display:block;margin-bottom:3rem;">
+        Trip<span style="color:var(--gold);">More</span>
+      </a>
+      <h2>Start your <em>journey</em><br>with us today</h2>
+      <p style="margin-top:1rem;">Join travellers discovering the world's most extraordinary destinations with TripMore.</p>
+      <div style="margin-top:2rem;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.6);font-size:13px;"><span style="color:var(--gold);">✓</span> Exclusive member-only deals</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.6);font-size:13px;"><span style="color:var(--gold);">✓</span> Free cancellation on all bookings</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.6);font-size:13px;"><span style="color:var(--gold);">✓</span> 24/7 AI travel concierge</div>
+        <div style="display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.6);font-size:13px;"><span style="color:var(--gold);">✓</span> Personal analytics dashboard</div>
+      </div>
+    </div>
+    <div class="auth-testimonial">
+      <p>"Best travel platform I've used. The AI recommendations saved hours of planning."</p>
+      <cite>— Arjun Mehta, Bangalore</cite>
+    </div>
+  </div>
 
+  <div class="auth-right" style="max-width:480px;">
+    <h2 class="auth-title">Create your account</h2>
+    <p class="auth-sub">It's free — no credit card required</p>
 
-        .box {
-            width: 360px;
-            padding: 28px;
-            border-radius: 14px;
-            background: #D8C6A3;
-            box-shadow: 0 18px 40px rgba(0,0,0,0.35);
-            animation: slideFade 1s ease;
-        }
+    <form action="{{ url_for('signup') }}" method="POST">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full name</label>
+          <input type="text" name="name" class="form-input"
+                 placeholder="Your name"
+                 value="{{ name or '' }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" name="phone" class="form-input" placeholder="+91 98765 43210">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" class="form-input"
+               placeholder="you@example.com"
+               value="{{ email or '' }}" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" id="pw" class="form-input"
+                 placeholder="Min. 8 characters" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm password</label>
+          <input type="password" id="pw2" class="form-input"
+                 placeholder="••••••••" required>
+        </div>
+      </div>
 
-        h2 {
-            text-align: center;
-        }
+      <!-- Password strength -->
+      <div id="pwStrength" style="margin-bottom:14px;display:none;">
+        <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px;">
+          <div id="pwBar" style="height:100%;width:0%;border-radius:2px;transition:all .3s;"></div>
+        </div>
+        <span id="pwLabel" style="font-size:11px;color:var(--muted);"></span>
+      </div>
 
-          input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 4px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            border: 1px solid #AAA;
-            font-size: 14px;
-            font-family: 'Poppins', sans-serif;
-            color: #1F2839;
-        }
+      <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;margin-bottom:1.4rem;cursor:pointer;color:var(--muted);">
+        <input type="checkbox" required style="margin-top:3px;">
+        I agree to TripMore's <a href="#" class="auth-link" style="margin:0 4px;">Terms</a> and <a href="#" class="auth-link">Privacy Policy</a>
+      </label>
 
-         button {
-            width: 100%;
-            padding: 10px;
-            background: #1F2839;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 500;
-            font-family: 'Poppins', sans-serif;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-      button:hover {
-            background: #141B27;
-        }
-
-        .link {
-            text-align: center;
-            margin-top: 10px;
-        }
-    </style>
-    
-</head>
-<body>
-
-<div class="box">
-    <h2>Signup</h2>
-
-    <form method="post">
-        Name:
-        <input type="text" name="name" placeholder="enter your name" required value="{{ name or '' }}">
-
-
-        Email:
-        <input type="email" name="email" placeholder="enter your email" required value="{{ email or '' }}">
-
-
-        Mobile No:
-        <input type="text" name="mobile" placeholder="enter your mobile number" required>
-
-        Password:
-        <input type="password" name="password" placeholder="enter your password" required>
-
-        <button type="submit">Signup</button>
+      <button type="submit" class="btn btn-teal btn-full btn-lg" id="signupBtn">Create Account →</button>
     </form>
 
-    <div class="link">
-        <a href="/login">Already have account? Login</a>
+    <div style="text-align:center;margin-top:1.2rem;font-size:13px;color:var(--muted);">
+      Already have an account?
+      <a href="{{ url_for('login') }}" class="auth-link" style="margin-left:4px;">Sign in</a>
     </div>
+  </div>
 </div>
-<!-- SweetAlert CDN -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <script>
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: "{{ category }}",
-          title: "{{ message }}",
-          showConfirmButton: false,
-          timer: 2500,
-          timerProgressBar: true,
-          width: '340px',
-          background: "{{ '#ffe5e5' if category == 'error' else '#eaf7ea' }}",
-          color: '#2b2b2b',
-          customClass: {
-            popup: 'luxury-toast'
-          }
-        });
-      </script>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+{% block extra_js %}
+<script>
+const pw  = document.getElementById('pw');
+const bar = document.getElementById('pwBar');
+const lbl = document.getElementById('pwLabel');
+const str = document.getElementById('pwStrength');
 
-<style>
-.luxury-toast {
-    border-radius: 18px !important;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important;
-    font-family: 'Poppins', sans-serif !important;
-    font-size: 14px !important;
-    backdrop-filter: blur(10px);
-}
-</style>
-
-
-</body>
-</html>
+pw.addEventListener('input', () => {
+  const v = pw.value;
+  str.style.display = 'block';
+  let score = 0;
+  if (v.length >= 6)  score++;
+  if (v.length >= 10) score++;
+  if (/[0-9]/.test(v))    score++;
+  if (/[A-Z]/.test(v))    score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const pct = [0, 20, 45, 65, 85, 100][score];
+  const colors = ['', '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#1a5c50'];
+  const labels = ['', 'Very weak', 'Weak', 'Fair', 'Good', 'Strong'];
+  bar.style.width = pct + '%';
+  bar.style.background = colors[score];
+  lbl.textContent = labels[score];
+  lbl.style.color = colors[score];
+});
+</script>
+{% endblock %}

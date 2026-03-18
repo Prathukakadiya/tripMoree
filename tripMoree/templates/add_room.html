@@ -1,0 +1,26 @@
+<h2>Add Room</h2>
+
+<form method="post">
+
+    Select Hotel:<br>
+    <select name="hotel_id">
+        {% for h in hotels %}
+        <option value="{{ h.id }}">{{ h.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    Room Type:<br>
+    <select name="room_type">
+        <option>Normal</option>
+        <option>AC</option>
+        <option>VIP</option>
+    </select><br><br>
+
+    Price per Day:<br>
+    <input type="number" name="price"><br><br>
+
+    Available Rooms:<br>
+    <input type="number" name="available"><br><br>
+
+    <button type="submit">Add Room</button>
+</form>

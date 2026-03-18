@@ -1,200 +1,177 @@
+<!-- ════════════════════════════════════════════
+     my_bookings.html
+════════════════════════════════════════════ -->
 {% extends "base.html" %}
-{% block title %}My Bookings | TripMoreee{% endblock %}
+{% block title %}My Trips — TripMore{% endblock %}
 
 {% block content %}
-
-<style>
-.page-hero{
-    background: linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)),
-    url("https://images.unsplash.com/photo-1502920917128-1aa500764cbd") center/cover;
-    height:40vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    text-align:center;
-}
-.page-hero h1{ font-size:42px; }
-
-.booking-section{
-    background:#f8f5ef;
-    padding:80px 20px;
-}
-
-.invoice{
-    max-width:1000px;
-    margin:40px auto;
-    background:white;
-    padding:40px;
-    border-radius:18px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.1);
-}
-
-.invoice-header{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:30px;
-}
-
-.company{
-    font-size:20px;
-    font-weight:600;
-    color:gold;
-}
-
-.section-title{
-    margin-top:30px;
-    font-weight:600;
-    border-bottom:2px solid #eee;
-    padding-bottom:5px;
-}
-
-.details p{
-    margin:6px 0;
-    font-size:14px;
-}
-
-.table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-}
-
-.table th{
-    background:black;
-    color:white;
-    padding:10px;
-}
-
-.table td{
-    padding:10px;
-    border-bottom:1px solid #eee;
-    text-align:center;
-}
-
-.total-box{
-    margin-top:25px;
-    text-align:right;
-    font-size:18px;
-    font-weight:600;
-}
-</style>
-
 <div class="page-hero">
-    <h1>📜 My Booking Invoices</h1>
+  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
+    <h1>My <span>Trips</span></h1>
+    <p>All your TripMore bookings in one place</p>
+  </div>
 </div>
 
-<div class="booking-section">
+<div style="padding:3rem 4rem;">
 
-{% if bookings %}
+  <!-- SUMMARY METRICS -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:2.5rem;">
+    <div class="metric-card">
+      <div class="metric-label">Total Bookings</div>
+      <div class="metric-value">{{ bookings | length }}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total Spent</div>
+      <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Active Trips</div>
+      <div class="metric-value">{{ bookings | selectattr('booking.status', 'eq', 'active') | list | length }}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Destinations</div>
+      <div class="metric-value">{{ bookings | map(attribute='booking.destination') | list | unique | list | length }}</div>
+    </div>
+  </div>
 
-{% for item in bookings %}
+  {% if bookings %}
+  {% for b in bookings %}
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;">
 
-<div class="invoice">
-
-    <div class="invoice-header">
-        <div>
-            <div class="company">TripMoreee Travel Pvt Ltd</div>
-            <div>Invoice ID: #{{ item.booking.id }}</div>
-            <div>Destination: {{ item.booking.destination }}</div>
-        </div>
-        <div>
-            {{ item.booking.status|capitalize }}
-        </div>
-        <div>
-            <a href="{{ url_for('download_invoice', booking_id=item.booking.id) }}" 
-               class="btn btn-dark">Download PDF</a>
-
-            <button 
-               class="btn btn-success"
-               onclick="sendInvoice({{ item.booking.id }})">
-               Send to Email
-            </button>
-        </div>
+    <!-- BOOKING HEADER -->
+    <div style="padding:1.2rem 1.5rem;background:var(--cream);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span style="font-family:monospace;font-size:12px;color:var(--muted);">#TM-{{ '%04d'|format(b.booking.id) }}</span>
+        <h3 style="font-family:var(--font-display);font-size:1.2rem;">{{ b.booking.destination }}</h3>
+        <span class="status-pill status-{{ b.booking.status }}">{{ b.booking.status | title }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.3rem;font-weight:600;color:var(--teal);font-family:var(--font-display);">₹{{ "{:,}".format(b.grand_total) }}</span>
+        <a href="{{ url_for('download_invoice', booking_id=b.booking.id) }}" class="btn btn-outline" style="padding:7px 16px;font-size:12px;">
+          ↓ Invoice PDF
+        </a>
+        <button onclick="sendInvoice({{ b.booking.id }},this)" class="btn btn-teal" style="padding:7px 16px;font-size:12px;">
+          ✉ Email Invoice
+        </button>
+      </div>
     </div>
 
-    {% if item.hotel %}
-    <div class="section-title">🏨 Hotel Details</div>
-    <div class="details">
-        <p><strong>Check-In:</strong> {{ item.hotel.check_in }}</p>
-        <p><strong>Check-Out:</strong> {{ item.hotel.check_out }}</p>
-        <p><strong>Hotel Amount:</strong> ₹ {{ item.hotel_total }}</p>
+    <!-- BOOKING DETAILS -->
+    <div style="padding:1.2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;">
+
+      {% if b.hotel %}
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Hotel</div>
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:var(--muted);padding:3px 0;">Hotel</td><td style="text-align:right;">{{ b.hotel.hotel_id }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Check-in</td><td style="text-align:right;">{{ b.hotel.check_in }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Check-out</td><td style="text-align:right;">{{ b.hotel.check_out }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Guests</td><td style="text-align:right;">{{ b.hotel.persons }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Hotel Total</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(b.hotel_total) }}</td></tr>
+        </table>
+      </div>
+      {% endif %}
+
+      {% for t in b.transports %}
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">
+          Transport — {{ t.transport.transport_type | title }}
+        </div>
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:var(--muted);padding:3px 0;">From</td><td style="text-align:right;">{{ t.transport.source }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">To</td><td style="text-align:right;">{{ t.transport.destination }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Passengers</td><td style="text-align:right;">{{ t.transport.persons }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Cost</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(t.transport.price) }}</td></tr>
+        </table>
+      </div>
+      {% endfor %}
+
+      {% if b.cab %}
+      <div>
+        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Cab Booking</div>
+        <table style="width:100%;font-size:13px;">
+          <tr><td style="color:var(--muted);padding:3px 0;">Days</td><td style="text-align:right;">{{ b.cab.days }}</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Total KM</td><td style="text-align:right;">{{ b.cab.total_km }} km</td></tr>
+          <tr><td style="color:var(--muted);padding:3px 0;">Cab Cost</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(b.cab_total) }}</td></tr>
+        </table>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- HYPE SPOTS if any -->
+    {% if b.cab_days %}
+    <div style="padding:0 1.5rem 1.2rem;">
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Sightseeing Plan</div>
+      {% for day in b.cab_days %}
+      <div style="padding:8px 12px;background:var(--cream);border-radius:var(--radius-sm);margin-bottom:6px;font-size:13px;">
+        <strong>Day {{ day.day }}:</strong>
+        {{ day.spots | join(', ') if day.spots else 'Hotel only' }}
+        <span style="color:var(--muted);margin-left:8px;">{{ day.km }} km · ₹{{ day.price }}</span>
+      </div>
+      {% endfor %}
     </div>
     {% endif %}
 
-    {% if item.transports %}
-    <div class="section-title">🚍 Transport Details</div>
-    <table class="table">
-        <tr>
-            <th>Type</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Persons</th>
-            <th>Price</th>
-        </tr>
-        {% for t in item.transports %}
-        <tr>
-            <td>{{ t.transport.transport_type|capitalize }}</td>
-            <td>{{ t.transport.source }}</td>
-            <td>{{ t.transport.destination }}</td>
-            <td>{{ t.transport.persons }}</td>
-            <td>₹ {{ t.transport.price }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% endif %}
+    <!-- REVIEW SECTION -->
+    <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--cream);">
+      <details>
+        <summary style="cursor:pointer;font-size:13px;font-weight:500;color:var(--teal);">+ Write a review for {{ b.booking.destination }}</summary>
+        <form action="{{ url_for('add_review') }}" method="POST" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;max-width:500px;">
+          <input type="hidden" name="destination" value="{{ b.booking.destination }}">
+          <div>
+            <label class="form-label">Rating</label>
+            <select name="rating" class="form-select" style="width:auto;">
+              <option value="5">★★★★★ Excellent</option>
+              <option value="4">★★★★☆ Good</option>
+              <option value="3">★★★☆☆ Average</option>
+              <option value="2">★★☆☆☆ Poor</option>
+              <option value="1">★☆☆☆☆ Terrible</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Your experience</label>
+            <textarea name="comment" class="form-textarea" rows="3" placeholder="Share your experience..." style="resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold" style="width:fit-content;">Submit Review</button>
+        </form>
+      </details>
+    </div>
 
-    {% if item.cab_days %}
-    <div class="section-title">🚖 Cab Details</div>
-    {% for day in item.cab_days %}
-    <div style="margin-top:15px; padding:15px; background:#f9f9f9; border-radius:10px;">
-        <strong>Day {{ day.day }}</strong><br>
-        Time: {{ day.arrival }} - {{ day.departure }}<br>
-        Pickup: {{ day.pickup|capitalize }}<br>
-        Drop: {{ day.drop|capitalize }}<br>
-        KM: {{ day.km }} km<br>
-        Price: ₹ {{ day.price }}
-    </div>
-    {% endfor %}
-    <div style="margin-top:15px;">
-        <strong>Total Cab Amount: ₹ {{ item.cab_total }}</strong>
-    </div>
-    {% endif %}
+  </div>
+  {% endfor %}
 
-    <div class="section-title">🧾 Final Bill</div>
-    <div class="total-box">
-        Hotel Total: ₹ {{ item.hotel_total }} <br>
-        Transport Total: ₹ {{ item.transport_total }} <br>
-        Cab Total: ₹ {{ item.cab_total }} <br>
-        <hr>
-        Grand Total: ₹ {{ item.grand_total }}
-    </div>
+  {% else %}
+  <div style="text-align:center;padding:6rem;color:var(--muted);">
+    <div style="font-size:3rem;margin-bottom:1rem;">✈️</div>
+    <h3 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">No bookings yet</h3>
+    <p>Start planning your first adventure with TripMore!</p>
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold" style="margin-top:1.5rem;">Explore Destinations</a>
+  </div>
+  {% endif %}
+
+  <div style="display:flex;gap:12px;margin-top:2rem;">
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">Book New Trip</a>
+    <a href="{{ url_for('analytics') }}" class="btn btn-outline">View Analytics</a>
+  </div>
 
 </div>
+{% endblock %}
 
-{% endfor %}
-
-{% else %}
-<h3 style="text-align:center;">No bookings yet!</h3>
-{% endif %}
-
-</div>
-
+{% block extra_js %}
 <script>
-function sendInvoice(bookingId){
-    fetch(`/send-invoice/${bookingId}`)
-    .then(response => response.json())
-    .then(data => {
-        if(data.success){
-            alert("✅ " + data.message);
-        } else {
-            alert("Something went wrong");
-        }
-    })
-    .catch(error => {
-        alert("Error sending invoice");
-    });
+async function sendInvoice(bookingId, btn) {
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  try {
+    const res  = await fetch(`/send-invoice/${bookingId}`);
+    const data = await res.json();
+    btn.textContent = data.success ? '✓ Sent!' : '✗ Failed';
+    setTimeout(() => { btn.textContent = '✉ Email Invoice'; btn.disabled = false; }, 3000);
+  } catch {
+    btn.textContent = '✗ Error';
+    btn.disabled = false;
+  }
 }
 </script>
-
 {% endblock %}

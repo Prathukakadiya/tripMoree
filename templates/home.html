@@ -1,317 +1,265 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>TripMoreee | Home</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% extends "base.html" %}
+{% block title %}TripMore — Journey Beyond the Ordinary{% endblock %}
 
-    <style>
-        body {
-            background: #ede6db;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
+{% block content %}
 
-        /* ---------- NAVBAR ---------- */
-        .navbar {
-            position: fixed;
-            top:10px;
-            left: 0;
-            width: 100%;
-            height:60px;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 12px 40px;
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-            box-sizing: border-box;
-        }
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-accent"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Curated Travel Experiences</div>
+    <h1>Journey beyond<br>the <em>ordinary</em></h1>
+    <p class="hero-sub">
+      Handpicked destinations, seamless bookings, and unforgettable memories —
+      crafted for the modern Indian explorer.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('destinations_page') }}" class="btn btn-gold btn-lg">Explore Destinations</a>
+      <a href="{{ url_for('about') }}" class="btn btn-outline-white btn-lg">Our Story</a>
+    </div>
+  </div>
 
-        .hamburger {
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            margin-right: 20px;
-        }
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <div class="search-field">
+      <span class="search-label">Destination</span>
+      <select id="searchDest" onchange="goToSearch()">
+        <option value="">Where do you want to go?</option>
+        {% for d in featured %}
+        <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="search-field">
+      <span class="search-label">Trip type</span>
+      <select id="searchType">
+        <option value="">Any type</option>
+        <option>Honeymoon</option>
+        <option>Adventure</option>
+        <option>Family</option>
+        <option>Spiritual</option>
+        <option>Solo</option>
+      </select>
+    </div>
+    <div class="search-field">
+      <span class="search-label">Best time</span>
+      <select id="searchSeason">
+        <option value="">Any season</option>
+        <option>Oct–Mar</option>
+        <option>Apr–Jun</option>
+        <option>Jun–Sep</option>
+        <option>Year-round</option>
+      </select>
+    </div>
+    <button class="search-submit" onclick="goToSearch()">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Search
+    </button>
+  </div>
+</section>
 
-        .logo {
-            color: gold;
-            font-size: 22px;
-            font-weight: bold;
-            margin-right: auto;
-        }
+<!-- ═══════ STATS ═══════ -->
+<div class="stats-row" style="margin-top:36px;">
+  <div class="stat-item">
+    <div class="stat-number">{{ total_destinations }}+</div>
+    <div class="stat-label">Destinations</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">{{ total_users }}+</div>
+    <div class="stat-label">Happy Travellers</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">{{ total_bookings }}+</div>
+    <div class="stat-label">Bookings Made</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">4.8★</div>
+    <div class="stat-label">Average Rating</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">98%</div>
+    <div class="stat-label">Satisfaction Rate</div>
+  </div>
+</div>
 
-        .nav-links a {
-            color: white;
-            margin-left: 25px;
-            text-decoration: none;
-            font-size: 17px;
-            white-space: nowrap;
-        }
+<!-- ═══════ FEATURED DESTINATIONS ═══════ -->
+<section class="section" style="padding:5rem 4rem;">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Featured</div>
+      <h2 class="section-title">Top <em>destinations</em></h2>
+    </div>
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-outline">View All →</a>
+  </div>
 
-        .nav-links a:hover {
-            color: gold;
-        }
+  <div class="dest-grid-hero">
+    {% for d in featured[:5] %}
+    <div class="dest-card-hero" onclick="window.location='/hotels/{{ d.id }}'">
+      <img
+        class="dest-card-img"
+        src="{{ d.image or 'https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg' }}"
+        alt="{{ d.name }}"
+        onerror="this.src='https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg'"
+      >
+      <div class="dest-card-overlay"></div>
 
-        .book-btn {
-            background: gold;
-            color: black;
-            padding: 6px 14px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
+      {% if session.user_id %}
+      <button
+        class="wish-btn {% if d.id in wishlist_ids %}wishlisted{% endif %}"
+        onclick="event.stopPropagation(); toggleWishlist({{ d.id }}, this)"
+        title="{% if d.id in wishlist_ids %}Remove from wishlist{% else %}Add to wishlist{% endif %}"
+      >
+        <svg width="16" height="16" fill="{% if d.id in wishlist_ids %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      {% endif %}
 
-        /* ---------- HERO SECTION ---------- */
-        .hero {
-            height: 75vh;
-            background-image: url("https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg");
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 140px;
-        }
+      <div class="dest-card-info">
+        <div class="dest-card-tag">{{ d.category | title }} · {{ d.country_type | title }}</div>
+        <div class="dest-card-name">{{ d.name }}</div>
+        <div class="dest-card-price">Best time: {{ d.best_time }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
 
-        .hero-text {
-            width: 75%;
-            background: rgba(0,0,0,0.45);
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            color: #FFDAB9;
-            animation: fadeSlide 1.5s ease-out;
-        }
+<!-- ═══════ AI RECOMMENDATIONS ═══════ -->
+{% if session.user_id %}
+<section style="padding:0 4rem 5rem;">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Powered by AI</div>
+      <h2 class="section-title">Recommended <em>for you</em></h2>
+    </div>
+    <span style="font-size:12px;color:var(--muted);">Based on your travel history</span>
+  </div>
+  <div class="recs-grid" id="recsGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);">Loading recommendations...</div>
+  </div>
+</section>
+{% endif %}
 
-        .hero-text h1 {
-            font-size: 44px;
-            margin-bottom: 15px;
-        }
+<!-- ═══════ POPULAR NOW ═══════ -->
+{% if popular_dests %}
+<section style="background:var(--cream);padding:5rem 4rem;">
+  <div class="section-header">
+    <div>
+      <div class="section-eyebrow">Trending</div>
+      <h2 class="section-title">Most <em>booked</em> right now</h2>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;">
+    {% for item in popular_dests %}
+    <a href="{{ url_for('hotels_by_destination', destination_id=item.dest.id) }}" style="display:block;">
+      <div class="rec-card">
+        <img
+          src="{{ item.dest.image or 'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg' }}"
+          alt="{{ item.dest.name }}"
+          onerror="this.src='https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg'"
+        >
+        <div class="rec-card-overlay"></div>
+        <div class="rec-card-info">
+          <div class="rec-card-tag">{{ item.bookings }} bookings</div>
+          <div class="rec-card-name">{{ item.dest.name }}</div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 
-        .hero-text p {
-            font-size: 20px;
-            line-height: 1.5;
-        }
+<!-- ═══════ REVIEWS ═══════ -->
+<section class="reviews-dark">
+  <div class="reviews-grid-2">
+    <div>
+      <div class="section-eyebrow" style="color:var(--gold);">Testimonials</div>
+      <h2 style="font-family:var(--font-display);font-size:2.8rem;font-weight:300;color:var(--white);line-height:1.1;margin-top:10px;">
+        Loved by <em style="color:var(--gold);">travellers</em><br>worldwide
+      </h2>
+      <p style="color:rgba(255,255,255,.4);margin-top:1.2rem;font-size:13px;">Join {{ total_users }}+ happy explorers</p>
+    </div>
+    <div class="reviews-cards">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"The Maldives package was absolutely flawless. Every detail was taken care of — we just showed up and enjoyed."</p>
+        <div class="review-author">— Priya S., Mumbai</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Ladakh trip was a dream. The itinerary was perfectly paced. Hotels were far better than expected."</p>
+        <div class="review-author">— Arjun M., Bangalore</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Booked Paris for our anniversary. TripMore handled everything. Perfect 10 days we'll never forget."</p>
+        <div class="review-author">— Neha &amp; Rohit, Delhi</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★☆</div>
+        <p class="review-text">"Dubai was spectacular. The desert safari add-on was worth every rupee. Will book again!"</p>
+        <div class="review-author">— Kavya T., Surat</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+<!-- ═══════ CTA BANNER ═══════ -->
+<section style="background:var(--gold);padding:5rem 4rem;display:flex;justify-content:space-between;align-items:center;gap:2rem;flex-wrap:wrap;">
+  <div>
+    <h2 style="font-family:var(--font-display);font-size:2.4rem;font-weight:400;color:var(--white);">Ready to start your <em>adventure?</em></h2>
+    <p style="color:rgba(255,255,255,.75);margin-top:8px;">Sign up free and unlock exclusive deals, AI trip planning and more.</p>
+  </div>
+  <div style="display:flex;gap:12px;">
+    {% if not session.user_id %}
+    <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg">Create Free Account</a>
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-outline-white btn-lg">Browse Destinations</a>
+    {% else %}
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-primary btn-lg">Find Your Next Trip</a>
+    <a href="{{ url_for('analytics') }}" class="btn btn-outline-white btn-lg">View My Analytics</a>
+    {% endif %}
+  </div>
+</section>
 
-        /* ---------- DESTINATIONS ---------- */
-        .section {
-            padding: 80px 20px;
-            background: #f5f5f5;
-            text-align: center;
-        }
+{% endblock %}
 
-        .section h2 {
-            font-size: 32px;
-            margin-bottom: 40px;
-        }
-
-        .cards {
-            max-width: 1100px;
-            margin: auto;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 40px;
-        }
-
-        .card {
-            position: relative;
-            height: 280px;
-            border-radius: 18px;
-            overflow: hidden;
-            cursor: pointer;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-            transition: transform 0.4s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-10px);
-        }
-
-        .card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease;
-        }
-
-        .card:hover img {
-            transform: scale(1.1);
-        }
-
-        .card-overlay {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 30px;
-            background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4), transparent);
-            color: white;
-        }
-
-        .card-overlay h3 {
-            margin: 0;
-            font-size: 26px;
-        }
-
-        .card-overlay p {
-            margin: 8px 0 0;
-            font-size: 15px;
-            opacity: 0;
-            transition: 0.3s ease;
-        }
-
-        .book-btn-card {
-            display: inline-block;
-            margin-top: 12px;
-            padding: 8px 20px;
-            background: gold;
-            color: black;
-            text-decoration: none;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 14px;
-            opacity: 0;
-            transition: 0.3s ease;
-        }
-
-        .card:hover .card-overlay p,
-        .card:hover .book-btn-card {
-            opacity: 1;
-        }
-
-        /* ---------- TOP EXPERIENCES ---------- */
-        .experience-section {
-            background: #d9aa4f;
-            padding: 80px 40px;
-        }
-
-        .experience-section h2 {
-            text-align: center;
-            font-size: 38px;
-            margin-bottom: 50px;
-            color: black;
-        }
-
-        .experience-cards {
-            display: flex;
-            gap: 30px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .experience-link {
-            text-decoration: none;
-        }
-
-        .experience-card {
-            width: 360px;
-            background: black;
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-            transition: transform 0.3s;
-        }
-
-        .experience-card:hover {
-            transform: translateY(-8px);
-        }
-
-        .experience-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-
-        .experience-content {
-            padding: 20px;
-            color: #FFDAB9;
-        }
-
-        .experience-content h3 {
-            margin: 0 0 10px;
-            font-size: 22px;
-            color: white;
-        }
-
-        .experience-content p {
-            font-size: 15px;
-            line-height: 1.5;
-            color: #e0e0e0;
-        }
-        .nav-book-btn {
-    background: gold;
-    color: black !important;
-    padding: 6px 14px;
-    border-radius: 5px;
-    font-weight: bold;
-}
-
-
-    </style>
-</head>
-
+{% block extra_js %}
 <script>
-function showAlert(){
-    alert("🚀 Our social media pages are coming soon!");
+function goToSearch() {
+  const dest = document.getElementById('searchDest').value;
+  if (dest) {
+    window.location = '/hotels/' + dest;
+  } else {
+    window.location = '{{ url_for("destinations_page") }}';
+  }
 }
+
+// Load AI recommendations
+{% if session.user_id %}
+async function loadRecs() {
+  try {
+    const res  = await fetch('/api/recommendations');
+    const data = await res.json();
+    const grid = document.getElementById('recsGrid');
+    if (!data.length) { grid.innerHTML = '<p style="color:var(--muted)">No recommendations yet — make your first booking!</p>'; return; }
+    grid.innerHTML = data.map(d => `
+      <a href="/hotels/${d.id}" style="display:block;">
+        <div class="rec-card">
+          <img src="${d.image || 'https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg'}"
+               alt="${d.name}"
+               onerror="this.src='https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg'">
+          <div class="rec-card-overlay"></div>
+          <div class="rec-card-info">
+            <div class="rec-card-tag">${d.category} · ${d.rating}★</div>
+            <div class="rec-card-name">${d.name}</div>
+          </div>
+        </div>
+      </a>
+    `).join('');
+  } catch(e) { console.error(e); }
+}
+loadRecs();
+{% endif %}
 </script>
-
-<body>
-
-{% include "navbar.html" %}
-
-<div class="hero">
-    <div class="hero-text">
-        <h1>Discover Beautiful Destinations</h1>
-        <p>From peaceful beaches to snowy mountains, explore India and international destinations with comfort and confidence.</p>
-    </div>
-</div>
-
-<div class="section">
-    <h2>Popular Destinations</h2>
-    <div class="cards">
-
-        <div class="card">
-            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-            <div class="card-overlay">
-                <h3>Goa</h3>
-                <p>Beaches • Nightlife • Water Sports</p>
-                <a href="/hotels/1" class="book-btn-card">Explore & Book</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
-            <div class="card-overlay">
-                <h3>Manali</h3>
-                <p>Snow • Mountains • Adventure</p>
-                <a href="/hotels/2" class="book-btn-card">Explore & Book</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
-            <div class="card-overlay">
-                <h3>Jaipur</h3>
-                <p>Palaces • Culture • History</p>
-                <a href="/hotels/3" class="book-btn-card">Explore & Book</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
-            <div class="card-overlay">
-                <h3>Dubai</h3>
-                <p>Luxury • Desert Safari • Skyline</p>
-                <a href="/hotels/4" class="book-btn-card">Explore & Book</a>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-</body>
-</html>
+{% endblock %}

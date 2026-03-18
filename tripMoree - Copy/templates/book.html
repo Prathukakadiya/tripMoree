@@ -1,0 +1,12 @@
+<h2>Book Room</h2>
+
+<p>Room Type: {{ room.room_type }}</p>
+<p>Price per day: ₹{{ room.price }}</p>
+<p>Available Rooms: {{ room.available_rooms }}</p>
+
+<form method="post">
+    Number of Days:<br>
+    <input type="number" name="days" required><br><br>
+
+    <button type="submit">Confirm Booking</button>
+</form>

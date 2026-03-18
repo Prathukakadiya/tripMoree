@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}My Analytics — TripMore{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
+    <h1>My Travel <span>Analytics</span></h1>
+    <p>Insights from your TripMore journey, {{ user.name }}</p>
+  </div>
+</div>
+
+<div style="padding:3rem 4rem;">
+
+  <!-- METRIC CARDS -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Total Trips</div>
+      <div class="metric-value">{{ total_trips }}</div>
+      <div class="metric-change metric-up">All time</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total Spent</div>
+      <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
+      <div class="metric-change metric-up">Lifetime value</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Favourite Destination</div>
+      <div class="metric-value" style="font-size:1.4rem;">
+        {{ fav_dest[0][0] if fav_dest else '—' }}
+      </div>
+      <div class="metric-change" style="color:var(--gold);">
+        {{ fav_dest[0][1] if fav_dest else 0 }} bookings
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Destinations Explored</div>
+      <div class="metric-value">{{ fav_dest | length }}</div>
+      <div class="metric-change metric-up">Unique places</div>
+    </div>
+  </div>
+
+  <!-- CHARTS GRID -->
+  <div class="analytics-grid">
+
+    <!-- Monthly Trend -->
+    <div class="chart-card">
+      <div class="chart-title">Monthly Booking Trend</div>
+      <canvas id="monthlyChart" height="200"></canvas>
+    </div>
+
+    <!-- Destination Distribution -->
+    <div class="chart-card">
+      <div class="chart-title">Your Top Destinations</div>
+      <canvas id="destChart" height="200"></canvas>
+    </div>
+
+    <!-- Transport Types -->
+    <div class="chart-card">
+      <div class="chart-title">Transport Preferences</div>
+      <canvas id="transportChart" height="180"></canvas>
+    </div>
+
+    <!-- Global vs My -->
+    <div class="chart-card">
+      <div class="chart-title">Global Popular vs Your Picks</div>
+      <div style="padding:1rem 0;">
+        {% for row in global_top %}
+        <div style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+            <span>{{ row.destination }}</span>
+            <span style="color:var(--muted);">{{ row.cnt }} bookings</span>
+          </div>
+          <div style="height:6px;background:var(--cream);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;background:var(--gold);border-radius:3px;width:{{ [row.cnt * 10, 100] | min }}%;transition:width .6s;"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SPENDING BREAKDOWN -->
+  {% if fav_dest %}
+  <div style="margin-top:2rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;">
+    <div class="chart-title" style="margin-bottom:1.5rem;">Destination Breakdown</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+      {% for dest_name, count in fav_dest %}
+      <div style="padding:1rem;background:var(--cream);border-radius:var(--radius-md);text-align:center;">
+        <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:600;color:var(--ink);">{{ count }}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">{{ dest_name }}</div>
+        <div style="font-size:11px;color:var(--gold);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;">bookings</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- QUICK ACTIONS -->
+  <div style="display:flex;gap:16px;margin-top:2rem;flex-wrap:wrap;">
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">Plan New Trip</a>
+    <a href="{{ url_for('my_bookings') }}"       class="btn btn-outline">View All Bookings</a>
+    <a href="{{ url_for('my_wishlist') }}"        class="btn btn-outline">My Wishlist</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function initCharts() {
+  const res  = await fetch('/api/analytics-data');
+  const data = await res.json();
+
+  const goldColor = 'rgba(201,168,76,0.85)';
+  const tealColor = 'rgba(26,92,80,0.85)';
+  const gridColor = 'rgba(0,0,0,0.06)';
+
+  Chart.defaults.font.family = "'Outfit', sans-serif";
+  Chart.defaults.font.size   = 12;
+
+  // Monthly
+  new Chart(document.getElementById('monthlyChart'), {
+    type: 'bar',
+    data: {
+      labels: data.monthly_labels,
+      datasets: [{
+        label: 'Bookings',
+        data: data.monthly_data,
+        backgroundColor: goldColor,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: gridColor }, beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Destinations Doughnut
+  if (data.dest_labels.length) {
+    new Chart(document.getElementById('destChart'), {
+      type: 'doughnut',
+      data: {
+        labels: data.dest_labels,
+        datasets: [{
+          data: data.dest_data,
+          backgroundColor: ['#c9a84c','#1a5c50','#e8d89a','#4a7c70','#e4f0ed'],
+          borderWidth: 2, borderColor: '#fff'
+        }]
+      },
+      options: {
+        cutout: '65%',
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+  }
+
+  // Transport
+  const transports = {{ transport_types | tojson }};
+  if (transports.length) {
+    new Chart(document.getElementById('transportChart'), {
+      type: 'bar',
+      data: {
+        labels: transports.map(t => t[0].charAt(0).toUpperCase() + t[0].slice(1)),
+        datasets: [{
+          label: 'Trips',
+          data: transports.map(t => t[1]),
+          backgroundColor: tealColor,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, beginAtZero: true },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+}
+
+initCharts();
+</script>
+{% endblock %}

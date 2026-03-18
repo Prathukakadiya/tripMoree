@@ -1,34 +1,183 @@
 {% extends "base.html" %}
-
-{% block title %}Explore Destinations{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/destinations.css') }}">
-{% endblock %}
+{% block title %}Destinations — TripMore{% endblock %}
 
 {% block content %}
 
-<h1 class="page-title">What kind of vacation are you planning?</h1>
-<p class="subtitle">Select a vacation type or search destinations</p>
-
-<div class="vacation-types">
-    <div class="vacation-card" onclick="loadDestinations('honeymoon')">Honeymoon</div>
-    <div class="vacation-card" onclick="loadDestinations('family')">Family</div>
-    <div class="vacation-card" onclick="loadDestinations('adventure')">Adventure</div>
-    <div class="vacation-card" onclick="loadDestinations('spiritual')">Spiritual</div>
-    <div class="vacation-card" onclick="loadDestinations('solo')">Solo</div>
+<div class="page-hero">
+  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
+    <h1>Explore <span>Destinations</span></h1>
+    <p>150+ handpicked places across India and the world</p>
+  </div>
 </div>
 
-<div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search destination (Goa, Paris...)">
-    <button onclick="searchDestinations()">Search</button>
-    <button class="secondary" onclick="loadAllDestinations()">See All</button>
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px;">Filter:</span>
+
+  <div class="filter-chip active" onclick="filterBy('all',this)">All</div>
+  {% for vt in vac_types %}
+  <div class="filter-chip" onclick="filterBy('{{ vt }}',this)">{{ vt | title }}</div>
+  {% endfor %}
+
+  <div style="width:1px;height:20px;background:var(--border);margin:0 8px;"></div>
+
+  {% for cat in categories %}
+  <div class="filter-chip" onclick="filterByCat('{{ cat }}',this)">{{ cat | title }}</div>
+  {% endfor %}
+
+  <div class="filter-search">
+    <svg class="filter-search-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Search destinations..." oninput="liveSearch(this.value)">
+  </div>
+
+  <select onchange="sortDests(this.value)" style="padding:7px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;outline:none;font-family:var(--font-body);margin-left:8px;">
+    <option value="rating">Sort: Rating</option>
+    <option value="popular">Sort: Popular</option>
+  </select>
 </div>
 
-<hr>
+<!-- NL SEARCH HINT -->
+<div style="padding:1rem 4rem;background:var(--gold-pale);border-bottom:1px solid var(--gold-light);display:flex;align-items:center;gap:10px;">
+  <span style="font-size:20px;">✨</span>
+  <div>
+    <span style="font-size:13px;font-weight:500;">Try natural language search:</span>
+    <span style="font-size:13px;color:var(--muted);margin-left:6px;">
+      "beach holiday under 20000" · "adventure trip in summer" · "honeymoon international"
+    </span>
+  </div>
+</div>
 
-<div id="destinations-container"></div>
+<!-- DESTINATIONS GRID -->
+<div style="padding:3rem 4rem;">
+  <div class="dest-list-grid" id="destGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted);">
+      <div style="width:32px;height:32px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;"></div>
+      Loading destinations...
+    </div>
+  </div>
+  <div id="noResults" style="display:none;text-align:center;padding:4rem;color:var(--muted);">
+    <div style="font-size:2rem;margin-bottom:1rem;">🔍</div>
+    <p>No destinations found for your search.</p>
+    <button onclick="resetSearch()" class="btn btn-outline" style="margin-top:1rem;">Clear Filters</button>
+  </div>
+</div>
 
-<script src="{{ url_for('static', filename='js/destinations.js') }}"></script>
+<!-- PEXELS CREDIT -->
+<div style="text-align:center;padding:1rem;font-size:11px;color:var(--muted);">
+  Photos provided by <a href="https://www.pexels.com" target="_blank" style="color:var(--gold);">Pexels</a>
+</div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const WISHLIST_IDS = {{ wishlist_ids | tojson }};
+let currentVacType = '';
+let currentCat = '';
+
+async function loadDestinations(params = {}) {
+  const grid = document.getElementById('destGrid');
+  const none = document.getElementById('noResults');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted);"><div style="width:32px;height:32px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;"></div>Loading...</div>';
+
+  const url = new URL('/api/search', window.location.origin);
+  Object.entries(params).forEach(([k, v]) => { if(v) url.searchParams.set(k, v); });
+
+  const res  = await fetch(url);
+  const data = await res.json();
+
+  if (!data.length) {
+    grid.innerHTML = '';
+    none.style.display = 'block';
+    return;
+  }
+  none.style.display = 'none';
+
+  grid.innerHTML = data.map(d => {
+    const wishlisted = WISHLIST_IDS.includes(d.id);
+    const imgUrl = d.image || 'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg';
+    return `
+    <div class="dest-list-card" onclick="window.location='/hotels/${d.id}'">
+      <div class="dest-list-img-wrap">
+        <img
+          src="${imgUrl}"
+          alt="${d.name}"
+          loading="lazy"
+          onerror="this.src='https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg'"
+        >
+        {% if session.user_id %}
+        <button
+          class="wish-btn ${wishlisted ? 'wishlisted' : ''}"
+          onclick="event.stopPropagation(); toggleWishlist(${d.id}, this)"
+          title="${wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}"
+        >
+          <svg width="16" height="16" fill="${wishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+        {% endif %}
+      </div>
+      <div class="dest-list-body">
+        <div class="dest-list-meta">
+          <div class="dest-name">${d.name}</div>
+          <div class="rating-pill"><span class="rating-star">★</span> ${d.rating || 'N/A'}</div>
+        </div>
+        <p class="dest-desc">${d.category || ''} · Best time: ${d.best_time || 'Year-round'}</p>
+        <div class="dest-list-footer">
+          <div>
+            <div class="price-from">From</div>
+            <div class="price-amt">₹ View hotels</div>
+          </div>
+          <span class="badge ${d.country_type === 'national' ? 'badge-teal' : 'badge-gold'}">
+            ${d.country_type === 'national' ? 'India' : 'International'}
+          </span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterBy(type, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentVacType = type === 'all' ? '' : type;
+  doSearch();
+}
+
+function filterByCat(cat, el) {
+  currentCat = cat;
+  doSearch();
+}
+
+function sortDests(val) {
+  doSearch(val);
+}
+
+function liveSearch(q) {
+  clearTimeout(window._searchTimer);
+  window._searchTimer = setTimeout(() => doSearch(), 400);
+}
+
+function doSearch(sort = '') {
+  const q    = document.getElementById('searchInput').value;
+  const sortVal = sort || document.querySelector('select')?.value || 'rating';
+  loadDestinations({
+    q: q,
+    type: currentVacType,
+    category: currentCat,
+    sort: sortVal
+  });
+}
+
+function resetSearch() {
+  document.getElementById('searchInput').value = '';
+  currentVacType = '';
+  currentCat = '';
+  loadDestinations();
+}
+
+// Initial load
+loadDestinations();
+</script>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 {% endblock %}

@@ -88,22 +88,20 @@ required>
 value="{{ form_data.get('phone') if form_data else '' }}"
 required>
 </div>
-
 <div>
 <label>ID Proof</label>
-<select name="id_type" required>
-<option value="">Select</option>
-<option value="aadhaar" {% if form_data and form_data.get('id_type')=='aadhaar' %}selected{% endif %}>Aadhaar</option>
-<option value="pan" {% if form_data and form_data.get('id_type')=='pan' %}selected{% endif %}>PAN</option>
-<option value="passport" {% if form_data and form_data.get('id_type')=='passport' %}selected{% endif %}>Passport</option>
-<option value="driving" {% if form_data and form_data.get('id_type')=='driving' %}selected{% endif %}>Driving License</option>
+<select name="id_type" id="idType" required>
+    <option value="">Select</option>
+    <option value="aadhaar">Aadhaar</option>
+    <option value="pan">PAN</option>
+    <option value="passport">Passport</option>
+    <option value="driving">Driving License</option>
 </select>
 </div>
 
 <div class="full">
 <label>ID Number</label>
 <input type="text" name="id_number"
-value="{{ form_data.get('id_number') if form_data else '' }}"
 required>
 </div>
 
@@ -323,6 +321,20 @@ document.getElementById("bookingForm").addEventListener("submit", function(e){
 });
 
 </script>
-
-
+<script>
+document.getElementById("idType").onchange = function() {
+    let input = document.getElementById("idNumber");
+    if(this.value === "aadhaar") {
+        input.maxLength = 12; input.pattern = "[0-9]{12}";
+    }
+    else if(this.value === "pan") {
+        input.maxLength = 10; input.pattern = "[A-Z]{5}[0-9]{4}[A-Z]";
+    }
+    else if(this.value === "passport") {
+        input.maxLength = 8; input.pattern = "[A-Za-z0-9]{8}";
+    }
+    else if(this.value === "driving") {
+        input.maxLength = 16; input.pattern = "[A-Za-z0-9]{10,16}";
+    }};
+</script>
 {% endblock %}
