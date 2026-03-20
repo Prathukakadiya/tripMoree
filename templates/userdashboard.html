@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — TripMore{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+
+  <!-- SIDEBAR -->
+  <div class="dash-sidebar">
+    <div class="dash-user-block">
+      <div class="dash-avatar">{{ user.name[0].upper() }}</div>
+      <div>
+        <div class="dash-user-name">{{ user.name }}</div>
+        <div class="dash-user-email">{{ user.email }}</div>
+      </div>
+    </div>
+    <a href="{{ url_for('user_dashboard') }}" class="dash-nav-item active">
+      <span class="dash-nav-icon">◉</span> Overview
+    </a>
+    <a href="{{ url_for('my_bookings') }}" class="dash-nav-item">
+      <span class="dash-nav-icon">✈</span> My Bookings
+    </a>
+    <a href="{{ url_for('my_wishlist') }}" class="dash-nav-item">
+      <span class="dash-nav-icon">♡</span> Wishlist ({{ wishlist_cnt }})
+    </a>
+    <a href="{{ url_for('analytics') }}" class="dash-nav-item">
+      <span class="dash-nav-icon">📊</span> Analytics
+    </a>
+    <a href="{{ url_for('destinations_page') }}" class="dash-nav-item">
+      <span class="dash-nav-icon">🌍</span> Explore
+    </a>
+    <div style="flex:1;"></div>
+    <a href="{{ url_for('logout') }}" class="dash-nav-item" style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:auto;">
+      <span class="dash-nav-icon">↩</span> Sign Out
+    </a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="dash-content">
+
+    <!-- HEADER -->
+    <div class="dash-header">
+      <div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+          {% set hour = now.hour if now else 12 %}
+          {% if hour < 12 %}Good morning{% elif hour < 17 %}Good afternoon{% else %}Good evening{% endif %}
+        </div>
+        <h2 class="dash-greeting">Welcome back, {{ user.name.split()[0] }} ✦</h2>
+      </div>
+      <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">+ Plan New Trip</a>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Trips</div>
+        <div class="metric-value">{{ total_trips }}</div>
+        <div class="metric-change metric-up">All time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Spent</div>
+        <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
+        <div class="metric-change metric-up">Lifetime</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Wishlist</div>
+        <div class="metric-value">{{ wishlist_cnt }}</div>
+        <div class="metric-change" style="color:var(--gold);">Saved places</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Upcoming</div>
+        <div class="metric-value">{{ upcoming | length }}</div>
+        <div class="metric-change" style="color:var(--gold);">
+          {% if upcoming %}Next: {{ upcoming[0].booking.destination }}{% else %}No trips yet{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- UPCOMING TRIP -->
+    {% if upcoming %}
+    <div style="background:linear-gradient(135deg,var(--ink),#1a2e2a);border-radius:var(--radius-lg);padding:1.8rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+      <div style="width:64px;height:64px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">✈</div>
+      <div style="flex:1;">
+        <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Upcoming Trip</div>
+        <div style="font-family:var(--font-display);font-size:1.5rem;color:#fff;">{{ upcoming[0].booking.destination }}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;">
+          Check-in: {{ upcoming[0].hotel.check_in }} · {{ upcoming[0].hotel.persons }} guests
+        </div>
+      </div>
+      <div>
+        <span class="status-pill status-confirmed">Confirmed</span>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- RECENT BOOKINGS -->
+    <div class="data-table-card">
+      <div class="table-header-row">
+        <div class="table-title">Recent Bookings</div>
+        <a href="{{ url_for('my_bookings') }}" class="btn btn-outline" style="font-size:12px;padding:6px 14px;">View All</a>
+      </div>
+      {% if my_bookings %}
+      <table>
+        <thead>
+          <tr>
+            <th>Booking ID</th>
+            <th>Destination</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in my_bookings %}
+          <tr>
+            <td style="font-family:monospace;font-size:12px;color:var(--muted);">#TM-{{ '%04d'|format(b.id) }}</td>
+            <td><strong>{{ b.destination }}</strong></td>
+            <td style="color:var(--muted);">{{ b.created_at.strftime('%d %b %Y') if b.created_at else '—' }}</td>
+            <td><span class="status-pill status-{{ b.status }}">{{ b.status | title }}</span></td>
+            <td>
+              <a href="{{ url_for('download_invoice', booking_id=b.id) }}" style="color:var(--gold);font-size:13px;">
+                ↓ Invoice
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="text-align:center;padding:3rem;color:var(--muted);">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">✈️</div>
+        <p>No bookings yet — <a href="{{ url_for('destinations_page') }}" style="color:var(--gold);">explore destinations</a></p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:1.5rem;">
+      <a href="{{ url_for('destinations_page') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="font-size:1.8rem;margin-bottom:6px;">🌍</div>
+        <div style="font-size:13px;font-weight:500;">Explore</div>
+      </a>
+      <a href="{{ url_for('my_wishlist') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="font-size:1.8rem;margin-bottom:6px;">♡</div>
+        <div style="font-size:13px;font-weight:500;">Wishlist</div>
+      </a>
+      <a href="{{ url_for('analytics') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="font-size:1.8rem;margin-bottom:6px;">📊</div>
+        <div style="font-size:13px;font-weight:500;">Analytics</div>
+      </a>
+      <a href="{{ url_for('my_bookings') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="font-size:1.8rem;margin-bottom:6px;">📋</div>
+        <div style="font-size:13px;font-weight:500;">My Trips</div>
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
