@@ -1,203 +1,194 @@
 {% extends "base.html" %}
-
-{% block title %}Select Transport | TripMoreee{% endblock %}
+{% block title %}Choose Transport — {{ destination }}{% endblock %}
+{% block extra_css %}
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.tc-hero{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);padding:3rem var(--page-pad) 2rem;text-align:center;}
+.tc-hero-label{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;}
+.tc-hero-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;margin-bottom:.4rem;}
+.tc-hero-sub{font-size:14px;color:rgba(255,255,255,.5);}
+.tc-wrap{max-width:960px;margin:0 auto;padding:2.5rem var(--page-pad);}
+.step-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:2.5rem;flex-wrap:wrap;}
+.step{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12px;font-weight:500;color:var(--muted);}
+.step.done{color:var(--teal);}
+.step.active{color:var(--ink);font-weight:700;}
+.step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:#f0ede8;color:var(--muted);flex-shrink:0;}
+.step.done .step-num{background:var(--teal);color:#fff;}
+.step.active .step-num{background:var(--ink);color:#fff;}
+.step-line{width:32px;height:1px;background:var(--border);}
+.source-row{display:flex;gap:10px;margin-bottom:1.5rem;}
+.source-input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;transition:border-color .2s;}
+.source-input:focus{border-color:var(--gold);}
+.check-btn{padding:12px 20px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:var(--font-body);cursor:pointer;font-size:14px;white-space:nowrap;}
+.route-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;}
+.route-visual{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:10px;padding:1rem;flex-wrap:wrap;}
+.route-city{text-align:center;min-width:80px;}
+.route-city-name{font-weight:600;font-size:14px;}
+.route-city-sub{font-size:11px;color:var(--muted);}
+.route-arr{flex:1;text-align:center;color:var(--gold);font-size:1.1rem;}
+.indirect-note{margin-top:1rem;padding:.8rem 1rem;background:#fff9f0;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;font-size:13px;}
+.options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.tc-opt{background:var(--white);border:2px solid var(--border);border-radius:var(--radius-lg);padding:1.8rem 1.2rem;text-align:center;cursor:pointer;text-decoration:none;transition:all .25s;animation:fadeUp .4s ease both;display:block;position:relative;}
+.tc-opt:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.1);}
+.tc-opt.best{border-color:var(--gold);background:linear-gradient(135deg,#fff9ee,#fff);}
+.tc-opt.disabled{opacity:.4;pointer-events:none;}
+.opt-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:3px 12px;background:var(--gold);color:#fff;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
+.opt-icon{font-size:2.5rem;display:block;margin-bottom:.6rem;}
+.opt-name{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--ink);margin-bottom:.3rem;}
+.opt-desc{font-size:11px;color:var(--muted);margin-bottom:.6rem;line-height:1.4;}
+.opt-price{font-size:13px;font-weight:600;color:var(--teal);}
+.warn-box{background:#fff9f0;border:1px solid #f0d090;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:13px;display:none;}
+.skip-link{text-align:center;font-size:13px;color:var(--muted);}
+.skip-link a{color:var(--gold);text-decoration:none;}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="tc-hero">
+  <div class="tc-hero-label">Booking Step 2 of 4</div>
+  <div class="tc-hero-title">How are you reaching {{ destination }}?</div>
+  <div class="tc-hero-sub">We'll suggest the best options based on your origin city</div>
+</div>
 
-<!-- HERO -->
-<div class="transport-hero">
-    <div>
-        <h1>Select Your Transport</h1>
-        <p>Choose how you want to travel to {{ destination }}</p>
+<div class="tc-wrap">
+  <div class="step-bar">
+    <div class="step done"><div class="step-num">✓</div>Hotel</div>
+    <div class="step-line"></div>
+    <div class="step active"><div class="step-num">2</div>Transport</div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num">3</div>Spots & Cab</div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num">4</div>Payment</div>
+  </div>
+
+  <!-- SOURCE INPUT -->
+  <div style="margin-bottom:1.5rem;">
+    <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;">Where are you travelling from?</label>
+    <div class="source-row">
+      <input type="text" id="srcInput" class="source-input" placeholder="Enter your city e.g. Delhi, Mumbai, Ahmedabad..." oninput="onSrcChange(this.value)">
+      <button class="check-btn" onclick="onSrcChange(document.getElementById('srcInput').value)">Check Routes →</button>
     </div>
-</div>
+  </div>
 
-{% if request.args.get('booked') == '1' %}
-<div style="
-    background: #d4edda;
-    color: #155724;
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin: 30px auto;
-    max-width: 800px;
-    font-weight: 500;
-    text-align: center;
-">
-    Hotel booked successfully! Now book your transport.
-</div>
-
-<script>
-    window.history.replaceState({}, document.title, window.location.pathname);
-</script>
-{% endif %}
-
-<style>
-
-/* ===== HERO SECTION ===== */
-.transport-hero{
-    background: linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
-    url("https://images.pexels.com/photos/21014/pexels-photo.jpg") center/cover no-repeat;
-    height:55vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    color:white;
-    animation: fadeIn 1.2s ease-in-out;
-}
-
-.transport-hero h1{
-    font-size:48px;
-    font-weight:700;
-    animation: slideDown 1s ease forwards;
-}
-
-.transport-hero p{
-    margin-top:15px;
-    color:#ddd;
-    font-size:18px;
-    animation: fadeIn 2s ease;
-}
-
-/* ===== TRANSPORT SECTION ===== */
-.transport-section{
-    padding:100px 20px;
-    background:#f8f5ef;
-    text-align:center;
-}
-
-.transport-container{
-    max-width:1100px;
-    margin:auto;
-}
-
-.transport-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-    gap:40px;
-    margin-top:50px;
-}
-
-/* ===== CARD ===== */
-.transport-card{
-    background:white;
-    padding:50px 20px;
-    border-radius:20px;
-    box-shadow:0 20px 40px rgba(0,0,0,0.1);
-    text-decoration:none;
-    color:black;
-    transition:0.4s ease;
-    position:relative;
-    overflow:hidden;
-    animation: fadeUp 1.2s ease forwards;
-}
-
-.transport-card:hover{
-    transform:translateY(-15px) scale(1.03);
-    box-shadow:0 30px 60px rgba(0,0,0,0.2);
-}
-
-.transport-icon{
-    font-size:50px;
-    margin-bottom:20px;
-    display:block;
-    transition:0.4s;
-}
-
-.transport-card:hover .transport-icon{
-    transform:rotate(10deg) scale(1.2);
-}
-
-.transport-card h3{
-    font-size:24px;
-    margin-bottom:10px;
-}
-
-.transport-card p{
-    font-size:14px;
-    color:#666;
-}
-
-.transport-card::before{
-    content:"";
-    position:absolute;
-    top:-100%;
-    left:0;
-    width:100%;
-    height:100%;
-    background:linear-gradient(120deg, transparent, rgba(255,215,0,0.4), transparent);
-    transition:0.6s;
-}
-
-.transport-card:hover::before{
-    top:100%;
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fadeIn{
-    from{opacity:0;}
-    to{opacity:1;}
-}
-
-@keyframes slideDown{
-    from{opacity:0; transform:translateY(-40px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-@keyframes fadeUp{
-    from{opacity:0; transform:translateY(40px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-@media(max-width:768px){
-    .transport-hero h1{
-        font-size:32px;
-    }
-}
-
-</style>
-
-<!-- OPTIONS -->
-<div class="transport-section">
-    <div class="transport-container">
-        <div class="transport-grid">
-
-            <a href="/bus/{{ destination }}" class="transport-card">
-                <span class="transport-icon">🚌</span>
-                <h3>Bus</h3>
-                <p>Comfortable and affordable road travel experience.</p>
-            </a>
-
-            <a href="/train/{{ destination }}" class="transport-card">
-                <span class="transport-icon">🚆</span>
-                <h3>Train</h3>
-                <p>Scenic rail journeys with premium seat options.</p>
-            </a>
-
-            <a href="/flight/{{ destination }}" class="transport-card">
-                <span class="transport-icon">✈️</span>
-                <h3>Flight</h3>
-                <p>Fastest way to reach your dream destination.</p>
-            </a>
-
-        </div>
+  <!-- ROUTE VISUAL -->
+  <div class="route-card">
+    <div style="font-weight:600;margin-bottom:.8rem;">🗺 Your Route</div>
+    <div class="route-visual">
+      <div class="route-city">
+        <div class="route-city-name" id="srcName">Your City</div>
+        <div class="route-city-sub">Origin</div>
+      </div>
+      <div class="route-arr" id="routeArrow">──▶</div>
+      <div class="route-city">
+        <div class="route-city-name">{{ destination }}</div>
+        <div class="route-city-sub">Destination</div>
+      </div>
     </div>
-</div>
-<div style="text-align:center; margin-top:40px;">
-    <a href="/hype-spots/{{ session.get('hotel_booking_id') }}"
-       style="
-        background:#ccc;
-        padding:12px 25px;
-        border-radius:25px;
-        text-decoration:none;
-        color:black;
-        font-weight:500;
-        transition:0.3s;
-       "
-       onmouseover="this.style.background='#bbb'"
-       onmouseout="this.style.background='#ccc'">
-       Skip Transport →
+    <div class="indirect-note" id="indirectNote" style="display:none;"></div>
+  </div>
+
+  <!-- WARNING -->
+  <div class="warn-box" id="warnBox"></div>
+
+  <!-- OPTIONS -->
+  <div class="options-grid">
+    <a href="{{ url_for('flight', destination=destination) }}" class="tc-opt best" style="animation-delay:.0s">
+      <div class="opt-badge">✦ Fastest</div>
+      <span class="opt-icon">✈️</span>
+      <div class="opt-name">Flight</div>
+      <div class="opt-desc">Available for all destinations. Quickest travel.</div>
+      <div class="opt-price" id="flightPriceLabel">From ₹2,500</div>
     </a>
-</div>
 
+    <a href="{{ url_for('train', destination=destination) }}" class="tc-opt" id="trainOpt" style="animation-delay:.1s">
+      <span class="opt-icon">🚂</span>
+      <div class="opt-name">Train</div>
+      <div class="opt-desc">Comfortable, scenic. Ideal for domestic destinations.</div>
+      <div class="opt-price">From ₹800</div>
+    </a>
+
+    <a href="{{ url_for('bus', destination=destination) }}" class="tc-opt" id="busOpt" style="animation-delay:.2s">
+      <span class="opt-icon">🚌</span>
+      <div class="opt-name">Bus</div>
+      <div class="opt-desc">Most budget-friendly for nearby destinations.</div>
+      <div class="opt-price">From ₹500</div>
+    </a>
+
+    {% if session.get('hotel_booking_id') %}
+    <a href="{{ url_for('hype_spots', hotel_booking_id=session.get('hotel_booking_id')) }}" class="tc-opt" style="animation-delay:.3s">
+      <span class="opt-icon">🚗</span>
+      <div class="opt-name">Own Vehicle</div>
+      <div class="opt-desc">Already have transport? Skip this and book spots.</div>
+      <div class="opt-price">No charge</div>
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="skip-link">
+    {% if session.get('hotel_booking_id') %}
+    <a href="{{ url_for('hype_spots', hotel_booking_id=session.get('hotel_booking_id')) }}">
+      Skip transport → Go to spot & cab selection
+    </a>
+    {% else %}
+    <a href="{{ url_for('my_bookings') }}">Skip → View my bookings</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const DEST = {{ destination | tojson }};
+const INTL = ['Bali','Paris','Dubai','Singapore','Switzerland','New Zealand','Mecca','Vatican City','Amsterdam','Iceland'];
+const FAR  = ['Ladakh','Spiti Valley','Kedarnath','Kasol','Rishikesh'];
+const INDIRECT = {
+  'Spiti Valley': 'No direct trains/buses. Route: Your City → Chandigarh → Manali → Spiti Valley.',
+  'Kedarnath':    'Take train to Haridwar/Rishikesh, then taxi/shared jeep to Gaurikund → Kedarnath.',
+  'Kasol':        'Take bus/train to Chandigarh or Delhi, then HRTC bus to Bhuntar, then local bus to Kasol.',
+  'Iceland':      'No direct flights from most Indian cities. Connect via Dubai, London, or Frankfurt.',
+  'New Zealand':  'Common routes connect via Singapore, Hong Kong, or Dubai.',
+  'Mecca':        'Flights available from major Indian cities. Saudi visa required.',
+};
+
+function onSrcChange(val) {
+  if(!val || val.length < 2) return;
+  document.getElementById('srcName').textContent = val;
+  const isIntl = INTL.includes(DEST);
+  const isFar  = FAR.includes(DEST);
+  const warn   = document.getElementById('warnBox');
+  const train  = document.getElementById('trainOpt');
+  const bus    = document.getElementById('busOpt');
+  const arrow  = document.getElementById('routeArrow');
+  const inNote = document.getElementById('indirectNote');
+
+  // Reset
+  train.classList.remove('disabled');
+  bus.classList.remove('disabled');
+  warn.style.display = 'none';
+
+  if(isIntl) {
+    train.classList.add('disabled');
+    bus.classList.add('disabled');
+    arrow.textContent = '──✈──▶';
+    warn.style.display = 'block';
+    warn.innerHTML = `✈️ <strong>${DEST}</strong> is an international destination. <strong>Only flights available.</strong> Bus and train are not applicable for international travel.`;
+  } else if(isFar) {
+    bus.classList.add('disabled');
+    arrow.textContent = '──🚂/✈──▶';
+    warn.style.display = 'block';
+    warn.innerHTML = `ℹ️ Direct bus to <strong>${DEST}</strong> is generally not available. We recommend <strong>Flight or Train</strong>.`;
+  } else {
+    arrow.textContent = '──▶';
+  }
+
+  if(INDIRECT[DEST]) {
+    inNote.style.display = 'block';
+    inNote.innerHTML = `💡 <strong>Smart Route Suggestion:</strong> ${val} → ${DEST}<br><small style="color:var(--muted)">${INDIRECT[DEST]}</small>`;
+  } else {
+    inNote.style.display = 'none';
+  }
+}
+
+window.addEventListener('load', () => onSrcChange('Your City'));
+</script>
 {% endblock %}

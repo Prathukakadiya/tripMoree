@@ -1,96 +1,617 @@
 {% extends "base.html" %}
-
-{% block title %}Hotels{% endblock %}
+{% block title %}Hotels in {{ destination.name }} — TripMore{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/hotels.css') }}">
+<style>
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+
+.hotels-hero {
+  height: 380px;
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: flex-end;
+}
+.hotels-hero-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, #0d1a1a 0%, #1a3a2e 100%);
+  background-size: cover; background-position: center;
+}
+.hotels-hero-bg img {
+  width:100%; height:100%; object-fit:cover; opacity:.5;
+}
+.hotels-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.8) 0%, rgba(0,0,0,.2) 60%, transparent 100%);
+}
+.hotels-hero-content {
+  position: relative; z-index: 2;
+  padding: 2.5rem var(--page-pad); width: 100%;
+}
+.hero-breadcrumb {
+  font-size: 12px; color: rgba(255,255,255,.5);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: .6rem;
+}
+.hero-breadcrumb a { color: var(--gold); text-decoration: none; }
+.hero-dest-name {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: #fff; font-weight: 600; line-height: 1.1;
+  margin-bottom: .5rem;
+}
+.hero-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.hero-meta-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: rgba(255,255,255,.7);
+}
+.hero-meta-item span { color: var(--gold); font-weight: 600; }
+
+/* FILTERS BAR */
+.filters-bar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem var(--page-pad);
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; position: sticky; top: 64px; z-index: 90;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.filter-chip {
+  padding: 7px 16px; border: 1px solid var(--border);
+  border-radius: 20px; font-size: 13px; font-weight: 500;
+  cursor: pointer; background: var(--white); color: var(--ink);
+  transition: all .2s; font-family: var(--font-body); white-space: nowrap;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+.filter-select {
+  padding: 7px 16px; border: 1px solid var(--border);
+  border-radius: 20px; font-size: 13px; font-family: var(--font-body);
+  background: var(--white); cursor: pointer; outline: none;
+  color: var(--ink);
+}
+.results-count {
+  margin-left: auto; font-size: 13px; color: var(--muted);
+}
+
+/* HOTELS GRID */
+.hotels-page-layout {
+  max-width: 1280px; margin: 0 auto;
+  padding: 2.5rem var(--page-pad);
+  display: grid; grid-template-columns: 280px 1fr; gap: 2rem;
+}
+.hotels-sidebar {
+  position: sticky; top: 120px; height: fit-content;
+}
+.sidebar-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
+}
+.sidebar-title {
+  font-family: var(--font-display); font-size: 1.1rem;
+  margin-bottom: 1rem; color: var(--ink);
+}
+.price-range-labels {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--muted); margin-top: 8px;
+}
+.range-input {
+  width: 100%; accent-color: var(--gold);
+}
+.star-filter { display: flex; gap: 8px; flex-wrap: wrap; }
+.star-btn {
+  padding: 6px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; cursor: pointer;
+  background: var(--white); transition: all .2s; font-family: var(--font-body);
+}
+.star-btn:hover, .star-btn.active {
+  background: var(--gold); color: #fff; border-color: var(--gold);
+}
+.amenity-list { display: flex; flex-direction: column; gap: 8px; }
+.amenity-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; cursor: pointer;
+}
+.amenity-check input { accent-color: var(--gold); }
+
+/* HOTEL CARDS */
+.hotels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.hotel-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all .3s;
+  animation: fadeUp .5s ease both;
+  cursor: pointer;
+}
+.hotel-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.12);
+  border-color: transparent;
+}
+.hotel-img-wrap {
+  position: relative; height: 220px; overflow: hidden;
+}
+.hotel-img-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .5s ease;
+}
+.hotel-card:hover .hotel-img-wrap img {
+  transform: scale(1.08);
+}
+.hotel-img-skeleton {
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite;
+}
+.hotel-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.5) 0%, transparent 50%);
+}
+.hotel-badge {
+  position: absolute; top: 12px; left: 12px;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; letter-spacing: .05em;
+}
+.badge-luxury { background: #c9a84c; color: #fff; }
+.badge-popular { background: #1a5c50; color: #fff; }
+.badge-budget { background: #e74c3c; color: #fff; }
+.hotel-wishlist-btn {
+  position: absolute; top: 12px; right: 12px;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.9); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; transition: all .2s;
+}
+.hotel-wishlist-btn:hover { background: #fff; transform: scale(1.1); }
+
+.hotel-stars {
+  position: absolute; bottom: 12px; left: 12px;
+  display: flex; gap: 2px;
+}
+.hotel-stars span { color: #f5c518; font-size: 13px; }
+
+.hotel-body { padding: 1.2rem 1.4rem; }
+.hotel-name {
+  font-family: var(--font-display);
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--ink); margin-bottom: .4rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.hotel-location {
+  font-size: 12px; color: var(--muted);
+  display: flex; align-items: center; gap: 4px; margin-bottom: .8rem;
+}
+.hotel-amenities-row {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem;
+}
+.amenity-tag {
+  padding: 3px 8px; background: var(--paper);
+  border-radius: 6px; font-size: 11px; color: var(--muted);
+}
+.hotel-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: .8rem; border-top: 1px solid var(--border);
+}
+.hotel-price-block {}
+.hotel-price-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.hotel-price {
+  font-family: var(--font-display);
+  font-size: 1.3rem; font-weight: 600; color: var(--ink);
+}
+.hotel-price small { font-size: 11px; color: var(--muted); font-family: var(--font-body); font-weight: 400; }
+.hotel-rooms {
+  font-size: 12px; color: var(--muted);
+  display: flex; align-items: center; gap: 4px;
+}
+.rooms-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #27ae60;
+}
+.rooms-dot.low { background: #e67e22; }
+.rooms-dot.none { background: #e74c3c; }
+.book-btn {
+  padding: 8px 18px;
+  background: var(--ink); color: #fff;
+  border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+  transition: all .2s; text-decoration: none;
+  display: inline-block;
+}
+.book-btn:hover { background: var(--teal); color: #fff; }
+
+/* PHOTO STRIP */
+.photo-strip {
+  display: flex; gap: 4px; padding: 0 1.4rem 1rem;
+  overflow-x: auto; scrollbar-width: none;
+}
+.photo-strip img {
+  width: 70px; height: 50px; object-fit: cover;
+  border-radius: 6px; flex-shrink: 0; opacity: .7;
+  transition: opacity .2s; cursor: pointer;
+}
+.photo-strip img:hover { opacity: 1; }
+
+.no-hotels {
+  grid-column: 1/-1; text-align: center; padding: 4rem;
+  color: var(--muted);
+}
+.no-hotels-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+@media(max-width: 900px) {
+  .hotels-page-layout { grid-template-columns: 1fr; }
+  .hotels-sidebar { position: static; }
+}
+@media(max-width: 600px) {
+  .hotels-grid { grid-template-columns: 1fr; }
+}
+</style>
 {% endblock %}
 
 {% block content %}
 
-<div class="page-wrapper">
-    <h2>Available Hotels in {{ destination.name }}</h2>
-
-<!-- ===== LOCAL GUIDE BANNER ===== -->
-<div class="local-guide-banner">
-    <h4>🌍 Know Before You Travel</h4>
-    <p>Discover local food, safety tips, etiquettes & alerts for {{ destination.name }}</p>
-
-    <a href="{{ url_for('culture_page', location=destination.name) }}" 
-       class="guide-btn">
-       🧭 View Full Travel Guide →
-    </a>
+<!-- HERO -->
+<div class="hotels-hero">
+  <div class="hotels-hero-bg">
+    <img id="heroImg"
+         src="{{ dest_img if dest_img else '' }}"
+         alt="{{ destination.name }}"
+         onerror="this.style.display='none'">
+  </div>
+  <div class="hotels-hero-overlay"></div>
+  <div class="hotels-hero-content">
+    <div class="hero-breadcrumb">
+      <a href="{{ url_for('destinations_page') }}">Destinations</a> → {{ destination.name }}
+    </div>
+    <div class="hero-dest-name">Hotels in {{ destination.name }}</div>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        🏨 <span>{{ hotels|length }}</span> properties
+      </div>
+      <div class="hero-meta-item">
+        ⭐ <span>{{ destination.rating }}</span> destination rating
+      </div>
+      <div class="hero-meta-item">
+        📅 Best time: <span>{{ destination.best_time }}</span>
+      </div>
+      <div class="hero-meta-item">
+        🌍 <span>{{ destination.country_type|title }}</span>
+      </div>
+    </div>
+  </div>
 </div>
 
-    
-    <div id="hotelContainer" class="hotel-container"></div>
+<!-- FILTERS BAR -->
+<div class="filters-bar">
+  <button class="filter-chip active" onclick="filterHotels('all', this)">All Hotels</button>
+  <button class="filter-chip" onclick="filterHotels('5', this)">★ 5 Star</button>
+  <button class="filter-chip" onclick="filterHotels('4', this)">★ 4 Star</button>
+  <button class="filter-chip" onclick="filterHotels('budget', this)">Budget</button>
+  <select class="filter-select" onchange="sortHotels(this.value)">
+    <option value="recommended">Recommended</option>
+    <option value="price_low">Price: Low to High</option>
+    <option value="price_high">Price: High to Low</option>
+    <option value="rating">Top Rated</option>
+  </select>
+  <div class="results-count" id="resultsCount">{{ hotels|length }} hotels found</div>
 </div>
 
+<!-- MAIN LAYOUT -->
+<div class="hotels-page-layout">
+
+  <!-- SIDEBAR FILTERS -->
+  <div class="hotels-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Price Range</div>
+      <input type="range" class="range-input" id="priceRange" min="1000" max="80000"
+             value="80000" oninput="filterByPrice(this.value)">
+      <div class="price-range-labels">
+        <span>₹1,000</span>
+        <span id="priceMax">₹80,000</span>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Star Rating</div>
+      <div class="star-filter">
+        <button class="star-btn active" onclick="toggleStar(this, 0)">All</button>
+        <button class="star-btn" onclick="toggleStar(this, 5)">★ 5</button>
+        <button class="star-btn" onclick="toggleStar(this, 4)">★ 4</button>
+        <button class="star-btn" onclick="toggleStar(this, 3)">★ 3</button>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Amenities</div>
+      <div class="amenity-list">
+        <label class="amenity-check"><input type="checkbox" onchange="filterAmenities()"> 🏊 Pool</label>
+        <label class="amenity-check"><input type="checkbox" onchange="filterAmenities()"> 📶 Free WiFi</label>
+        <label class="amenity-check"><input type="checkbox" onchange="filterAmenities()"> 🚗 Parking</label>
+        <label class="amenity-check"><input type="checkbox" onchange="filterAmenities()"> 💪 Gym</label>
+        <label class="amenity-check"><input type="checkbox" onchange="filterAmenities()"> 💆 Spa</label>
+      </div>
+    </div>
+
+    <div class="sidebar-card" style="background:linear-gradient(135deg,var(--ink),#1a3a2e);border:none;">
+      <div style="color:#fff;font-family:var(--font-display);font-size:1rem;margin-bottom:.6rem;">
+        Need Help Choosing?
+      </div>
+      <p style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:1rem;">
+        Chat with our AI travel assistant for personalised hotel recommendations.
+      </p>
+      <button onclick="document.getElementById('chatToggle').click()"
+              style="width:100%;padding:8px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--font-body);">
+        Chat with AI ✦
+      </button>
+    </div>
+  </div>
+
+  <!-- HOTELS GRID -->
+  <div>
+    <div class="hotels-grid" id="hotelsGrid">
+      {% for hotel in hotels %}
+      {% set avail_rooms = hotel.rooms | selectattr('total_rooms') | list %}
+      {% set min_price = hotel.rooms | map(attribute='base_price') | select | min | default(0) %}
+      {% set total_avail = namespace(val=0) %}
+      {% for r in hotel.rooms %}
+        {% if r.total_rooms and r.booked_rooms is not none %}
+          {% set total_avail.val = total_avail.val + (r.total_rooms - r.booked_rooms) %}
+        {% endif %}
+      {% endfor %}
+      {% set amenity_names = hotel.amenities | map(attribute='name') | list %}
+
+      <div class="hotel-card"
+           data-price="{{ min_price }}"
+           data-stars="{{ hotel.stars }}"
+           data-rooms="{{ total_avail.val }}"
+           data-amenities="{{ amenity_names | join(',') | lower }}"
+           style="animation-delay: {{ loop.index0 * 0.07 }}s;">
+
+        <!-- IMAGE -->
+        <div class="hotel-img-wrap">
+          <div class="hotel-img-skeleton" id="skel-{{ hotel.id }}"></div>
+          <img id="himg-{{ hotel.id }}"
+               src=""
+               alt="{{ hotel.name }}"
+               style="display:none;position:absolute;inset:0;"
+               onload="this.style.display='block';document.getElementById('skel-{{ hotel.id }}').style.display='none';">
+          <div class="hotel-img-overlay"></div>
+
+          {% if hotel.stars == 5 %}
+          <div class="hotel-badge badge-luxury">✦ Luxury</div>
+          {% elif min_price < 5000 %}
+          <div class="hotel-badge badge-budget">💰 Budget</div>
+          {% else %}
+          <div class="hotel-badge badge-popular">🔥 Popular</div>
+          {% endif %}
+
+          <button class="hotel-wishlist-btn" title="Save">♡</button>
+
+          <div class="hotel-stars">
+            {% for i in range(hotel.stars | int) %}
+            <span>★</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- PHOTO STRIP - loaded async -->
+        <div class="photo-strip" id="strip-{{ hotel.id }}"></div>
+
+        <!-- BODY -->
+        <div class="hotel-body">
+          <div class="hotel-name" title="{{ hotel.name }}">{{ hotel.name }}</div>
+          <div class="hotel-location">
+            📍 {{ destination.name }}, {{ destination.country_type | title }}
+          </div>
+
+          {% if amenity_names %}
+          <div class="hotel-amenities-row">
+            {% for a in amenity_names[:3] %}
+            <span class="amenity-tag">{{ a }}</span>
+            {% endfor %}
+            {% if amenity_names|length > 3 %}
+            <span class="amenity-tag">+{{ amenity_names|length - 3 }} more</span>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <div class="hotel-footer">
+            <div class="hotel-price-block">
+              <div class="hotel-price-label">Starting from</div>
+              {% if min_price > 0 %}
+              <div class="hotel-price">₹{{ "{:,}".format(min_price) }}<small>/night</small></div>
+              {% else %}
+              <div class="hotel-price" style="font-size:1rem;color:var(--muted);">Price on request</div>
+              {% endif %}
+              <div class="hotel-rooms">
+                <div class="rooms-dot{% if total_avail.val == 0 %} none{% elif total_avail.val < 5 %} low{% endif %}"></div>
+                {% if total_avail.val > 0 %}
+                  {{ total_avail.val }} rooms available
+                {% else %}
+                  Currently full
+                {% endif %}
+              </div>
+            </div>
+            <a href="{{ url_for('hotel_booking', hotel_id=hotel.id) }}" class="book-btn">
+              Book Now →
+            </a>
+          </div>
+        </div>
+
+      </div>
+      {% endfor %}
+
+      <div class="no-hotels" id="noResults" style="display:none;">
+        <div class="no-hotels-icon">🏨</div>
+        <p>No hotels match your filters.</p>
+        <button onclick="resetFilters()" class="book-btn" style="margin-top:1rem;">Reset Filters</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+// ── UNIQUE HOTEL IMAGES VIA PEXELS ──────────────────────────
+const hotelData = [
+  {% for hotel in hotels %}
+  { id: {{ hotel.id }}, name: {{ hotel.name | tojson }}, dest: {{ destination.name | tojson }} }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
 
-    const container = document.getElementById("hotelContainer");
-    const destinationId = {{ destination.id }};
-    const DEFAULT_IMAGE = "{{ url_for('static', filename='images/hotel_default.jpg') }}";
+// Different search queries per hotel to avoid same image
+function getHotelQuery(hotelName, destName) {
+  const lower = hotelName.toLowerCase();
+  if (lower.includes('taj'))        return `taj hotel ${destName} luxury`;
+  if (lower.includes('marriott'))   return `marriott hotel resort luxury`;
+  if (lower.includes('hilton'))     return `hilton hotel luxury room`;
+  if (lower.includes('oberoi'))     return `oberoi palace hotel luxury india`;
+  if (lower.includes('hyatt'))      return `hyatt hotel modern interior`;
+  if (lower.includes('radisson'))   return `radisson hotel business room`;
+  if (lower.includes('ritz'))       return `ritz carlton luxury hotel`;
+  if (lower.includes('palace'))     return `palace hotel royal heritage`;
+  if (lower.includes('resort'))     return `beach resort swimming pool`;
+  if (lower.includes('zostel'))     return `hostel backpacker budget room`;
+  if (lower.includes('heritage'))   return `heritage boutique hotel india`;
+  if (lower.includes('lake'))       return `lake view hotel scenic water`;
+  if (lower.includes('mountain') || lower.includes('himalayan')) return `mountain hotel himalaya scenic`;
+  if (lower.includes('grand'))      return `grand hotel luxury lobby`;
+  if (lower.includes('sheraton') || lower.includes('westin')) return `sheraton hotel premium room`;
+  if (lower.includes('inn'))        return `boutique inn cozy hotel room`;
+  return `${destName} hotel luxury room`;
+}
 
-    fetch(`/api/hotels/${destinationId}`)
-    .then(res => res.json())
-    .then(data => {
+async function fetchHotelImage(hotelId, query, page) {
+  try {
+    const resp = await fetch(`/api/pexels-image?q=${encodeURIComponent(query)}&page=${page||1}`);
+    const data = await resp.json();
+    return data.url || '';
+  } catch(e) { return ''; }
+}
 
-        if (!data || data.length === 0) {
-            container.innerHTML = "<p>No hotels found</p>";
-            return;
-        }
+// Load images one by one with unique queries
+async function loadHotelImages() {
+  for (let i = 0; i < hotelData.length; i++) {
+    const h = hotelData[i];
+    const query = getHotelQuery(h.name, h.dest);
+    // Use page offset to get different images
+    const url = await fetchHotelImage(h.id, query, (i % 5) + 1);
+    if (url) {
+      const img = document.getElementById(`himg-${h.id}`);
+      if (img) {
+        img.src = url;
+        // load strip images
+        loadPhotoStrip(h.id, query);
+      }
+    }
+    // Small delay to avoid rate limiting
+    await new Promise(r => setTimeout(r, 150));
+  }
+}
 
-        container.innerHTML = "";
+async function loadPhotoStrip(hotelId, baseQuery) {
+  try {
+    const queries = [baseQuery + ' lobby', baseQuery + ' pool', baseQuery + ' restaurant'];
+    const strip = document.getElementById(`strip-${hotelId}`);
+    if (!strip) return;
+    for (const q of queries) {
+      const resp = await fetch(`/api/pexels-image?q=${encodeURIComponent(q)}`);
+      const data = await resp.json();
+      if (data.url) {
+        const img = document.createElement('img');
+        img.src = data.url;
+        img.alt = q;
+        strip.appendChild(img);
+      }
+      await new Promise(r => setTimeout(r, 200));
+    }
+  } catch(e) {}
+}
 
-        data.forEach(hotel => {
+// Load images after page ready
+window.addEventListener('load', loadHotelImages);
 
-            let roomHTML = hotel.rooms.map(room => `
-                <p>🛏 ${room.type} - ${room.available} Rooms - ₹${room.price}</p>
-            `).join("");
+// ── FILTERS ────────────────────────────────────────────────
+let activeFilter = 'all';
+let activeStars  = 0;
+let maxPrice     = 80000;
 
-            let amenitiesHTML = hotel.amenities.length > 0
-                ? hotel.amenities.join(", ")
-                : "Basic Amenities";
+function filterHotels(type, btn) {
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = type;
+  applyFilters();
+}
 
-            const card = document.createElement("div");
-            card.className = "hotel-card";
-            card.style.animationDelay = `${data.indexOf(hotel) * 0.1}s`;
+function sortHotels(val) {
+  const grid  = document.getElementById('hotelsGrid');
+  const cards = [...grid.querySelectorAll('.hotel-card')];
+  cards.sort((a, b) => {
+    const pa = parseInt(a.dataset.price) || 0;
+    const pb = parseInt(b.dataset.price) || 0;
+    const sa = parseFloat(a.dataset.stars) || 0;
+    const sb = parseFloat(b.dataset.stars) || 0;
+    if (val === 'price_low')  return pa - pb;
+    if (val === 'price_high') return pb - pa;
+    if (val === 'rating')     return sb - sa;
+    return 0;
+  });
+  cards.forEach(c => grid.appendChild(c));
+}
 
+function filterByPrice(val) {
+  maxPrice = parseInt(val);
+  document.getElementById('priceMax').textContent = '₹' + parseInt(val).toLocaleString('en-IN');
+  applyFilters();
+}
 
-            card.innerHTML = `
-                <div class="image-wrapper">
-                    <img src="${DEFAULT_IMAGE}" class="hotel-img" alt="hotel image">
-                </div>
+function toggleStar(btn, stars) {
+  document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeStars = stars;
+  applyFilters();
+}
 
-                <div class="hotel-info">
-                    <h3>${hotel.hotel}</h3>
-                    <p>⭐ ${hotel.stars} Rating</p>
-                    <p>💰 Starting From ₹${hotel.price}</p>
-                    <p>🛏 Total Available Rooms: ${hotel.available_rooms}</p>
-                    <p>🏨 ${amenitiesHTML}</p>
+function filterAmenities() { applyFilters(); }
 
-                    <div class="room-section">
-                        ${roomHTML}
-                    </div>
+function applyFilters() {
+  const cards = document.querySelectorAll('.hotel-card');
+  let shown = 0;
+  cards.forEach(card => {
+    const price  = parseInt(card.dataset.price) || 0;
+    const stars  = parseFloat(card.dataset.stars) || 0;
+    let show = true;
 
-                    <a href="/book-hotel/${hotel.id}" class="book-btn">
-                        Book Now
-                    </a>
-                </div>
-            `;
+    if (activeFilter === '5' && stars < 5) show = false;
+    if (activeFilter === '4' && (stars < 4 || stars >= 5)) show = false;
+    if (activeFilter === 'budget' && price > 8000) show = false;
+    if (activeStars > 0 && Math.floor(stars) !== activeStars) show = false;
+    if (price > 0 && price > maxPrice) show = false;
 
-            container.appendChild(card);
-        });
+    card.style.display = show ? '' : 'none';
+    if (show) shown++;
+  });
+  document.getElementById('resultsCount').textContent = shown + ' hotels found';
+  document.getElementById('noResults').style.display = shown === 0 ? 'grid' : 'none';
+}
 
-    })
-    .catch(err => {
-        console.error(err);
-        container.innerHTML = "<p>Error loading hotels</p>";
-    });
-
-});
+function resetFilters() {
+  activeFilter = 'all'; activeStars = 0; maxPrice = 80000;
+  document.querySelectorAll('.filter-chip').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.star-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.querySelectorAll('.amenity-check input').forEach(c => c.checked = false);
+  document.getElementById('priceRange').value = 80000;
+  document.getElementById('priceMax').textContent = '₹80,000';
+  applyFilters();
+}
 </script>
-
 {% endblock %}

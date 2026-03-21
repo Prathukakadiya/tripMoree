@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}Community — TripMore{% endblock %}
+{% block extra_css %}
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.cm-hero{background:linear-gradient(135deg,#0d1a2a,#1a2e3a);padding:3rem var(--page-pad);text-align:center;}
+.cm-hero h1{font-family:var(--font-display);color:#fff;font-size:clamp(1.8rem,4vw,2.8rem);margin-bottom:.5rem;}
+.cm-hero p{color:rgba(255,255,255,.5);font-size:14px;}
+.cm-wrap{max-width:1100px;margin:0 auto;padding:2.5rem var(--page-pad);display:grid;grid-template-columns:1fr 340px;gap:2rem;}
+.review-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem;animation:fadeUp .4s ease both;transition:all .2s;}
+.review-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.08);}
+.rv-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem;}
+.rv-avatar{width:42px;height:42px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:600;flex-shrink:0;}
+.rv-name{font-weight:600;font-size:14px;}
+.rv-dest{font-size:12px;color:var(--muted);}
+.rv-stars{color:#f5c518;font-size:13px;letter-spacing:1px;}
+.rv-text{font-size:14px;color:var(--ink);line-height:1.6;margin-bottom:.8rem;}
+.rv-footer{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);}
+.rv-like-btn{background:none;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:12px;font-family:var(--font-body);transition:all .2s;}
+.rv-like-btn:hover{background:var(--paper);border-color:var(--gold);}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:1.5rem;}
+.photo-grid img{width:100%;height:100px;object-fit:cover;border-radius:8px;cursor:pointer;transition:opacity .2s;}
+.photo-grid img:hover{opacity:.85;}
+.write-form{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;}
+.write-title{font-family:var(--font-display);font-size:1.1rem;margin-bottom:1rem;}
+.form-row{margin-bottom:12px;}
+.form-row label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:9px;font-size:14px;font-family:var(--font-body);outline:none;transition:border-color .2s;background:var(--paper);}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--gold);}
+.form-row textarea{resize:vertical;min-height:80px;}
+.star-pick{display:flex;gap:4px;font-size:1.5rem;cursor:pointer;margin-bottom:12px;}
+.star-pick span{color:#ddd;transition:color .1s;}
+.star-pick span.on{color:#f5c518;}
+.submit-rv-btn{width:100%;padding:11px;background:var(--ink);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:background .2s;}
+.submit-rv-btn:hover{background:var(--teal);}
+.upload-area{border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:12px;}
+.upload-area:hover{border-color:var(--gold);}
+.upload-area input{display:none;}
+.upload-icon{font-size:2rem;margin-bottom:.5rem;}
+.upload-text{font-size:13px;color:var(--muted);}
+.preview-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.preview-row img{width:70px;height:60px;object-fit:cover;border-radius:6px;}
+.sidebar-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem;}
+.sb-title{font-family:var(--font-display);font-size:1rem;margin-bottom:1rem;color:var(--ink);}
+.trending-dest{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.trending-dest:last-child{border-bottom:none;}
+.td-rank{width:22px;height:22px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);}
+.td-rank.top{background:var(--gold);color:#fff;}
+.tab-row{display:flex;gap:0;margin-bottom:1.5rem;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.tab-btn{flex:1;padding:10px;text-align:center;border:none;background:var(--paper);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .2s;}
+.tab-btn.active{background:var(--ink);color:#fff;}
+@media(max-width:900px){.cm-wrap{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cm-hero">
+  <h1>🌍 Traveller Community</h1>
+  <p>Share your experiences, inspire others, discover hidden gems</p>
+</div>
+
+<div class="cm-wrap">
+  <!-- MAIN FEED -->
+  <div>
+    <!-- TAB FILTER -->
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="filterTab('all',this)">All Reviews</button>
+      <button class="tab-btn" onclick="filterTab('photos',this)">📷 With Photos</button>
+      <button class="tab-btn" onclick="filterTab('top',this)">⭐ Top Rated</button>
+      <button class="tab-btn" onclick="filterTab('recent',this)">🕐 Recent</button>
+    </div>
+
+    <!-- WRITE REVIEW -->
+    {% if session.get('user_id') %}
+    <div class="write-form">
+      <div class="write-title">✍️ Share Your Experience</div>
+      <form method="POST" action="{{ url_for('add_review') }}" enctype="multipart/form-data">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-row">
+            <label>Destination</label>
+            <select name="destination" required>
+              <option value="">Select destination...</option>
+              {% for d in all_destinations %}
+              <option value="{{ d.name }}">{{ d.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Trip Type</label>
+            <select name="trip_type">
+              <option value="Solo">Solo</option>
+              <option value="Couple">Couple</option>
+              <option value="Family">Family</option>
+              <option value="Friends">Friends</option>
+            </select>
+          </div>
+        </div>
+        <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;">Your Rating</label>
+        <div class="star-pick" id="starPick">
+          <span onclick="setStar(1)" data-v="1">★</span>
+          <span onclick="setStar(2)" data-v="2">★</span>
+          <span onclick="setStar(3)" data-v="3">★</span>
+          <span onclick="setStar(4)" data-v="4">★</span>
+          <span onclick="setStar(5)" data-v="5">★</span>
+        </div>
+        <input type="hidden" name="rating" id="ratingVal" value="5">
+        <div class="form-row">
+          <label>Your Experience</label>
+          <textarea name="comment" placeholder="Tell us about your trip — what you loved, tips for other travellers..." required></textarea>
+        </div>
+        <div class="upload-area" onclick="document.getElementById('photoUpload').click()">
+          <input type="file" id="photoUpload" name="photos" multiple accept="image/*" onchange="previewPhotos(this)">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Tap to upload trip photos (optional)</div>
+        </div>
+        <div class="preview-row" id="photoPreview"></div>
+        <button type="submit" class="submit-rv-btn">Share Review →</button>
+      </form>
+    </div>
+    {% else %}
+    <div style="background:var(--paper);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;margin-bottom:1.5rem;">
+      <p style="font-size:14px;margin-bottom:1rem;">Login to share your travel experience</p>
+      <a href="{{ url_for('login') }}" style="padding:10px 24px;background:var(--ink);color:#fff;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">Login to Share →</a>
+    </div>
+    {% endif %}
+
+    <!-- REVIEWS FEED -->
+    <div id="reviewsFeed">
+    {% for r in reviews %}
+    <div class="review-card" style="animation-delay:{{ loop.index0* 0.05 }}s;"
+         data-rating="{{ r.rating }}" data-has-photos="{{ '1' if r.photos else '0' }}" data-date="{{ r.created_at }}">
+      <div class="rv-header">
+        <div class="rv-avatar">{{ r.user_name[0].upper() if r.user_name else 'T' }}</div>
+        <div>
+          <div class="rv-name">{{ r.user_name or 'Traveller' }}</div>
+          <div class="rv-dest">📍 {{ r.destination }} · {{ r.trip_type or 'Solo' }} trip</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div class="rv-stars">{% for i in range(r.rating) %}★{% endfor %}{% for i in range(5-r.rating) %}<span style="color:#ddd;">★</span>{% endfor %}</div>
+          <div style="font-size:11px;color:var(--muted);">{{ r.created_at.strftime('%d %b %Y') if r.created_at else '' }}</div>
+        </div>
+      </div>
+      {% if r.photos %}
+      <div class="photo-grid">
+        {% for p in r.photos[:6] %}
+        <img src="/uploads/community/{{ p }}" alt="Trip photo" onclick="openPhoto(this.src)">
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="rv-text">{{ r.comment }}</div>
+      <div class="rv-footer">
+        <span>💬 {{ r.reply_count or 0 }} replies</span>
+        <button class="rv-like-btn" onclick="likeReview({{ r.id }}, this)">❤️ {{ r.likes or 0 }} Helpful</button>
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:3rem;color:var(--muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;">📝</div>
+      <p>No reviews yet. Be the first to share your experience!</p>
+    </div>
+    {% endfor %}
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div>
+    <div class="sidebar-box">
+      <div class="sb-title">🔥 Trending Destinations</div>
+      {% for t in trending %}
+      <div class="trending-dest">
+        <div class="td-rank {% if loop.index <= 3 %}top{% endif %}">{{ loop.index }}</div>
+        <div style="flex:1;">
+          <div style="font-weight:500;font-size:13px;">{{ t.destination }}</div>
+          <div style="font-size:11px;color:var(--muted);">{{ t.review_count }} reviews</div>
+        </div>
+        <div style="color:#f5c518;font-size:12px;">{{ '%.1f'|format(t[1]) }}★</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="sidebar-box">
+      <div class="sb-title">📊 Community Stats</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="text-align:center;padding:.8rem;background:var(--paper);border-radius:8px;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;">{{ total_reviews }}</div>
+          <div style="font-size:11px;color:var(--muted);">Reviews</div>
+        </div>
+        <div style="text-align:center;padding:.8rem;background:var(--paper);border-radius:8px;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;">{{ total_photos }}</div>
+          <div style="font-size:11px;color:var(--muted);">Photos</div>
+        </div>
+        <div style="text-align:center;padding:.8rem;background:var(--paper);border-radius:8px;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;">{{ total_travellers }}</div>
+          <div style="font-size:11px;color:var(--muted);">Travellers</div>
+        </div>
+        <div style="text-align:center;padding:.8rem;background:var(--paper);border-radius:8px;">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:600;">{{ total_destinations_reviewed }}</div>
+          <div style="font-size:11px;color:var(--muted);">Destinations</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-box" style="background:linear-gradient(135deg,var(--ink),#1a3a2e);border:none;">
+      <div style="color:#fff;font-family:var(--font-display);font-size:1rem;margin-bottom:.5rem;">🤖 AI Trip Planner</div>
+      <p style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:1rem;">Tell us your budget, days & vibe — get a full trip plan!</p>
+      <a href="{{ url_for('trip_planner') }}" style="display:block;text-align:center;padding:9px;background:var(--gold);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;">Plan My Trip ✦</a>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO LIGHTBOX -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:999;align-items:center;justify-content:center;" onclick="closeLightbox()">
+  <img id="lbImg" src="" style="max-width:90vw;max-height:90vh;border-radius:8px;">
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let starVal = 5;
+function setStar(n) {
+  starVal = n;
+  document.getElementById('ratingVal').value = n;
+  document.querySelectorAll('#starPick span').forEach((s,i) => s.classList.toggle('on', i < n));
+}
+setStar(5);
+
+function previewPhotos(input) {
+  const wrap = document.getElementById('photoPreview');
+  wrap.innerHTML = '';
+  [...input.files].forEach(f => {
+    const r = new FileReader();
+    r.onload = e => {
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      wrap.appendChild(img);
+    };
+    r.readAsDataURL(f);
+  });
+}
+
+function filterTab(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('.review-card');
+  cards.forEach(c => {
+    if(type === 'all') { c.style.display = ''; return; }
+    if(type === 'photos' && c.dataset.hasPhotos === '1') { c.style.display = ''; return; }
+    if(type === 'photos') { c.style.display = 'none'; return; }
+    if(type === 'top' && parseInt(c.dataset.rating) >= 4) { c.style.display = ''; return; }
+    if(type === 'top') { c.style.display = 'none'; return; }
+    c.style.display = '';
+  });
+}
+
+function likeReview(id, btn) {
+  fetch('/community/like/' + id, {method:'POST'})
+    .then(r => r.json())
+    .then(d => { btn.textContent = '❤️ ' + d.likes + ' Helpful'; });
+}
+
+function openPhoto(src) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; }
+</script>
+{% endblock %}

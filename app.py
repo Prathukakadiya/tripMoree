@@ -642,32 +642,87 @@ def get_recommendations():
         result.append({"id": d.id, "name": d.name, "rating": d.rating, "image": img, "category": d.category, "best_time": d.best_time})
     return jsonify(result)
 
-
 # ── ANALYTICS ──
 @app.route("/analytics")
 @login_required
 def analytics():
     from datetime import datetime, timedelta
+    from collections import Counter
+
     uid  = session["user_id"]
     user = User.query.get(uid)
+
     my_bookings = BookingHistory.query.filter_by(user_id=uid).all()
     booking_ids = [b.id for b in my_bookings]
+
     total_trips = len(my_bookings)
-    total_spent = (db.session.query(func.sum(HotelBooking.final_payable)).filter(HotelBooking.booking_id.in_(booking_ids)).scalar() or 0)
-    total_spent += (db.session.query(func.sum(TransportBooking.price)).filter(TransportBooking.booking_id.in_(booking_ids)).scalar() or 0)
+
+    total_spent = (
+        db.session.query(func.sum(HotelBooking.final_payable))
+        .filter(HotelBooking.booking_id.in_(booking_ids))
+        .scalar() or 0
+    )
+
+    total_spent += (
+        db.session.query(func.sum(TransportBooking.price))
+        .filter(TransportBooking.booking_id.in_(booking_ids))
+        .scalar() or 0
+    )
+
+    # Favourite destinations
     dest_counter = Counter(b.destination for b in my_bookings)
     fav_dest     = dest_counter.most_common(5)
+
+    # Monthly data
     monthly = {}
     for i in range(5, -1, -1):
         dt    = datetime.now() - timedelta(days=30 * i)
         label = dt.strftime("%b %Y")
-        count = sum(1 for b in my_bookings if b.created_at and b.created_at.month == dt.month and b.created_at.year == dt.year)
-        monthly[label] = count
-    global_top = db.session.query(BookingHistory.destination, func.count(BookingHistory.id).label("cnt")).group_by(BookingHistory.destination).order_by(func.count(BookingHistory.id).desc()).limit(5).all()
-    transport_types = db.session.query(TransportBooking.transport_type, func.count(TransportBooking.id).label("cnt")).filter(TransportBooking.booking_id.in_(booking_ids)).group_by(TransportBooking.transport_type).all()
-    return render_template("analytics.html", user=user, total_trips=total_trips, total_spent=total_spent,
-        fav_dest=fav_dest, monthly=monthly, global_top=global_top, transport_types=transport_types)
 
+        count = sum(
+            1 for b in my_bookings
+            if b.created_at and
+               b.created_at.month == dt.month and
+               b.created_at.year == dt.year
+        )
+        monthly[label] = count
+
+    # 🔥 FIX 1: global_top (Row → dict)
+    global_top_raw = db.session.query(
+        BookingHistory.destination,
+        func.count(BookingHistory.id)
+    ).group_by(BookingHistory.destination)\
+     .order_by(func.count(BookingHistory.id).desc())\
+     .limit(5).all()
+
+    global_top = [
+        {"destination": t[0], "cnt": t[1]}
+        for t in global_top_raw
+    ]
+
+    # 🔥 FIX 2: transport_types (Row → dict)
+    transport_types_raw = db.session.query(
+        TransportBooking.transport_type,
+        func.count(TransportBooking.id)
+    ).filter(
+        TransportBooking.booking_id.in_(booking_ids)
+    ).group_by(TransportBooking.transport_type).all()
+
+    transport_types = [
+        {"type": t[0], "count": t[1]}
+        for t in transport_types_raw
+    ]
+
+    return render_template(
+        "analytics.html",
+        user=user,
+        total_trips=total_trips,
+        total_spent=total_spent,
+        fav_dest=fav_dest,
+        monthly=monthly,
+        global_top=global_top,
+        transport_types=transport_types
+    )
 @app.route("/api/analytics-data")
 @login_required
 def analytics_data():
@@ -1371,6 +1426,338 @@ def generate_invoice_pdf(booking_id):
     elements.append(Paragraph("Computer generated invoice. No signature required.", styles["Normal"]))
     doc.build(elements)
     return file_path
+@app.route("/api/pexels-image")
+def pexels_image():
+    query = request.args.get("q", "hotel room")
+    page  = int(request.args.get("page", 1))
+    try:
+        resp = requests.get(
+            "https://api.pexels.com/v1/search",
+            headers={"Authorization": PEXELS_API_KEY},
+            params={"query": query, "per_page": 1, "page": page, "orientation": "landscape"},
+            timeout=5
+        )
+        photos = resp.json().get("photos", [])
+        url = photos[0]["src"]["large"] if photos else ""
+    except Exception as e:
+        url = ""
+    return jsonify({"url": url})
+
+# ================================================================
+#  PHASE 2 — NEW ROUTES
+#  Add ALL of these BEFORE the `if __name__ == "__main__":` line
+#  Also add these NEW SQL tables (run in phpMyAdmin first)
+# ================================================================
+
+# ── SQL TO RUN IN PHPMYADMIN FIRST ───────────────────────────
+SQL_TO_RUN = """
+CREATE TABLE IF NOT EXISTS community_photos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  destination VARCHAR(100),
+  image_url VARCHAR(500),
+  caption TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+"""
+# ─────────────────────────────────────────────────────────────
+
+# ADD THIS MODEL after your existing models:
+# class CommunityPhoto(db.Model):
+#     __tablename__ = "community_photos"
+#     id          = db.Column(db.Integer, primary_key=True)
+#     user_id     = db.Column(db.Integer, db.ForeignKey("users.id"))
+#     destination = db.Column(db.String(100))
+#     image_url   = db.Column(db.String(500))
+#     caption     = db.Column(db.Text)
+#     created_at  = db.Column(db.DateTime, server_default=db.func.now())
+
+# ─────────────────────────────────────────────────────────────
+# PASTE THESE ROUTES INTO app.py BEFORE if __name__ == "__main__"
+# ─────────────────────────────────────────────────────────────
+
+# ── TRANSPORT AVAILABILITY API (for transport_choice.html) ───
+
+@app.route("/api/transport-availability")
+def transport_availability():
+    destination = request.args.get("destination", "")
+
+    # Check flights
+    flights = Flight.query.filter_by(destination=destination).all()
+    trains  = Train.query.filter_by(destination=destination).all()
+    buses   = Bus.query.filter_by(destination=destination).all()
+
+    flight_prices = [f.price for f in flights if f.price]
+    train_prices  = [t.price for t in trains  if t.price]
+    bus_prices    = [b.price for b in buses   if b.price]
+
+    # Smart routing: if no direct bus/train, suggest via hub
+    smart_route = None
+    INTERNATIONAL = ["Bali","Paris","Dubai","Singapore","Switzerland","New Zealand",
+                     "Mecca","Vatican City","Iceland","Amsterdam"]
+
+    if destination in INTERNATIONAL:
+        # Only flights for international
+        smart_route = None
+        # Mark bus/train as not available
+    elif not buses and not trains:
+        # Suggest via Delhi or Mumbai
+        hubs = ["Delhi", "Mumbai", "Ahmedabad"]
+        for hub in hubs:
+            hub_to_dest_bus   = Bus.query.filter_by(source=hub,   destination=destination).first()
+            hub_to_dest_train = Train.query.filter_by(source=hub, destination=destination).first()
+            if hub_to_dest_bus or hub_to_dest_train:
+                smart_route = ["Your City", hub, destination]
+                break
+
+    return jsonify({
+        "flights": {
+            "count":     len(flights),
+            "min_price": min(flight_prices) if flight_prices else 0,
+            "available": len(flights) > 0
+        },
+        "trains": {
+            "count":     len(trains),
+            "min_price": min(train_prices) if train_prices else 0,
+            "available": len(trains) > 0
+        },
+        "buses": {
+            "count":     len(buses),
+            "min_price": min(bus_prices) if bus_prices else 0,
+            "available": len(buses) > 0
+        },
+        "is_international": destination in INTERNATIONAL,
+        "smart_route": smart_route
+    })
+
+
+# ── AI TRIP PLANNER ──────────────────────────────────────────
+
+@app.route("/trip-planner")
+def trip_planner():
+    return render_template("trip_planner.html")
+
+
+@app.route("/api/ai-trip-plan", methods=["POST"])
+def ai_trip_plan():
+    data  = request.json
+    query = data.get("query", "").strip()
+    if not query:
+        return jsonify({"plan": "Please enter a trip query."})
+
+    # Extract destination from query
+    all_dests     = Destination.query.all()
+    dest_names    = [d.name for d in all_dests]
+    found_dest    = None
+    query_lower   = query.lower()
+    for name in dest_names:
+        if name.lower() in query_lower:
+            found_dest = name
+            break
+
+    # Get matching hotels
+    matching_hotels = []
+    if found_dest:
+        dest_obj = Destination.query.filter_by(name=found_dest).first()
+        if dest_obj:
+            hotels = Hotel.query.filter_by(destination_id=dest_obj.id).order_by(Hotel.starting_price).limit(5).all()
+            for h in hotels:
+                prices = [r.base_price for r in h.rooms if r.base_price]
+                avail  = sum((r.total_rooms - r.booked_rooms) for r in h.rooms if r.total_rooms and r.booked_rooms is not None)
+                matching_hotels.append({
+                    "id":    h.id,
+                    "name":  h.name,
+                    "stars": h.stars,
+                    "price": min(prices) if prices else 0,
+                    "rooms": avail
+                })
+
+    # Get matching flights
+    matching_flights = []
+    if found_dest:
+        flights = Flight.query.filter_by(destination=found_dest).order_by(Flight.price).limit(3).all()
+        for f in flights:
+            matching_flights.append({
+                "airline":      f.airline,
+                "price":        f.price,
+                "source":       f.source,
+                "destination":  f.destination,
+                "flight_class": f.flight_class
+            })
+
+    # Extract budget from query
+    import re
+    budget_match = re.search(r'(?:under|below|within|₹|rs\.?)\s*(\d[\d,]*)', query_lower)
+    budget = int(budget_match.group(1).replace(',', '')) if budget_match else None
+
+    # Build AI prompt
+    system_prompt = """You are TripMore's AI trip planner. When given a trip request, respond with a JSON object only (no markdown, no explanation) with this exact structure:
+{
+  "plan": "A detailed day-by-day itinerary as a formatted string with \\n for newlines",
+  "destination": "destination name",
+  "budget": {
+    "Hotel (per night)": "amount",
+    "Transport": "amount",
+    "Food (per day)": "amount",
+    "Activities": "amount",
+    "Miscellaneous": "amount",
+    "total": "total amount"
+  },
+  "tips": ["tip1", "tip2", "tip3"]
+}
+Keep the plan practical, fun and within the budget. Include specific recommendations for food, places, timing."""
+
+    user_msg = f"""Plan this trip: {query}
+Available destinations on TripMore: {', '.join(dest_names[:15])}
+{"Budget: ₹" + str(budget) if budget else ""}
+{"Destination detected: " + found_dest if found_dest else ""}"""
+
+    try:
+        resp = requests.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json"
+            },
+            json={
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 1000,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": user_msg}]
+            },
+            timeout=20
+        )
+        text = resp.json()["content"][0]["text"].strip()
+        # Clean JSON
+        if text.startswith("```"):
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        result = json.loads(text)
+    except Exception as e:
+        print(f"AI Plan error: {e}")
+        result = {
+            "plan": f"🌟 Trip Plan for: {query}\n\nDay 1: Arrival & Check-in\n• Arrive and settle into your hotel\n• Evening: Explore local market\n• Dinner at local restaurant\n\nDay 2: Sightseeing\n• Morning: Top attractions\n• Afternoon: Local cuisine & shopping\n• Evening: Sunset views\n\nBest tip: Book early for best prices!",
+            "destination": found_dest or "Your destination",
+            "budget": {
+                "Hotel (per night)": str(budget // 3 if budget else 3000),
+                "Transport": str(budget // 5 if budget else 2000),
+                "Food (per day)": str(budget // 6 if budget else 1500),
+                "Activities": str(budget // 8 if budget else 1000),
+                "Miscellaneous": "500",
+                "total": str(budget or 8000)
+            },
+            "tips": ["Book hotels in advance", "Carry cash for local markets", "Try street food safely"]
+        }
+
+    result["hotels"]  = matching_hotels[:4]
+    result["flights"] = matching_flights[:3]
+    return jsonify(result)
+
+
+# ── COMMUNITY ────────────────────────────────────────────────
+
+@app.route("/community")
+def community():
+    # All reviews with user names
+    reviews_raw = db.session.query(
+        Review, User.name.label("user_name")
+    ).join(User, Review.user_id == User.id, isouter=True
+    ).order_by(Review.created_at.desc()).limit(20).all()
+
+    reviews = []
+    for r, uname in reviews_raw:
+        reviews.append({
+            "destination": r.destination,
+            "rating":      r.rating,
+            "comment":     r.comment,
+            "created_at":  r.created_at,
+            "user_name":   uname or "Traveller"
+        })
+
+    # Community photos
+    photos_raw = []
+    try:
+        photos_raw = db.session.execute(
+            text("SELECT cp.image_url, cp.destination, cp.caption, u.name as user_name FROM community_photos cp LEFT JOIN users u ON cp.user_id=u.id ORDER BY cp.created_at DESC LIMIT 12")
+        ).fetchall()
+    except:
+        pass
+
+    photos = [{"image_url": p.image_url, "destination": p.destination,
+               "user_name": p.user_name} for p in photos_raw]
+
+    # Trending destinations
+    trending = db.session.query(
+        BookingHistory.destination,
+        func.count(BookingHistory.id).label("cnt")
+    ).group_by(BookingHistory.destination).order_by(
+        func.count(BookingHistory.id).desc()
+    ).limit(8).all()
+
+    # Top reviewers
+    top_reviewers_raw = db.session.query(
+        User.name,
+        func.count(Review.id).label("review_count")
+    ).join(Review, User.id == Review.user_id, isouter=True
+    ).group_by(User.id).order_by(func.count(Review.id).desc()).limit(5).all()
+
+    top_reviewers = []
+    for name, rc in top_reviewers_raw:
+        trip_count = BookingHistory.query.filter_by(user_id=User.query.filter_by(name=name).first().id if User.query.filter_by(name=name).first() else 0).count()
+        top_reviewers.append({"name": name, "review_count": rc, "trip_count": trip_count})
+
+    # Visited destinations for logged-in user
+    visited_destinations = []
+    if "user_id" in session:
+        bookings = BookingHistory.query.filter_by(user_id=session["user_id"]).all()
+        visited_destinations = list({b.destination for b in bookings})
+
+    all_destinations = Destination.query.all()
+
+    return render_template("community.html",
+        reviews=reviews, photos=photos,
+        trending=trending, top_reviewers=top_reviewers,
+        visited_destinations=visited_destinations,
+        all_destinations=all_destinations,
+        total_reviews=Review.query.count(),
+        total_photos=len(photos),
+        total_users=User.query.count(),
+        total_destinations=Destination.query.count(),
+        enumerate=enumerate
+    )
+
+
+@app.route("/upload-community-photo", methods=["POST"])
+@login_required
+def upload_community_photo():
+    import base64
+    photos      = request.files.getlist("photos")
+    destination = request.form.get("destination", "")
+    caption     = request.form.get("caption", "")
+
+    for photo in photos:
+        if photo and photo.filename:
+            # Convert to base64 data URL for storage (simple approach)
+            ext      = photo.filename.rsplit('.', 1)[-1].lower()
+            if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+                continue
+            data     = photo.read()
+            b64      = base64.b64encode(data).decode()
+            data_url = f"data:image/{ext};base64,{b64}"
+            # Store in DB
+            try:
+                db.session.execute(text(
+                    "INSERT INTO community_photos (user_id, destination, image_url, caption) VALUES (:uid, :dest, :url, :cap)"
+                ), {"uid": session["user_id"], "dest": destination, "url": data_url, "cap": caption})
+                db.session.commit()
+            except Exception as e:
+                print(f"Photo upload error: {e}")
+                db.session.rollback()
+
+    flash("Photos shared with the community!", "success")
+    return redirect(url_for("community"))
 
 
 # ================= RUN =================

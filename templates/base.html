@@ -26,6 +26,8 @@
       {% if session.user_id %}
       <li><a href="{{ url_for('analytics') }}" {% if request.endpoint=='analytics' %}class="active"{% endif %}>Analytics</a></li>
       {% endif %}
+      <li><a href="/community">Community</a></li>
+      <li><a href="/trip-planner">AI Planner</a></li>
     </ul>
 
     <div class="nav-actions">
