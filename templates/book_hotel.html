@@ -1,340 +1,676 @@
 {% extends "base.html" %}
-{% block title %}Hotel Booking{% endblock %}
+{% block title %}Book {{ hotel.name }}{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/hotel_booking.css') }}">
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+@keyframes checkIn{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+
+*{box-sizing:border-box;}
+.bk-page{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;}
+
+/* HOTEL HERO */
+.bk-hero{
+  border-radius:20px;overflow:hidden;height:320px;
+  position:relative;margin-bottom:2rem;
+  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);
+}
+.bk-hero-img{width:100%;height:100%;object-fit:cover;opacity:.7;}
+.bk-hero-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 60%,transparent 100%);
+}
+.bk-hero-content{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:2rem;color:#fff;
+}
+.bk-hotel-name{font-family:Georgia,serif;font-size:clamp(1.6rem,4vw,2.4rem);font-weight:600;margin-bottom:.4rem;}
+.bk-hotel-stars{color:#f5c518;font-size:1.1rem;margin-bottom:.4rem;}
+.bk-hotel-amenities{display:flex;gap:10px;flex-wrap:wrap;}
+.bk-amenity{padding:4px 12px;background:rgba(255,255,255,.15);border-radius:20px;font-size:12px;backdrop-filter:blur(4px);}
+
+/* IMAGE STRIP */
+.bk-img-strip{display:flex;gap:8px;margin-bottom:2rem;overflow-x:auto;scrollbar-width:none;}
+.bk-img-strip img{height:80px;width:120px;object-fit:cover;border-radius:10px;flex-shrink:0;cursor:pointer;transition:transform .2s;opacity:.8;}
+.bk-img-strip img:hover{transform:scale(1.05);opacity:1;}
+
+/* LAYOUT */
+.bk-layout{display:grid;grid-template-columns:1fr 360px;gap:2rem;}
+
+/* FORM CARD */
+.bk-form-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;animation:fadeUp .5s ease;}
+.bk-section-title{font-family:Georgia,serif;font-size:1.2rem;color:#0d0f0e;margin-bottom:1.2rem;padding-bottom:.6rem;border-bottom:2px solid #f0ede8;display:flex;align-items:center;gap:.5rem;}
+.bk-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;}
+.bk-grid.single{grid-template-columns:1fr;}
+.bk-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.fg label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:11px 14px;border:1.5px solid #e8e4de;border-radius:10px;
+  font-size:14px;font-family:inherit;outline:none;transition:all .2s;
+  background:#fff;color:#0d0f0e;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#c9a84c;box-shadow:0 0 0 3px rgba(201,168,76,.1);}
+.fg input.error-field{border-color:#e74c3c;}
+.fg .hint{font-size:11px;color:#888;margin-top:4px;}
+
+/* DATE RANGE */
+.date-range-wrap{
+  background:#f8f6f1;border-radius:12px;padding:1rem;
+  display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;
+  margin-bottom:1.5rem;
+}
+.date-arrow{color:#c9a84c;font-size:1.5rem;text-align:center;}
+.nights-badge{
+  grid-column:1/-1;text-align:center;
+  font-size:13px;font-weight:600;color:#1a5c50;
+  background:#e8f5e9;border-radius:20px;padding:5px 16px;
+  display:inline-block;margin:0 auto;
+}
+
+/* ROOM CARDS */
+.room-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+.room-card{
+  border:2px solid #e8e4de;border-radius:12px;padding:1rem;
+  cursor:pointer;transition:all .2s;position:relative;
+}
+.room-card:hover{border-color:#c9a84c;background:#fffdf5;}
+.room-card.selected{border-color:#1a5c50;background:#f0faf8;}
+.room-card input[type="radio"]{display:none;}
+.room-name{font-weight:700;font-size:14px;color:#0d0f0e;margin-bottom:4px;}
+.room-price{font-family:Georgia,serif;font-size:1.1rem;color:#1a5c50;font-weight:600;}
+.room-avail{font-size:11px;margin-top:4px;}
+.avail-ok{color:#27ae60;}
+.avail-low{color:#e67e22;}
+.avail-no{color:#e74c3c;}
+.room-selected-check{
+  position:absolute;top:8px;right:8px;width:20px;height:20px;
+  background:#1a5c50;border-radius:50%;display:none;
+  align-items:center;justify-content:center;color:#fff;font-size:11px;
+}
+.room-card.selected .room-selected-check{display:flex;}
+
+/* EXTRAS */
+.extras-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.5rem;}
+.extra-card{
+  border:2px solid #e8e4de;border-radius:12px;padding:1rem;text-align:center;
+  cursor:pointer;transition:all .2s;
+}
+.extra-card:hover{border-color:#c9a84c;}
+.extra-card.selected{border-color:#1a5c50;background:#f0faf8;}
+.extra-card input[type="checkbox"]{display:none;}
+.extra-icon{font-size:1.8rem;margin-bottom:6px;}
+.extra-name{font-size:13px;font-weight:600;color:#0d0f0e;}
+.extra-price{font-size:12px;color:#1a5c50;font-weight:600;margin-top:2px;}
+
+/* BANK OFFERS */
+.bank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.bank-card{
+  border:2px solid #e8e4de;border-radius:10px;padding:10px 8px;
+  cursor:pointer;transition:all .2s;text-align:center;
+  font-size:12px;font-weight:600;
+}
+.bank-card:hover{border-color:#c9a84c;}
+.bank-card.selected{border-color:#1a5c50;background:#f0faf8;color:#1a5c50;}
+.bank-logo{font-size:1.4rem;margin-bottom:4px;}
+.bank-disc{font-size:11px;color:#27ae60;font-weight:700;}
+
+/* COUPON */
+.coupon-row{display:flex;gap:8px;margin-bottom:.5rem;}
+.coupon-input{flex:1;padding:10px 14px;border:1.5px solid #e8e4de;border-radius:8px;font-size:14px;font-family:inherit;outline:none;text-transform:uppercase;}
+.coupon-input:focus{border-color:#c9a84c;}
+.coupon-btn{padding:10px 16px;background:#0d0f0e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.coupon-result{font-size:12px;margin-bottom:.5rem;}
+.coupon-ok{color:#27ae60;}
+.coupon-err{color:#e74c3c;}
+
+/* RIGHT SIDEBAR */
+.bk-sidebar{}
+.price-card{
+  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);
+  border-radius:20px;padding:1.5rem;
+  color:#fff;position:sticky;top:80px;
+}
+.price-title{font-family:Georgia,serif;font-size:1.2rem;color:#c9a84c;margin-bottom:1.2rem;}
+.price-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px;}
+.price-row:last-child{border:none;}
+.price-label{color:rgba(255,255,255,.6);}
+.price-value{color:#fff;font-weight:600;}
+.price-discount{color:#27ae60;}
+.price-total-row{
+  display:flex;justify-content:space-between;padding:12px 0;
+  font-family:Georgia,serif;font-size:1.3rem;font-weight:600;
+  border-top:1px solid rgba(255,255,255,.2);margin-top:4px;
+}
+.price-total-label{color:rgba(255,255,255,.8);}
+.price-total-value{color:#c9a84c;}
+
+.confirm-btn{
+  width:100%;padding:15px;background:linear-gradient(135deg,#c9a84c,#b8934a);
+  color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;margin-top:1.2rem;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.confirm-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.3);}
+.confirm-btn:disabled{background:#888;cursor:not-allowed;transform:none;}
+
+.trust-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:1rem;}
+.trust-badge{font-size:11px;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:4px;}
+
+/* SERVICES LIST */
+.services-list{list-style:none;padding:0;margin:0;}
+.services-list li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;color:rgba(255,255,255,.7);}
+.services-list li:last-child{border:none;}
+
+/* ERROR BOX */
+.error-box{
+  background:#fce4ec;border:1px solid #f48fb1;border-radius:10px;
+  padding:1rem 1.2rem;margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:.8rem;font-size:14px;color:#c62828;
+}
+
+/* PROGRESS */
+.bk-progress{
+  display:flex;align-items:center;gap:8px;margin-bottom:2rem;
+  font-size:13px;color:#888;flex-wrap:wrap;
+}
+.bk-progress .step-done{color:#1a5c50;font-weight:600;}
+.bk-progress .step-now{color:#c9a84c;font-weight:700;background:#fffdf5;padding:4px 12px;border-radius:20px;border:1px solid #c9a84c;}
+
+@media(max-width:900px){
+  .bk-layout{grid-template-columns:1fr;}
+  .bk-sidebar .price-card{position:static;}
+  .bk-grid.three,.extras-grid,.bank-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .bk-grid,.room-grid{grid-template-columns:1fr;}
+  .date-range-wrap{grid-template-columns:1fr;text-align:center;}
+  .date-arrow{transform:rotate(90deg);}
+}
+</style>
 {% endblock %}
 
-
 {% block content %}
+<div class="bk-page">
 
-<div class="booking-wrapper">
+  <!-- PROGRESS -->
+  <div class="bk-progress">
+    <span>📍 Choose Destination</span> →
+    <span>🏨 Choose Hotel</span> →
+    <span class="step-now">📋 Book Hotel</span> →
+    <span>💳 Payment</span> →
+    <span>✈ Transport</span>
+  </div>
 
-<div class="booking-card">
+  <!-- HERO -->
+  <div class="bk-hero">
+    {% if hotel_images and hotel_images[0] %}
+    <img src="{{ hotel_images[0] }}" alt="{{ hotel.name }}" class="bk-hero-img" id="heroImg">
+    {% endif %}
+    <div class="bk-hero-overlay"></div>
+    <div class="bk-hero-content">
+      <div class="bk-hotel-stars">
+        {% for i in range(hotel.stars|int) %}★{% endfor %}
+        <span style="font-size:13px;margin-left:6px;opacity:.8;">{{ hotel.stars }} Star Hotel</span>
+      </div>
+      <div class="bk-hotel-name">{{ hotel.name }}</div>
+      <div class="bk-hotel-amenities">
+        {% for a in hotel.amenities[:4] %}
+        <span class="bk-amenity">✓ {{ a.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 
-<h2>{{ hotel.name }}</h2>
-<p>⭐ {{ hotel.stars }} Rating</p>
+  <!-- IMAGE STRIP -->
+  {% if hotel_images %}
+  <div class="bk-img-strip">
+    {% for img in hotel_images %}
+    <img src="{{ img }}" alt="{{ hotel.name }}" onclick="document.getElementById('heroImg').src=this.src">
+    {% endfor %}
+  </div>
+  {% endif %}
 
-{% if error %}
-<div class="error-box">
-    {{ error }}
+  <!-- ERROR -->
+  {% if error %}
+  <div class="error-box">
+    <span style="font-size:1.3rem;">⚠️</span>
+    <span>{{ error }}</span>
+  </div>
+  {% endif %}
+
+  <form method="POST" id="bookingForm">
+  <div class="bk-layout">
+
+    <!-- LEFT: FORM -->
+    <div>
+
+      <!-- DATES -->
+      <div class="bk-form-card">
+        <div class="bk-section-title">📅 Select Dates</div>
+        <div class="date-range-wrap">
+          <div class="fg">
+            <label>Check-in</label>
+            <input type="date" name="checkin" id="checkin"
+                   value="{{ form_data.get('checkin','') if form_data else '' }}" required>
+          </div>
+          <div class="date-arrow">→</div>
+          <div class="fg">
+            <label>Check-out (same day = 1 night)</label>
+            <input type="date" name="checkout" id="checkout"
+                   value="{{ form_data.get('checkout','') if form_data else '' }}" required>
+          </div>
+          <div class="nights-badge" id="nightsBadge" style="display:none;">
+            📅 <span id="nightsText">0</span> night(s)
+          </div>
+        </div>
+
+        <div class="fg">
+          <label>Number of Guests</label>
+          <input type="number" name="persons" id="persons"
+                 value="{{ form_data.get('persons','1') if form_data else '1' }}"
+                 min="1" max="20" required>
+          <div class="hint">👥 1 room fits 2 guests. We'll automatically book required rooms.</div>
+        </div>
+      </div>
+
+      <!-- ROOM SELECTION -->
+      <div class="bk-form-card" style="margin-top:1rem;">
+        <div class="bk-section-title">🛏 Choose Room Type</div>
+        <div class="room-grid">
+          {% for room in hotel.rooms %}
+          {% set avail = (room.total_rooms or 0) - (room.booked_rooms or 0) %}
+          <label class="room-card {% if avail == 0 %}opacity-50{% endif %} {% if form_data and form_data.get('room_id') == room.id|string %}selected{% endif %}"
+                 for="room-{{ room.id }}" onclick="selectRoom(this)">
+            <input type="radio" name="room_id" id="room-{{ room.id }}" value="{{ room.id }}"
+                   {% if loop.first %}checked{% endif %}
+                   {% if avail == 0 %}disabled{% endif %}>
+            <div class="room-selected-check">✓</div>
+            <div class="room-name">{{ room.room_type }}</div>
+            <div class="room-price">₹{{ "{:,}".format(room.base_price or 0) }}<span style="font-size:11px;color:#888;font-weight:400;"> /night</span></div>
+            <div class="room-avail">
+              {% if avail > 5 %}<span class="avail-ok">🟢 {{ avail }} available</span>
+              {% elif avail > 0 %}<span class="avail-low">🟠 Only {{ avail }} left!</span>
+              {% else %}<span class="avail-no">❌ Sold out</span>{% endif %}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- EXTRAS -->
+      <div class="bk-form-card" style="margin-top:1rem;">
+        <div class="bk-section-title">✨ Add Extras</div>
+        <div class="extras-grid">
+          <label class="extra-card {% if form_data and form_data.get('lunch') %}selected{% endif %}"
+                 onclick="toggleExtra(this)">
+            <input type="checkbox" name="lunch" value="1"
+                   {% if form_data and form_data.get('lunch') %}checked{% endif %}>
+            <div class="extra-icon">🍽️</div>
+            <div class="extra-name">Lunch</div>
+            <div class="extra-price">+₹{{ hotel.lunch_price or 500 }}/person</div>
+          </label>
+          <label class="extra-card {% if form_data and form_data.get('dinner') %}selected{% endif %}"
+                 onclick="toggleExtra(this)">
+            <input type="checkbox" name="dinner" value="1"
+                   {% if form_data and form_data.get('dinner') %}checked{% endif %}>
+            <div class="extra-icon">🌙</div>
+            <div class="extra-name">Dinner</div>
+            <div class="extra-price">+₹{{ hotel.dinner_price or 600 }}/person</div>
+          </label>
+          <label class="extra-card {% if form_data and form_data.get('pickup') %}selected{% endif %}"
+                 onclick="toggleExtra(this)">
+            <input type="checkbox" name="pickup" value="1"
+                   {% if form_data and form_data.get('pickup') %}checked{% endif %}>
+            <div class="extra-icon">🚗</div>
+            <div class="extra-name">Airport Pickup</div>
+            <div class="extra-price">+₹{{ hotel.pickup_price or 800 }} flat</div>
+          </label>
+        </div>
+      </div>
+
+      <!-- GUEST DETAILS -->
+      <div class="bk-form-card" style="margin-top:1rem;">
+        <div class="bk-section-title">👤 Guest Details</div>
+        <div class="bk-grid">
+          <div class="fg">
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="As on ID proof"
+                   value="{{ form_data.get('name','') if form_data else '' }}" required>
+          </div>
+          <div class="fg">
+            <label>Phone Number</label>
+            <input type="text" name="phone" placeholder="10-digit mobile"
+                   value="{{ form_data.get('phone','') if form_data else '' }}" required
+                   maxlength="10">
+          </div>
+          <div class="fg">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="for confirmation"
+                   value="{{ form_data.get('email','') if form_data else '' }}" required>
+          </div>
+          <div class="fg">
+            <label>ID Proof Type</label>
+            <select name="id_type" required>
+              <option value="">Select ID type</option>
+              <option value="aadhaar" {% if form_data and form_data.get('id_type')=='aadhaar' %}selected{% endif %}>Aadhaar Card</option>
+              <option value="pan"     {% if form_data and form_data.get('id_type')=='pan'     %}selected{% endif %}>PAN Card</option>
+              <option value="passport"{% if form_data and form_data.get('id_type')=='passport'%}selected{% endif %}>Passport</option>
+              <option value="driving" {% if form_data and form_data.get('id_type')=='driving' %}selected{% endif %}>Driving License</option>
+            </select>
+          </div>
+          <div class="fg bk-grid single">
+            <label>ID Number</label>
+            <input type="text" name="id_number" id="idNumber" placeholder="Enter ID number"
+                   value="{{ form_data.get('id_number','') if form_data else '' }}" required>
+            <div class="hint" id="idHint">Enter your ID number</div>
+          </div>
+          <div class="fg bk-grid single">
+            <label>Special Request (optional)</label>
+            <textarea name="special_request" rows="2"
+                      placeholder="e.g. Early check-in, sea-facing room, birthday decoration..."
+                      style="resize:vertical;">{{ form_data.get('special_request','') if form_data else '' }}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANK OFFERS -->
+      <div class="bk-form-card" style="margin-top:1rem;">
+        <div class="bk-section-title">🏦 Bank Offers & Discounts</div>
+        <input type="hidden" name="bank_name" id="bankNameInput" value="{{ form_data.get('bank_name','') if form_data else '' }}">
+        <div class="bank-grid">
+          {% for bank, disc, logo in [('hdfc','10%','🔵'),('sbi','15%','🟢'),('icici','12%','🔴'),('axis','8%','🟤'),('kotak','7%','🟡'),('none','0%','⚪')] %}
+          <div class="bank-card {% if form_data and form_data.get('bank_name')==bank %}selected{% endif %}"
+               onclick="selectBank('{{ bank }}', this)">
+            <div class="bank-logo">{{ logo }}</div>
+            <div>{{ bank.upper() if bank != 'none' else 'No Bank' }}</div>
+            <div class="bank-disc">{{ disc }} off</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- COUPON -->
+        <div style="margin-top:1rem;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-bottom:8px;">Have a Coupon?</div>
+          <div class="coupon-row">
+            <input type="text" class="coupon-input" id="couponInput" placeholder="WELCOME10, HOTEL20..." style="text-transform:uppercase;">
+            <input type="hidden" name="coupon_code" id="couponCodeInput">
+            <button type="button" class="coupon-btn" onclick="applyCoupon()">Apply</button>
+          </div>
+          <div class="coupon-result" id="couponResult"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: PRICE SUMMARY -->
+    <div class="bk-sidebar">
+      <div class="price-card">
+        <div class="price-title">💰 Price Summary</div>
+
+        <div class="price-row">
+          <span class="price-label">🏨 Hotel</span>
+          <span class="price-value" id="hotelName">{{ hotel.name[:20] }}</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">📅 Duration</span>
+          <span class="price-value" id="durationText">Select dates</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">🛏 Rooms needed</span>
+          <span class="price-value" id="roomsNeeded">—</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">🏷 Room rate</span>
+          <span class="price-value" id="roomRate">—</span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">Base amount</span>
+          <span class="price-value" id="baseAmt">₹0</span>
+        </div>
+        <div class="price-row" id="extrasRow" style="display:none;">
+          <span class="price-label">✨ Extras</span>
+          <span class="price-value" id="extrasAmt">₹0</span>
+        </div>
+        <div class="price-row" id="bankDiscRow" style="display:none;">
+          <span class="price-label">🏦 Bank offer</span>
+          <span class="price-discount" id="bankDiscAmt">−₹0</span>
+        </div>
+        <div class="price-row" id="couponDiscRow" style="display:none;">
+          <span class="price-label">🎟 Coupon</span>
+          <span class="price-discount" id="couponDiscAmt">−₹0</span>
+        </div>
+        <div class="price-total-row">
+          <span class="price-total-label">Total Payable</span>
+          <span class="price-total-value" id="totalPayable">₹0</span>
+        </div>
+
+        <button type="submit" class="confirm-btn" id="confirmBtn">
+          🏨 Confirm & Pay →
+        </button>
+
+        <div class="trust-badges">
+          <span class="trust-badge">🔒 Secure</span>
+          <span class="trust-badge">✅ Instant confirm</span>
+          <span class="trust-badge">📧 Email receipt</span>
+        </div>
+
+        <!-- HOTEL SERVICES -->
+        <div style="margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid rgba(255,255,255,.1);">
+          <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem;">Included in Stay</div>
+          <ul class="services-list">
+            <li>🌅 Complimentary breakfast</li>
+            <li>🛎 24×7 Room service</li>
+            <li>🚿 Hot water & AC</li>
+            <li>📶 Free WiFi</li>
+            <li>🅿️ Free parking</li>
+            <li>⚡ Power backup</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </form>
 </div>
-{% endif %}
+{% endblock %}
 
-<form method="POST" id="bookingForm">
-
-<div class="form-grid">
-
-<div>
-<label>Persons</label>
-<input type="number" name="persons" id="persons"
-value="{{ form_data.get('persons','1') if form_data else '1' }}"
-min="1" required>
-</div>
-
-<div>
-<label>Room Type</label>
-<select name="room_id" id="roomSelect" required>
-{% for room in hotel.rooms %}
-<option value="{{ room.id }}"
-data-price="{{ room.base_price }}"
-{% if form_data and form_data.get('room_id') == room.id|string %}selected{% endif %}>
-{{ room.room_type }} - ₹{{ room.base_price }}
-</option>
-{% endfor %}
-</select>
-</div>
-
-<div>
-<label>Check-in</label>
-<input type="date" name="checkin" id="checkin"
-value="{{ form_data.get('checkin') if form_data else '' }}"
-required>
-</div>
-
-<div>
-<label>Check-out</label>
-<input type="date" name="checkout" id="checkout"
-value="{{ form_data.get('checkout') if form_data else '' }}"
-required>
-</div>
-
-<div class="summary-box full" id="summaryBox">
-<p>Rooms: 0</p>
-<p>Nights: 0</p>
-<p>Base: ₹0</p>
-<p>Extras: ₹0</p>
-<p>Discount: ₹0</p>
-<hr>
-<h4>Total: ₹0</h4>
-</div>
-
-<div>
-<label>Full Name</label>
-<input type="text" name="name"
-value="{{ form_data.get('name') if form_data else '' }}"
-required>
-</div>
-
-<div>
-<label>Email</label>
-<input type="email" name="email"
-value="{{ form_data.get('email') if form_data else '' }}"
-required>
-</div>
-
-<div>
-<label>Phone</label>
-<input type="text" name="phone"
-value="{{ form_data.get('phone') if form_data else '' }}"
-required>
-</div>
-<div>
-<label>ID Proof</label>
-<select name="id_type" id="idType" required>
-    <option value="">Select</option>
-    <option value="aadhaar">Aadhaar</option>
-    <option value="pan">PAN</option>
-    <option value="passport">Passport</option>
-    <option value="driving">Driving License</option>
-</select>
-</div>
-
-<div class="full">
-<label>ID Number</label>
-<input type="text" name="id_number"
-required>
-</div>
-
-<div>
-<label>Bank</label>
-<select name="bank_name" id="bankSelect">
-<option value="">Select</option>
-<option value="hdfc" {% if form_data and form_data.get('bank_name')=='hdfc' %}selected{% endif %}>HDFC (10%)</option>
-<option value="sbi" {% if form_data and form_data.get('bank_name')=='sbi' %}selected{% endif %}>SBI (15%)</option>
-<option value="icici" {% if form_data and form_data.get('bank_name')=='icici' %}selected{% endif %}>ICICI (12%)</option>
-</select>
-<button type="button" class="apply-btn" onclick="applyDiscount()">Apply Bank Discount</button>
-</div>
-
-<div>
-<label>Card Number</label>
-<input type="text" name="card_number"
-value="{{ form_data.get('card_number') if form_data else '' }}"
-required>
-</div>
-
-<div class="full">
-<h3>Add Extras</h3>
-
-<label>
-<input type="checkbox" id="lunch" name="lunch" value="1"
-{% if form_data and form_data.get('lunch') %}checked{% endif %}>
-Lunch (+ ₹{{ hotel.lunch_price or 0 }})
-</label>
-
-<label>
-<input type="checkbox" id="dinner" name="dinner" value="1"
-{% if form_data and form_data.get('dinner') %}checked{% endif %}>
-Dinner (+ ₹{{ hotel.dinner_price or 0 }})
-</label>
-
-<label>
-<input type="checkbox" id="pickup" name="pickup" value="1"
-{% if form_data and form_data.get('pickup') %}checked{% endif %}>
-Pickup (+ ₹{{ hotel.pickup_price or 0 }})
-</label>
-</div>
-
-<button type="submit" class="confirm-btn">Confirm Booking</button>
-
-</div>
-</form>
-</div>
-
-<!-- RIGHT SIDE SERVICES -->
-<div class="hotel-details">
-
-<h3>Hotel Services</h3>
-<ul>
-<li>✔ Complimentary breakfast</li>
-<li>✔ Room service</li>
-<li>✔ 24x7 Security</li>
-<li>✔ CCTV Surveillance</li>
-<li>✔ AC Rooms</li>
-<li>✔ Free Parking</li>
-<li>✔ Power Backup</li>
-</ul>
-
-</div>
-</div>
+{% block extra_js %}
 <script>
-document.addEventListener("DOMContentLoaded", function(){
-
-const persons = document.getElementById("persons");
-const roomSelect = document.getElementById("roomSelect");
-const checkin = document.getElementById("checkin");
-const checkout = document.getElementById("checkout");
-const summaryBox = document.getElementById("summaryBox");
-const bankSelect = document.getElementById("bankSelect");
-
-const lunch = document.getElementById("lunch");
-const dinner = document.getElementById("dinner");
-const pickup = document.getElementById("pickup");
-
-const lunchPrice = {{ hotel.lunch_price or 0 }};
-const dinnerPrice = {{ hotel.dinner_price or 0 }};
-const pickupPrice = {{ hotel.pickup_price or 0 }};
-
-let discountAmount = {{ applied_discount or 0 }};
-
-
-/* ================= DATE VALIDATION ================= */
-
-const today = new Date().toISOString().split("T")[0];
-checkin.min = today;
-checkout.min = today;
-
-checkin.addEventListener("change", function(){
-    checkout.min = checkin.value;
-    if(checkout.value < checkin.value){
-        checkout.value = checkin.value;
-    }
-    calculate();
-});
-
-/* ================= MAIN CALCULATION ================= */
-
-function calculate(){
-
-if(!checkin.value || !checkout.value){
-    return;
-}
-
-const p = parseInt(persons.value) || 1;
-const price = parseInt(roomSelect.selectedOptions[0].dataset.price);
-
-const inDate = new Date(checkin.value);
-const outDate = new Date(checkout.value);
-
-let nights = (outDate - inDate)/(1000*60*60*24);
-if(nights <= 0) nights = 1;
-
-const rooms = Math.ceil(p/2);
-const base = nights * price * rooms;
-
-let extra = 0;
-if(lunch.checked) extra += lunchPrice * p;
-if(dinner.checked) extra += dinnerPrice * p;
-if(pickup.checked) extra += pickupPrice;
-
-let totalBeforeDiscount = base + extra;
-let finalTotal = totalBeforeDiscount - discountAmount;
-
-if(finalTotal < 0) finalTotal = 0;
-
-summaryBox.innerHTML = `
-<p>Rooms: ${rooms}</p>
-<p>Nights: ${nights}</p>
-<p>Base: ₹${base}</p>
-<p>Extras: ₹${extra}</p>
-<p>Discount: ₹${discountAmount}</p>
-<hr>
-<h4>Total: ₹${Math.round(finalTotal)}</h4>
-`;
-}
-
-/* ================= APPLY BANK DISCOUNT ================= */
-
-window.applyDiscount = function(){
-
-if(!checkin.value || !checkout.value){
-    alert("Please select dates first");
-    return;
-}
-
-const p = parseInt(persons.value) || 1;
-const price = parseInt(roomSelect.selectedOptions[0].dataset.price);
-
-const inDate = new Date(checkin.value);
-const outDate = new Date(checkout.value);
-
-let nights = (outDate - inDate)/(1000*60*60*24);
-if(nights <= 0) nights = 1;
-
-const rooms = Math.ceil(p/2);
-
-let total = nights * price * rooms;
-
-if(lunch.checked) total += lunchPrice * p;
-if(dinner.checked) total += dinnerPrice * p;
-if(pickup.checked) total += pickupPrice;
-
-let percent = 0;
-
-if(bankSelect.value === "hdfc") percent = 10;
-if(bankSelect.value === "sbi") percent = 15;
-if(bankSelect.value === "icici") percent = 12;
-
-if(percent === 0){
-    alert("Please select valid bank");
-    return;
-}
-
-discountAmount = Math.round(total * percent / 100);
-
-calculate();
+// ── CONFIG ────────────────────────────────────────────────────
+const ROOM_PRICES = {
+  {% for room in hotel.rooms %}
+  "{{ room.id }}": {{ room.base_price or 0 }}{% if not loop.last %},{% endif %}
+  {% endfor %}
 };
+const LUNCH_PRICE  = {{ hotel.lunch_price  or 500 }};
+const DINNER_PRICE = {{ hotel.dinner_price or 600 }};
+const PICKUP_PRICE = {{ hotel.pickup_price or 800 }};
+const BANK_DISCOUNTS = {hdfc:10, sbi:15, icici:12, axis:8, kotak:7, none:0};
 
-/* ================= EVENT LISTENERS ================= */
+let selectedBank     = "{{ form_data.get('bank_name','') if form_data else '' }}";
+let couponDiscount   = 0;
+let couponApplied    = false;
 
-persons.oninput = calculate;
-roomSelect.onchange = calculate;
-checkout.onchange = calculate;
-lunch.onchange = calculate;
-dinner.onchange = calculate;
-pickup.onchange = calculate;
+// ── DATE SETUP ────────────────────────────────────────────────
+const today = new Date().toISOString().split("T")[0];
+document.getElementById('checkin').min  = today;
+document.getElementById('checkout').min = today;
 
+document.getElementById('checkin').addEventListener('change', function() {
+  const ci = this.value;
+  document.getElementById('checkout').min = ci;
+  // Same day allowed — checkout can equal checkin
+  if (document.getElementById('checkout').value < ci) {
+    document.getElementById('checkout').value = ci;
+  }
+  calculate();
+});
+document.getElementById('checkout').addEventListener('change', calculate);
+document.getElementById('persons').addEventListener('input', calculate);
+
+// ── ROOM SELECTION ────────────────────────────────────────────
+function selectRoom(label) {
+  document.querySelectorAll('.room-card').forEach(c => c.classList.remove('selected'));
+  label.classList.add('selected');
+  calculate();
+}
+
+// ── EXTRAS TOGGLE ────────────────────────────────────────────
+function toggleExtra(label) {
+  const cb = label.querySelector('input[type="checkbox"]');
+  setTimeout(() => {
+    label.classList.toggle('selected', cb.checked);
+    calculate();
+  }, 0);
+}
+
+// ── BANK SELECTION ───────────────────────────────────────────
+function selectBank(bank, el) {
+  document.querySelectorAll('.bank-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedBank = bank;
+  document.getElementById('bankNameInput').value = bank === 'none' ? '' : bank;
+  calculate();
+}
+
+// ── COUPON ───────────────────────────────────────────────────
+async function applyCoupon() {
+  const code   = document.getElementById('couponInput').value.trim().toUpperCase();
+  const result = document.getElementById('couponResult');
+  if (!code) { result.innerHTML = '<span class="coupon-err">Enter a coupon code</span>'; return; }
+
+  // Calculate current amount for min check
+  const amt = calcTotal(false);
+  try {
+    const resp = await fetch('/api/validate-coupon', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({code, amount: amt})
+    });
+    const data = await resp.json();
+    if (data.valid) {
+      couponDiscount = data.discount;
+      couponApplied  = true;
+      document.getElementById('couponCodeInput').value = code;
+      result.innerHTML = `<span class="coupon-ok">✓ ${data.message}</span>`;
+    } else {
+      couponDiscount = 0;
+      couponApplied  = false;
+      result.innerHTML = `<span class="coupon-err">✗ ${data.message}</span>`;
+    }
+  } catch(e) {
+    couponDiscount = 0;
+    result.innerHTML = '<span class="coupon-err">Could not validate coupon</span>';
+  }
+  calculate();
+}
+
+// ── CALCULATE ────────────────────────────────────────────────
+function calcTotal(updateUI = true) {
+  const checkin  = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+  const persons  = parseInt(document.getElementById('persons').value) || 1;
+  const roomEl   = document.querySelector('input[name="room_id"]:checked');
+  const roomPrice= roomEl ? (ROOM_PRICES[roomEl.value] || 0) : 0;
+
+  // Same day = 1 night
+  let nights = 0;
+  if (checkin && checkout) {
+    nights = Math.max((new Date(checkout) - new Date(checkin)) / (1000*60*60*24), 0);
+    if (nights === 0 && checkout >= checkin) nights = 1; // same day checkout = 1 night
+  }
+
+  const rooms     = Math.ceil(persons / 2);
+  const base      = nights * roomPrice * rooms;
+  const lunch     = document.querySelector('[name="lunch"]')?.checked;
+  const dinner    = document.querySelector('[name="dinner"]')?.checked;
+  const pickup    = document.querySelector('[name="pickup"]')?.checked;
+  let   extras    = 0;
+  if (lunch)  extras += LUNCH_PRICE  * persons;
+  if (dinner) extras += DINNER_PRICE * persons;
+  if (pickup) extras += PICKUP_PRICE;
+
+  const subtotal  = base + extras;
+  const bankPct   = BANK_DISCOUNTS[selectedBank] || 0;
+  const bankDisc  = Math.round(subtotal * bankPct / 100);
+  const afterBank = subtotal - bankDisc;
+  const total     = Math.max(afterBank - couponDiscount, 0);
+
+  if (updateUI) {
+    const fmt = n => '₹' + Math.round(n).toLocaleString('en-IN');
+    document.getElementById('durationText').textContent  = nights ? `${nights} night${nights>1?'s':''}` : 'Select dates';
+    document.getElementById('roomsNeeded').textContent   = `${rooms} room${rooms>1?'s':''}`;
+    document.getElementById('roomRate').textContent      = fmt(roomPrice) + '/night';
+    document.getElementById('baseAmt').textContent       = fmt(base);
+    document.getElementById('totalPayable').textContent  = fmt(total);
+
+    const extRow = document.getElementById('extrasRow');
+    extRow.style.display = extras > 0 ? 'flex' : 'none';
+    document.getElementById('extrasAmt').textContent = fmt(extras);
+
+    const bankRow = document.getElementById('bankDiscRow');
+    bankRow.style.display = bankDisc > 0 ? 'flex' : 'none';
+    document.getElementById('bankDiscAmt').textContent = '−' + fmt(bankDisc);
+
+    const couponRow = document.getElementById('couponDiscRow');
+    couponRow.style.display = couponDiscount > 0 ? 'flex' : 'none';
+    document.getElementById('couponDiscAmt').textContent = '−' + fmt(couponDiscount);
+
+    const badge = document.getElementById('nightsBadge');
+    const nightsText = document.getElementById('nightsText');
+    if (nights > 0) {
+      badge.style.display = 'inline-block';
+      nightsText.textContent = nights + (nights === 1 && new Date(checkout).getTime() === new Date(checkin).getTime() ? ' (same day checkout)' : '');
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  return subtotal;
+}
+
+function calculate() { calcTotal(true); }
+
+// ── ID TYPE HINTS ─────────────────────────────────────────────
+document.querySelector('[name="id_type"]').addEventListener('change', function() {
+  const hints = {
+    aadhaar: 'Enter 12-digit Aadhaar number',
+    pan:     'Format: ABCDE1234F (5 letters + 4 digits + 1 letter)',
+    passport:'Enter passport number (8-9 characters)',
+    driving: 'Enter driving license number'
+  };
+  document.getElementById('idHint').textContent = hints[this.value] || '';
+});
+
+// ── FORM SUBMIT ───────────────────────────────────────────────
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+  const checkin  = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+  if (!checkin || !checkout) {
+    e.preventDefault();
+    alert('Please select check-in and check-out dates.');
+    return;
+  }
+  if (checkout < checkin) {
+    e.preventDefault();
+    alert('Check-out date cannot be before check-in date.');
+    return;
+  }
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Processing...';
+});
+
+// ── INIT ─────────────────────────────────────────────────────
 calculate();
-
-});
-
-</script>
-<script>
-
-document.getElementById("bookingForm").addEventListener("submit", function(e){
-
-    const form = this;
-
-    // 🔥 Check basic required fields before popup
-    if(!form.checkValidity()){
-        return; // browser validation show thase
-    }
-
-    // 🔥 Custom confirm popup
-    const confirmBooking = confirm("Are you sure you want to confirm this booking?");
-
-    if(!confirmBooking){
-        e.preventDefault(); // stop submit
-        return;
-    }
-
-});
-
-</script>
-<script>
-document.getElementById("idType").onchange = function() {
-    let input = document.getElementById("idNumber");
-    if(this.value === "aadhaar") {
-        input.maxLength = 12; input.pattern = "[0-9]{12}";
-    }
-    else if(this.value === "pan") {
-        input.maxLength = 10; input.pattern = "[A-Z]{5}[0-9]{4}[A-Z]";
-    }
-    else if(this.value === "passport") {
-        input.maxLength = 8; input.pattern = "[A-Za-z0-9]{8}";
-    }
-    else if(this.value === "driving") {
-        input.maxLength = 16; input.pattern = "[A-Za-z0-9]{10,16}";
-    }};
+// Pre-select first room
+const firstRoom = document.querySelector('.room-card');
+if (firstRoom) firstRoom.classList.add('selected');
+// Pre-select bank if form_data
+if (selectedBank) {
+  const bankEl = document.querySelector(`.bank-card[onclick*="${selectedBank}"]`);
+  if (bankEl) bankEl.classList.add('selected');
+}
 </script>
 {% endblock %}

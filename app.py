@@ -2416,16 +2416,14 @@ def hype_spots(hotel_booking_id):
         nights = max((hotel_booking.check_out - hotel_booking.check_in).days, 1)
 
     return render_template("hype_spots.html",
-        spots=spots,
-        transports=transports,
-        destination_name=destination.name,
-        hotel_id=hotel.id,
-        hotel_booking_id=hotel_booking.id,
-        hotel_booking=hotel_booking,
-        hotel_name=hotel.name,
-        total_days=total_days,
-        nights=nights,
-        persons=persons)
+    spots=spots, transports=transports,
+    destination_name=destination.name,
+    hotel_id=hotel.id,
+    hotel_booking_id=hotel_booking.id,
+    hotel_booking=hotel_booking,
+    hotel=hotel,          # ← ADD THIS LINE
+    hotel_name=hotel,
+    nights=nights, persons=persons)
 
 
 @app.route("/book-cab/<int:hotel_booking_id>", methods=["POST"])
@@ -3256,8 +3254,24 @@ def generate_invoice_pdf(booking_id):
 
     doc.build(elements)
     return file_path
+WEATHER_API_KEY = "bd5e378503939ddaee76f12ad7a97608"
 
-
+@app.route("/api/weather")
+def weather_api():
+    city = request.args.get("city", "")
+    try:
+        resp = requests.get("https://api.openweathermap.org/data/2.5/weather",
+            params={"q": city+",IN","appid":WEATHER_API_KEY,"units":"metric"},timeout=5)
+        data = resp.json()
+        if data.get("cod") == 200:
+            return jsonify({"temp":round(data["main"]["temp"]),
+                "feels_like":round(data["main"]["feels_like"]),
+                "desc":data["weather"][0]["description"].title(),
+                "icon":data["weather"][0]["icon"],
+                "humidity":data["main"]["humidity"],
+                "wind":round(data["wind"]["speed"]*3.6)})
+    except: pass
+    return jsonify({"error":"not available"})
 
 # ================= RUN =================
 if __name__ == "__main__":
