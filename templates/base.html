@@ -206,5 +206,197 @@ async function toggleWishlist(destId, btn) {
   btn.title = data.status === 'added' ? 'Remove from wishlist' : 'Add to wishlist';
 }
 </script>
+<!-- 
+  ======================================================
+  TRIPMORE GLOBAL SPINNER
+  ======================================================
+  Paste this block ONCE inside your base.html, 
+  just BEFORE the closing </body> tag.
+  It covers the ENTIRE website automatically —
+  every link click, form submit, and button press.
+  ======================================================
+-->
+
+<!-- Spinner overlay (hidden by default) -->
+<div id="tm-spinner-overlay" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(10,10,20,0.55);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:18px;
+">
+  <!-- Animated logo + ring -->
+  <div style="position:relative;width:80px;height:80px;">
+    <!-- Outer spinning ring -->
+    <svg width="80" height="80" viewBox="0 0 80 80" style="position:absolute;top:0;left:0;animation:tm-spin 1s linear infinite;">
+      <circle cx="40" cy="40" r="34" fill="none" stroke="#e94560" stroke-width="5"
+              stroke-dasharray="160 55" stroke-linecap="round"/>
+    </svg>
+    <!-- Inner static circle with T logo -->
+    <div style="
+      position:absolute;inset:12px;
+      background:#1a1a2e;
+      border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;font-weight:900;color:#e94560;font-family:Arial,sans-serif;
+      letter-spacing:-1px;
+    ">T</div>
+  </div>
+
+  <!-- Loading text -->
+  <div id="tm-spinner-text" style="
+    color:#ffffff;
+    font-size:15px;
+    font-family:Arial,sans-serif;
+    font-weight:600;
+    letter-spacing:0.5px;
+    text-align:center;
+  ">Loading…</div>
+
+  <!-- Animated dots bar -->
+  <div style="display:flex;gap:6px;margin-top:-8px;">
+    <span class="tm-dot" style="width:8px;height:8px;border-radius:50%;background:#e94560;display:inline-block;animation:tm-bounce 1.2s ease-in-out 0s infinite;"></span>
+    <span class="tm-dot" style="width:8px;height:8px;border-radius:50%;background:#e94560;display:inline-block;animation:tm-bounce 1.2s ease-in-out 0.2s infinite;"></span>
+    <span class="tm-dot" style="width:8px;height:8px;border-radius:50%;background:#e94560;display:inline-block;animation:tm-bounce 1.2s ease-in-out 0.4s infinite;"></span>
+  </div>
+</div>
+
+<style>
+@keyframes tm-spin   { to { transform: rotate(360deg); } }
+@keyframes tm-bounce {
+  0%,80%,100% { transform: scale(0.6); opacity:0.4; }
+  40%         { transform: scale(1.2); opacity:1;   }
+}
+/* Prevent body scroll while spinner is visible */
+body.tm-loading { overflow: hidden; }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  const overlay = document.getElementById("tm-spinner-overlay");
+  const textEl  = document.getElementById("tm-spinner-text");
+
+  /* ── Messages matched to URL keywords ── */
+  const MSG_MAP = [
+    [/confirm-flight/,  "Booking your flight ✈️"],
+    [/confirm-train/,   "Booking your train 🚆"],
+    [/confirm-bus/,     "Booking your bus 🚌"],
+    [/book-cab/,        "Booking your cab 🚗"],
+    [/payment/,         "Processing payment 💳"],
+    [/book-hotel/,      "Confirming hotel 🏨"],
+    [/download-invoice/,"Preparing invoice 📄"],
+    [/send-invoice/,    "Sending invoice ✉️"],
+    [/trip-planner/,    "AI is thinking 🤖"],
+    [/login|signup/,    "Signing you in 🔐"],
+    [/my-bookings/,     "Loading bookings 📋"],
+    [/dashboard/,       "Loading dashboard 🏠"],
+  ];
+
+  function getMsg(url) {
+    for (const [re, msg] of MSG_MAP) {
+      if (re.test(url)) return msg;
+    }
+    return "Loading…";
+  }
+
+  function showSpinner(msg) {
+    if (!overlay) return;
+    textEl.textContent = msg || "Loading…";
+    overlay.style.display = "flex";
+    document.body.classList.add("tm-loading");
+  }
+
+  function hideSpinner() {
+    if (!overlay) return;
+    overlay.style.display = "none";
+    document.body.classList.remove("tm-loading");
+  }
+
+  /* ── Intercept ALL <a> link clicks (except anchors, js:, target=_blank) ── */
+  document.addEventListener("click", function (e) {
+    const a = e.target.closest("a");
+    if (!a) return;
+    const href = a.getAttribute("href") || "";
+    if (
+      !href ||
+      href.startsWith("#") ||
+      href.startsWith("javascript") ||
+      a.getAttribute("target") === "_blank" ||
+      e.ctrlKey || e.metaKey || e.shiftKey   // open-in-tab shortcuts
+    ) return;
+    showSpinner(getMsg(href));
+  }, true);
+
+  /* ── Intercept ALL <form> submits ── */
+  document.addEventListener("submit", function (e) {
+    const form   = e.target;
+    const action = form.getAttribute("action") || window.location.href;
+    // Find the submit button that was clicked (if any) and disable it
+    const btn = form.querySelector('[type="submit"]');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = "0.6";
+      btn.style.cursor  = "not-allowed";
+    }
+    showSpinner(getMsg(action));
+  }, true);
+
+  /* ── Also disable buttons that navigate (onclick with location.href) ── */
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("button[data-href], button[onclick]");
+    if (!btn) return;
+    const href = btn.dataset.href || "";
+    if (href) showSpinner(getMsg(href));
+  }, true);
+
+  /* ── Hide spinner on back/forward navigation ── */
+  window.addEventListener("pageshow", function (e) {
+    hideSpinner();
+    // Re-enable any disabled buttons (e.g. after back navigation)
+    document.querySelectorAll("button[disabled], input[type='submit'][disabled]").forEach(function(b) {
+      b.disabled = false;
+      b.style.opacity = "";
+      b.style.cursor  = "";
+    });
+  });
+
+  /* ── Hide on popstate ── */
+  window.addEventListener("popstate", hideSpinner);
+
+  /* ── Safety net: hide after 12s max (prevents infinite spinner on errors) ── */
+  let safetyTimer = null;
+  const _showOrig = showSpinner;
+  window._tmShowSpinner = function(msg) {
+    clearTimeout(safetyTimer);
+    _showOrig(msg);
+    safetyTimer = setTimeout(hideSpinner, 12000);
+  };
+
+})();
+</script>
+
+<!-- 
+  ======================================================
+  ALSO ADD THIS to every "Book Now" / "Confirm" button
+  that uses a plain <a> link (optional, for extra safety):
+
+  Example:
+    <a href="/confirm-flight/5?hotel_booking_id=12"
+       onclick="this.style.pointerEvents='none';this.innerHTML='Booking…';">
+      Book Flight
+    </a>
+
+  This disables the link immediately on click so the user
+  cannot double-click even if the spinner is slow to appear.
+  ======================================================
+-->
 </body>
 </html>
