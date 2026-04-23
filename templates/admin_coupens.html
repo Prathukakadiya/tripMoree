@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Admin — Coupons{% endblock %}
+{% block content %}
+<div style="max-width:1000px;margin:2rem auto;padding:0 1.5rem;">
+  <h1 style="font-family:Georgia,serif;font-size:1.5rem;margin-bottom:1.5rem;">🎟 Coupons</h1>
+  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;">
+    <h3 style="font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem;">Add New Coupon</h3>
+    <form method="POST" action="{{ url_for('admin_add_coupon') }}" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end;">
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Code</label><input type="text" name="code" required style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;text-transform:uppercase;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Discount %</label><input type="number" name="discount_percent" value="10" min="1" max="100" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Max Discount ₹</label><input type="number" name="max_discount" value="5000" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Min Amount ₹</label><input type="number" name="min_amount" value="0" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Usage Limit</label><input type="number" name="usage_limit" value="100" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Valid From</label><input type="date" name="valid_from" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Valid Till</label><input type="date" name="valid_till" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <button type="submit" style="padding:10px 16px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;height:40px;">Add Coupon</button>
+    </form>
+  </div>
+  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:#f8f6f1;">
+        {% for h in ['Code','Discount','Max ₹','Min ₹','Used','Valid Till','Status','Action'] %}
+        <th style="padding:10px 14px;text-align:left;font-size:11px;color:#888;font-weight:600;">{{ h }}</th>
+        {% endfor %}
+      </tr></thead>
+      <tbody>
+      {% for c in coupons %}
+      <tr style="border-top:1px solid #f0ede8;">
+        <td style="padding:10px 14px;font-family:monospace;font-size:13px;font-weight:700;color:#0d0f0e;">{{ c.code }}</td>
+        <td style="padding:10px 14px;font-size:13px;">{{ c.discount_percent }}%</td>
+        <td style="padding:10px 14px;font-size:13px;">₹{{ "{:,}".format(c.max_discount) }}</td>
+        <td style="padding:10px 14px;font-size:13px;">₹{{ "{:,}".format(c.min_amount) }}</td>
+        <td style="padding:10px 14px;font-size:13px;">{{ c.used_count }}/{{ c.usage_limit }}</td>
+        <td style="padding:10px 14px;font-size:12px;color:#888;">{{ c.valid_till or '—' }}</td>
+        <td style="padding:10px 14px;"><span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;background:{% if c.active %}#d1fae5;color:#065f46{% else %}#fee2e2;color:#991b1b{% endif %};">{{ 'Active' if c.active else 'Inactive' }}</span></td>
+        <td style="padding:10px 14px;"><a href="{{ url_for('admin_toggle_coupon', coupon_id=c.id) }}" style="font-size:12px;color:#c9a84c;text-decoration:none;font-weight:600;">{{ 'Disable' if c.active else 'Enable' }}</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:1rem;"><a href="{{ url_for('admin_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Admin Dashboard</a></div>
+</div>
+{% endblock %}

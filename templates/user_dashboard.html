@@ -1,158 +1,173 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — TripMore{% endblock %}
-
+{% block title %}Dashboard — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.dash-wrap{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px);}
+.dash-side{background:#0d0f0e;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:.3rem;}
+.dash-user{display:flex;align-items:center;gap:.8rem;padding:.8rem;margin-bottom:.8rem;border-bottom:1px solid rgba(255,255,255,.08);}
+.dash-av{width:42px;height:42px;background:#c9a84c;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:#fff;flex-shrink:0;}
+.dash-name{font-size:13px;font-weight:600;color:#fff;}
+.dash-email{font-size:11px;color:rgba(255,255,255,.3);word-break:break-all;}
+.dash-link{display:flex;align-items:center;gap:.6rem;padding:9px 12px;border-radius:8px;text-decoration:none;font-size:13px;color:rgba(255,255,255,.5);transition:.2s;}
+.dash-link:hover{background:rgba(255,255,255,.06);color:#fff;}
+.dash-link.active{background:rgba(201,168,76,.15);color:#c9a84c;}
+.dash-section{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.2);padding:8px 12px 4px;margin-top:.5rem;}
+.dash-main{padding:2rem 1.5rem;background:#f8f6f1;}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.dash-greet{font-family:Georgia,serif;font-size:1.6rem;color:#0d0f0e;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.m-card{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:1.2rem;}
+.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem;}
+.m-val{font-family:Georgia,serif;font-size:1.8rem;font-weight:600;color:#0d0f0e;}
+.m-sub{font-size:11px;color:#c9a84c;margin-top:.2rem;}
+.upcoming-card{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;}
+.quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.8rem;margin-bottom:1.5rem;}
+.qa{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1rem;text-decoration:none;color:#0d0f0e;transition:.2s;gap:.4rem;}
+.qa:hover{border-color:#c9a84c;transform:translateY(-2px);}
+.qa-icon{font-size:1.6rem;}
+.qa-label{font-size:12px;font-weight:600;}
+.recent-table{background:#fff;border:1px solid #e8e4de;border-radius:16px;overflow:hidden;}
+.rt-header{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid #f0ede8;}
+.rt-title{font-family:Georgia,serif;font-size:1rem;font-weight:600;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 16px;text-align:left;font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:#f8f6f1;}
+td{padding:12px 16px;font-size:13px;border-top:1px solid #f0ede8;}
+.status-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.status-active{background:#d1fae5;color:#065f46;}
+.status-cancelled{background:#fee2e2;color:#991b1b;}
+.status-completed{background:#e0e7ff;color:#3730a3;}
+.status-demo,.status-pending{background:#fef3c7;color:#92400e;}
+.tier-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.tier-bronze{background:#fde68a;color:#92400e;}
+.tier-silver{background:#e5e7eb;color:#374151;}
+.tier-gold{background:#fef3c7;color:#b45309;}
+@media(max-width:900px){.dash-wrap{grid-template-columns:1fr;}.dash-side{display:none;}.metrics{grid-template-columns:1fr 1fr;}}
+</style>{% endblock %}
 {% block content %}
-<div class="dashboard-layout">
-
+<div class="dash-wrap">
   <!-- SIDEBAR -->
-  <div class="dash-sidebar">
-    <div class="dash-user-block">
-      <div class="dash-avatar">{{ user.name[0].upper() }}</div>
+  <div class="dash-side">
+    <div class="dash-user">
+      <div class="dash-av">{{ (user.name or 'U')[0].upper() }}</div>
       <div>
-        <div class="dash-user-name">{{ user.name }}</div>
-        <div class="dash-user-email">{{ user.email }}</div>
+        <div class="dash-name">{{ user.name }}</div>
+        <div class="dash-email">{{ user.email }}</div>
       </div>
     </div>
-    <a href="{{ url_for('user_dashboard') }}" class="dash-nav-item active">
-      <span class="dash-nav-icon">◉</span> Overview
+    <div class="dash-section">Bookings</div>
+    <a href="{{ url_for('user_dashboard') }}" class="dash-link active">📊 Overview</a>
+    <a href="{{ url_for('my_bookings') }}" class="dash-link">📋 My Bookings</a>
+    <a href="{{ url_for('my_wishlist') }}" class="dash-link">♡ Wishlist ({{ wishlist_cnt }})</a>
+    <a href="{{ url_for('analytics') }}" class="dash-link">📈 Analytics</a>
+    <div class="dash-section">Perks</div>
+    <a href="{{ url_for('loyalty_page') }}" class="dash-link">⭐ Loyalty Points
+      <span style="margin-left:auto;background:rgba(201,168,76,.2);color:#c9a84c;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">{{ user.loyalty_points or 0 }}</span>
     </a>
-    <a href="{{ url_for('my_bookings') }}" class="dash-nav-item">
-      <span class="dash-nav-icon">✈</span> My Bookings
-    </a>
-    <a href="{{ url_for('my_wishlist') }}" class="dash-nav-item">
-      <span class="dash-nav-icon">♡</span> Wishlist ({{ wishlist_cnt }})
-    </a>
-    <a href="{{ url_for('analytics') }}" class="dash-nav-item">
-      <span class="dash-nav-icon">📊</span> Analytics
-    </a>
-    <a href="{{ url_for('destinations_page') }}" class="dash-nav-item">
-      <span class="dash-nav-icon">🌍</span> Explore
-    </a>
+    <a href="{{ url_for('notifications') }}" class="dash-link">🔔 Notifications</a>
+    <div class="dash-section">Account</div>
+    <a href="{{ url_for('user_profile') }}" class="dash-link">👤 Profile</a>
+    <a href="{{ url_for('my_support') }}" class="dash-link">🎧 Support</a>
     <div style="flex:1;"></div>
-    <a href="{{ url_for('logout') }}" class="dash-nav-item" style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:auto;">
-      <span class="dash-nav-icon">↩</span> Sign Out
-    </a>
+    <a href="{{ url_for('logout') }}" class="dash-link" style="border-top:1px solid rgba(255,255,255,.08);padding-top:10px;margin-top:.5rem;">↩ Logout</a>
   </div>
 
-  <!-- MAIN CONTENT -->
-  <div class="dash-content">
-
-    <!-- HEADER -->
+  <!-- MAIN -->
+  <div class="dash-main">
     <div class="dash-header">
       <div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
-          {% set hour = now.hour if now else 12 %}
-          {% if hour < 12 %}Good morning{% elif hour < 17 %}Good afternoon{% else %}Good evening{% endif %}
+        <div style="font-size:12px;color:#888;margin-bottom:4px;">
+          {% if now %}{% set h=now.hour %}{% if h<12 %}Good morning{% elif h<17 %}Good afternoon{% else %}Good evening{% endif %}{% endif %}, {{ user.name.split()[0] }}!
         </div>
-        <h2 class="dash-greeting">Welcome back, {{ user.name.split()[0] }} ✦</h2>
+        <div class="dash-greet">Your Travel Dashboard ✦</div>
       </div>
-      <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">+ Plan New Trip</a>
+      <a href="{{ url_for('destinations_page') }}" style="padding:12px 22px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;">+ New Trip</a>
     </div>
 
     <!-- METRICS -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Trips</div>
-        <div class="metric-value">{{ total_trips }}</div>
-        <div class="metric-change metric-up">All time</div>
+    <div class="metrics">
+      <div class="m-card">
+        <div class="m-label">Total Trips</div>
+        <div class="m-val">{{ total_trips }}</div>
+        <div class="m-sub">All time</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Total Spent</div>
-        <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
-        <div class="metric-change metric-up">Lifetime</div>
+      <div class="m-card">
+        <div class="m-label">Total Spent</div>
+        <div class="m-val">₹{{ "{:,}".format(total_spent|int) }}</div>
+        <div class="m-sub">Lifetime</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Wishlist</div>
-        <div class="metric-value">{{ wishlist_cnt }}</div>
-        <div class="metric-change" style="color:var(--gold);">Saved places</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Upcoming</div>
-        <div class="metric-value">{{ upcoming | length }}</div>
-        <div class="metric-change" style="color:var(--gold);">
-          {% if upcoming %}Next: {{ upcoming[0].booking.destination }}{% else %}No trips yet{% endif %}
+      <div class="m-card">
+        <div class="m-label">Loyalty Points</div>
+        <div class="m-val">{{ user.loyalty_points or 0 }}</div>
+        <div class="m-sub">
+          {% set pts = user.loyalty_points or 0 %}
+          {% if pts >= 5000 %}<span class="tier-badge tier-gold">Gold</span>
+          {% elif pts >= 1000 %}<span class="tier-badge tier-silver">Silver</span>
+          {% else %}<span class="tier-badge tier-bronze">Bronze</span>{% endif %}
         </div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Upcoming Trips</div>
+        <div class="m-val">{{ upcoming|length }}</div>
+        <div class="m-sub">{{ upcoming[0].booking.destination if upcoming else 'None scheduled' }}</div>
       </div>
     </div>
 
-    <!-- UPCOMING TRIP -->
+    <!-- UPCOMING -->
     {% if upcoming %}
-    <div style="background:linear-gradient(135deg,var(--ink),#1a2e2a);border-radius:var(--radius-lg);padding:1.8rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
-      <div style="width:64px;height:64px;background:var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0;">✈</div>
+    <div class="upcoming-card">
+      <div style="width:52px;height:52px;background:#c9a84c;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;">✈️</div>
       <div style="flex:1;">
-        <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px;">Upcoming Trip</div>
-        <div style="font-family:var(--font-display);font-size:1.5rem;color:#fff;">{{ upcoming[0].booking.destination }}</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;">
-          Check-in: {{ upcoming[0].hotel.check_in }} · {{ upcoming[0].hotel.persons }} guests
+        <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Next Trip</div>
+        <div style="font-family:Georgia,serif;font-size:1.3rem;color:#fff;font-weight:600;">{{ upcoming[0].booking.destination }}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:3px;">
+          Check-in: {{ upcoming[0].hotel.check_in }} · {{ upcoming[0].hotel.persons }} guest{{ 's' if upcoming[0].hotel.persons > 1 }}
         </div>
       </div>
-      <div>
-        <span class="status-pill status-confirmed">Confirmed</span>
-      </div>
+      <a href="{{ url_for('my_bookings') }}" style="padding:10px 18px;background:rgba(201,168,76,.2);color:#c9a84c;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1px solid rgba(201,168,76,.3);">View Booking →</a>
     </div>
     {% endif %}
 
+    <!-- QUICK ACTIONS -->
+    <div class="quick-actions">
+      <a href="{{ url_for('destinations_page') }}" class="qa"><span class="qa-icon">🌍</span><span class="qa-label">Explore</span></a>
+      <a href="{{ url_for('trip_planner') }}" class="qa"><span class="qa-icon">🤖</span><span class="qa-label">AI Planner</span></a>
+      <a href="{{ url_for('my_wishlist') }}" class="qa"><span class="qa-icon">♡</span><span class="qa-label">Wishlist</span></a>
+      <a href="{{ url_for('loyalty_page') }}" class="qa"><span class="qa-icon">⭐</span><span class="qa-label">Points</span></a>
+      <a href="{{ url_for('community') }}" class="qa"><span class="qa-icon">👥</span><span class="qa-label">Community</span></a>
+      <a href="{{ url_for('currency_page') }}" class="qa"><span class="qa-icon">💱</span><span class="qa-label">Currency</span></a>
+      <a href="{{ url_for('user_profile') }}" class="qa"><span class="qa-icon">👤</span><span class="qa-label">Profile</span></a>
+      <a href="{{ url_for('my_support') }}" class="qa"><span class="qa-icon">🎧</span><span class="qa-label">Support</span></a>
+    </div>
+
     <!-- RECENT BOOKINGS -->
-    <div class="data-table-card">
-      <div class="table-header-row">
-        <div class="table-title">Recent Bookings</div>
-        <a href="{{ url_for('my_bookings') }}" class="btn btn-outline" style="font-size:12px;padding:6px 14px;">View All</a>
+    <div class="recent-table">
+      <div class="rt-header">
+        <div class="rt-title">Recent Bookings</div>
+        <a href="{{ url_for('my_bookings') }}" style="font-size:13px;color:#c9a84c;text-decoration:none;font-weight:600;">View all →</a>
       </div>
       {% if my_bookings %}
       <table>
-        <thead>
-          <tr>
-            <th>Booking ID</th>
-            <th>Destination</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Booking ID</th><th>Destination</th><th>Date</th><th>Status</th><th>Invoice</th>
+        </tr></thead>
         <tbody>
-          {% for b in my_bookings %}
-          <tr>
-            <td style="font-family:monospace;font-size:12px;color:var(--muted);">#TM-{{ '%04d'|format(b.id) }}</td>
-            <td><strong>{{ b.destination }}</strong></td>
-            <td style="color:var(--muted);">{{ b.created_at.strftime('%d %b %Y') if b.created_at else '—' }}</td>
-            <td><span class="status-pill status-{{ b.status }}">{{ b.status | title }}</span></td>
-            <td>
-              <a href="{{ url_for('download_invoice', booking_id=b.id) }}" style="color:var(--gold);font-size:13px;">
-                ↓ Invoice
-              </a>
-            </td>
-          </tr>
-          {% endfor %}
+        {% for b in my_bookings %}
+        <tr>
+          <td style="font-family:monospace;color:#888;">#TM-{{ '%04d'|format(b.id) }}</td>
+          <td><strong>{{ b.destination }}</strong></td>
+          <td style="color:#888;">{{ b.created_at.strftime('%d %b %Y') if b.created_at else '—' }}</td>
+          <td><span class="status-pill status-{{ b.status }}">{{ b.status|title }}</span></td>
+          <td><a href="{{ url_for('download_invoice', booking_id=b.id) }}" style="color:#c9a84c;font-size:12px;font-weight:600;text-decoration:none;">↓ PDF</a></td>
+        </tr>
+        {% endfor %}
         </tbody>
       </table>
       {% else %}
-      <div style="text-align:center;padding:3rem;color:var(--muted);">
-        <div style="font-size:2.5rem;margin-bottom:1rem;">✈️</div>
-        <p>No bookings yet — <a href="{{ url_for('destinations_page') }}" style="color:var(--gold);">explore destinations</a></p>
+      <div style="text-align:center;padding:3rem;color:#888;">
+        <div style="font-size:2.5rem;margin-bottom:.8rem;">✈️</div>
+        <p>No bookings yet — <a href="{{ url_for('destinations_page') }}" style="color:#c9a84c;">explore destinations</a></p>
       </div>
       {% endif %}
     </div>
-
-    <!-- QUICK ACTIONS -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:1.5rem;">
-      <a href="{{ url_for('destinations_page') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:1.8rem;margin-bottom:6px;">🌍</div>
-        <div style="font-size:13px;font-weight:500;">Explore</div>
-      </a>
-      <a href="{{ url_for('my_wishlist') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:1.8rem;margin-bottom:6px;">♡</div>
-        <div style="font-size:13px;font-weight:500;">Wishlist</div>
-      </a>
-      <a href="{{ url_for('analytics') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:1.8rem;margin-bottom:6px;">📊</div>
-        <div style="font-size:13px;font-weight:500;">Analytics</div>
-      </a>
-      <a href="{{ url_for('my_bookings') }}" style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;text-decoration:none;color:var(--ink);transition:all .2s;" onmouseenter="this.style.borderColor='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)'">
-        <div style="font-size:1.8rem;margin-bottom:6px;">📋</div>
-        <div style="font-size:13px;font-weight:500;">My Trips</div>
-      </a>
-    </div>
-
   </div>
 </div>
 {% endblock %}

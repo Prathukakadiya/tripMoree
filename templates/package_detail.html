@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ package.name }} — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.hero{height:320px;overflow:hidden;position:relative;background:#0d1a1a;}
+.hero img{width:100%;height:100%;object-fit:cover;opacity:.6;}
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:2rem 1.5rem;}
+.hero-title{font-family:Georgia,serif;font-size:2.2rem;color:#fff;font-weight:600;}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.6);margin-top:.4rem;}
+.pg{max-width:1000px;margin:0 auto;padding:2rem 1.5rem;display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start;}
+.main-info{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:1.5rem;margin-bottom:1.2rem;}
+.main-info h2{font-family:Georgia,serif;font-size:1.2rem;margin-bottom:1rem;}
+.inc-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.inc-list li{display:flex;align-items:center;gap:.6rem;font-size:14px;}
+.inc-list li::before{content:"✓";color:#27ae60;font-weight:700;flex-shrink:0;}
+.book-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:1.5rem;position:sticky;top:80px;}
+.price-big{font-family:Georgia,serif;font-size:2.2rem;font-weight:600;color:#0d0f0e;}
+.price-orig{font-size:14px;color:#888;text-decoration:line-through;}
+.save-tag{display:inline-block;background:#e94560;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;margin-top:.3rem;}
+.book-btn{display:block;padding:14px;background:linear-gradient(135deg,#c9a84c,#b8934a);color:#fff;border-radius:12px;text-align:center;text-decoration:none;font-weight:700;font-size:15px;margin-top:1rem;transition:.2s;}
+.book-btn:hover{opacity:.9;color:#fff;}
+.detail-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0ede8;font-size:13px;}
+.detail-row:last-child{border:none;}
+.detail-label{color:#666;}
+.detail-val{font-weight:600;color:#0d0f0e;}
+@media(max-width:768px){.pg{grid-template-columns:1fr;}.book-card{position:static;}}
+</style>{% endblock %}
+{% block content %}
+<div class="hero">
+  {% if images %}<img src="{{ images[0] }}" alt="{{ package.name }}">{% endif %}
+  <div class="hero-content">
+    <div class="hero-title">{{ package.name }}</div>
+    <div class="hero-sub">📍 {{ dest.name if dest else 'India' }} · {{ package.nights }} Nights / {{ package.days }} Days</div>
+  </div>
+</div>
+<div class="pg">
+  <div>
+    <div class="main-info">
+      <h2>What's Included</h2>
+      {% if package.includes_list %}
+      <ul class="inc-list">{% for i in package.includes_list %}<li>{{ i }}</li>{% endfor %}</ul>
+      {% else %}<p style="color:#888;font-size:13px;">Includes hotel stay, transport and guided sightseeing.</p>{% endif %}
+    </div>
+    {% if dest %}
+    <div class="main-info">
+      <h2>About {{ dest.name }}</h2>
+      <p style="font-size:14px;color:#555;line-height:1.7;">{{ dest.description or 'A beautiful destination worth exploring.' }}</p>
+    </div>
+    {% endif %}
+  </div>
+  <div>
+    <div class="book-card">
+      <div class="price-big">₹{{ "{:,}".format(package.price) }}</div>
+      {% if package.original_price and package.original_price > package.price %}
+      <div><span class="price-orig">₹{{ "{:,}".format(package.original_price) }}</span>
+      <span class="save-tag">Save {{ ((package.original_price - package.price) / package.original_price * 100)|int }}%</span></div>
+      {% endif %}
+      <div style="font-size:12px;color:#888;margin-top:.3rem;">per person · {{ package.nights }}N/{{ package.days }}D</div>
+      <div style="margin-top:1.2rem;">
+        <div class="detail-row"><span class="detail-label">Duration</span><span class="detail-val">{{ package.nights }} Nights / {{ package.days }} Days</span></div>
+        <div class="detail-row"><span class="detail-label">Destination</span><span class="detail-val">{{ dest.name if dest else 'N/A' }}</span></div>
+        {% if hotel %}<div class="detail-row"><span class="detail-label">Hotel</span><span class="detail-val">{{ hotel.name }}</span></div>{% endif %}
+      </div>
+      {% if dest %}
+      <a href="{{ url_for('hotels_by_destination', destination_id=dest.id) }}" class="book-btn">Book This Package →</a>
+      {% endif %}
+      <div style="text-align:center;margin-top:.8rem;font-size:12px;color:#888;">
+        <a href="{{ url_for('packages_page') }}" style="color:#888;">← All Packages</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Flash Sales — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.hero{background:linear-gradient(135deg,#1a0a0a,#3a0f0f);padding:3rem 1.5rem;text-align:center;color:#fff;}
+.hero h1{font-family:Georgia,serif;font-size:2.2rem;margin-bottom:.5rem;}
+.hero h1 span{color:#e94560;}
+.pg{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+.sale-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.5rem;}
+.sale-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;position:relative;}
+.sale-banner{padding:1.2rem 1.5rem;display:flex;align-items:center;gap:.8rem;}
+.sale-pct{font-family:Georgia,serif;font-size:2.5rem;font-weight:600;color:#fff;line-height:1;}
+.sale-off{font-size:13px;color:rgba(255,255,255,.7);margin-top:2px;}
+.sale-title{font-family:Georgia,serif;font-size:1rem;color:#fff;font-weight:600;margin-top:.3rem;}
+.sale-img{height:140px;overflow:hidden;background:#f0ede8;}
+.sale-img img{width:100%;height:100%;object-fit:cover;}
+.sale-body{padding:1.2rem;}
+.countdown{display:flex;gap:.5rem;margin-bottom:1rem;}
+.cdown-box{background:#0d0f0e;color:#c9a84c;border-radius:8px;padding:.3rem .6rem;font-family:monospace;font-size:1.1rem;font-weight:700;min-width:44px;text-align:center;}
+.cdown-label{font-size:9px;color:#888;text-align:center;margin-top:2px;display:block;}
+.sale-btn{display:block;padding:11px;background:#e94560;color:#fff;border-radius:10px;text-align:center;text-decoration:none;font-weight:700;font-size:13px;}
+.empty{text-align:center;padding:4rem;color:#888;}
+</style>{% endblock %}
+{% block content %}
+<div class="hero">
+  <div style="font-size:2rem;margin-bottom:.5rem;">⚡</div>
+  <h1>Flash <span>Sales</span></h1>
+  <p style="color:rgba(255,255,255,.5);font-size:14px;margin-top:.4rem;">Limited time offers — book before they expire!</p>
+</div>
+<div class="pg">
+  {% if sales %}
+  <div class="sale-grid">
+    {% for s in sales %}
+    <div class="sale-card">
+      <div class="sale-banner" style="background:{{ s.banner_color or '#e94560' }};">
+        <div>
+          <div class="sale-pct">{{ s.discount_pct }}%</div>
+          <div class="sale-off">OFF</div>
+        </div>
+        <div style="flex:1;"><div class="sale-title">{{ s.title }}</div></div>
+      </div>
+      {% if s.dest_img %}
+      <div class="sale-img"><img src="{{ s.dest_img }}" alt="{{ s.title }}" loading="lazy"></div>
+      {% endif %}
+      <div class="sale-body">
+        <div style="font-size:12px;color:#888;margin-bottom:.6rem;">Expires: {{ s.ends_at.strftime('%d %b %Y %I:%M %p') if s.ends_at else '' }}</div>
+        <div class="countdown" data-end="{{ s.ends_at.isoformat() if s.ends_at else '' }}">
+          <div><div class="cdown-box" data-h>00</div><span class="cdown-label">HRS</span></div>
+          <div><div class="cdown-box" data-m>00</div><span class="cdown-label">MIN</span></div>
+          <div><div class="cdown-box" data-s>00</div><span class="cdown-label">SEC</span></div>
+        </div>
+        <a href="{{ url_for('destinations_page') }}" class="sale-btn">Book Now — {{ s.discount_pct }}% Off →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <div style="font-size:3rem;margin-bottom:.8rem;">⚡</div>
+    <h3 style="margin-bottom:.5rem;">No active flash sales</h3>
+    <p style="margin-bottom:1.5rem;">Check back soon for exciting deals!</p>
+    <a href="{{ url_for('destinations_page') }}" style="color:#c9a84c;font-weight:600;">Browse Destinations →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('.countdown').forEach(box=>{
+  const end=new Date(box.dataset.end);
+  function tick(){
+    const now=new Date(), diff=end-now;
+    if(diff<=0){box.innerHTML='<span style="color:#e74c3c;font-size:13px;font-weight:700;">EXPIRED</span>';return;}
+    const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+    box.querySelector('[data-h]').textContent=String(h).padStart(2,'0');
+    box.querySelector('[data-m]').textContent=String(m).padStart(2,'0');
+    box.querySelector('[data-s]').textContent=String(s).padStart(2,'0');
+  }
+  tick(); setInterval(tick,1000);
+});
+</script>
+{% endblock %}

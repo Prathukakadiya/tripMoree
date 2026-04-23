@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Verify OTP — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.auth-wrap{min-height:70vh;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.auth-card{background:#fff;border:1px solid #e8e4de;border-radius:24px;padding:2.5rem;width:100%;max-width:420px;text-align:center;}
+.auth-logo{font-family:Georgia,serif;font-size:1.8rem;color:#0d0f0e;margin-bottom:.4rem;}
+.auth-logo span{color:#c9a84c;}
+.auth-sub{font-size:13px;color:#888;margin-bottom:2rem;}
+.fg{margin-bottom:1.2rem;text-align:left;}
+.fg label{display:block;font-size:12px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.fg input{width:100%;padding:13px 16px;border:1.5px solid #e8e4de;border-radius:12px;font-size:14px;font-family:inherit;outline:none;}
+.fg input:focus{border-color:#c9a84c;}
+.sbtn{width:100%;padding:14px;background:linear-gradient(135deg,#c9a84c,#b8934a);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+</style>{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">TripMore<span>e</span></div>
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">📧</div>
+    <div class="auth-sub">Enter the 6-digit OTP sent to your email, then set your new password</div>
+    <form method="POST">
+      <div class="fg"><label>OTP Code</label><input type="text" name="otp" maxlength="6" placeholder="123456" required autofocus style="letter-spacing:.3em;font-size:1.4rem;text-align:center;"></div>
+      <div class="fg"><label>New Password</label><input type="password" name="new_password" placeholder="Min 6 characters" required></div>
+      <button type="submit" class="sbtn">Reset Password →</button>
+    </form>
+    <div style="margin-top:1.2rem;font-size:13px;color:#888;">
+      <a href="{{ url_for('forgot_password') }}" style="color:#c9a84c;">Resend OTP</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

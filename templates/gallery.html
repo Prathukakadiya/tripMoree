@@ -1,266 +1,202 @@
 {% extends "base.html" %}
+{% block title %}Gallery — TripMoree{% endblock %}
+{% block extra_css %}
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.g-hero{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);padding:3rem 1.5rem;text-align:center;color:#fff;}
+.g-hero h1{font-family:Georgia,serif;font-size:2.5rem;margin-bottom:.5rem;}
+.g-hero h1 span{color:#c9a84c;}
+.pg{max-width:1200px;margin:0 auto;padding:2rem 1.5rem;}
 
-{% block title %}Gallery | TripMoreee{% endblock %}
+/* Tabs */
+.tab-row{display:flex;gap:0;background:#fff;border-radius:12px;padding:4px;margin-bottom:2rem;border:1px solid #e8e4de;display:inline-flex;}
+.tab-btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;font-family:inherit;color:#888;transition:.2s;}
+.tab-btn.active{background:#0d0f0e;color:#fff;}
+
+/* Masonry grid */
+.gallery-grid{columns:4;column-gap:1rem;margin-bottom:2rem;}
+.g-item{break-inside:avoid;margin-bottom:1rem;border-radius:14px;overflow:hidden;position:relative;cursor:pointer;animation:fadeUp .4s ease both;}
+.g-item img{width:100%;display:block;transition:transform .4s;}
+.g-item:hover img{transform:scale(1.04);}
+.g-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.65) 0%,transparent 50%);opacity:0;transition:.3s;}
+.g-item:hover .g-overlay{opacity:1;}
+.g-info{position:absolute;bottom:0;left:0;right:0;padding:.8rem 1rem;transform:translateY(6px);transition:.3s;opacity:0;}
+.g-item:hover .g-info{transform:translateY(0);opacity:1;}
+.g-dest{font-size:12px;font-weight:700;color:#fff;}
+.g-caption{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+.g-user{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
+.g-like{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.4);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px);display:flex;align-items:center;gap:4px;transition:.2s;opacity:0;}
+.g-item:hover .g-like{opacity:1;}
+.g-like:hover{background:rgba(233,69,96,.7);}
+
+/* Pexels fallback grid */
+.px-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;margin-bottom:2rem;}
+.px-item{border-radius:14px;overflow:hidden;aspect-ratio:4/3;background:#f0ede8;position:relative;}
+.px-item img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
+.px-item:hover img{transform:scale(1.05);}
+.px-label{position:absolute;bottom:0;left:0;right:0;padding:.8rem;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);color:#fff;font-size:12px;font-weight:600;opacity:0;transition:.3s;}
+.px-item:hover .px-label{opacity:1;}
+
+/* Upload CTA */
+.upload-cta{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:20px;padding:2.5rem;text-align:center;color:#fff;margin-top:2rem;}
+.upload-cta h2{font-family:Georgia,serif;font-size:1.5rem;margin-bottom:.5rem;}
+.upload-cta p{color:rgba(255,255,255,.5);font-size:13px;margin-bottom:1.2rem;}
+.cta-btn{display:inline-block;padding:12px 28px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;}
+
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;align-items:center;justify-content:center;padding:1rem;}
+.lightbox.open{display:flex;}
+.lb-img{max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;}
+.lb-close{position:absolute;top:16px;right:20px;color:#fff;font-size:2rem;cursor:pointer;background:none;border:none;line-height:1;}
+.lb-info{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);text-align:center;color:#fff;}
+.lb-dest{font-size:14px;font-weight:700;}
+.lb-cap{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:3rem;color:#888;background:#fff;border-radius:16px;border:1px solid #e8e4de;}
+
+@media(max-width:900px){.gallery-grid{columns:2;}}
+@media(max-width:500px){.gallery-grid{columns:1;}.px-grid{grid-template-columns:1fr 1fr;}}
+</style>
+{% endblock %}
 
 {% block content %}
-
-<style>
-
-/* ================= PAGE BACKGROUND ================= */
-body{
-    background: linear-gradient(135deg,#fdf6ec,#f1e4d3);
-    font-family:'Poppins',sans-serif;
-}
-
-/* ================= HERO ================= */
-.gallery-hero{
-    padding:140px 20px 100px 20px;
-    text-align:center;
-    background:#fdf6ec;
-}
-
-.gallery-hero h1{
-    font-size:54px;
-    font-weight:700;
-    color:#5a3f2e;
-    animation:slideDown 1s ease;
-}
-
-.gallery-hero p{
-    margin-top:15px;
-    font-size:18px;
-    color:#7a5c43;
-    animation:fadeIn 1.5s ease;
-}
-
-/* ================= GALLERY SECTION ================= */
-.gallery-section{
-    max-width:1300px;
-    margin:auto;
-    padding:40px 20px 100px 20px;
-}
-
-/* ================= CREATIVE GRID ================= */
-.gallery-grid{
-    display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 250px;
-    gap:25px;
-}
-
-/* Different sizes */
-.gallery-item.large{
-    grid-column: span 2;
-    grid-row: span 2;
-}
-
-.gallery-item.wide{
-    grid-column: span 2;
-}
-
-.gallery-item.tall{
-    grid-row: span 2;
-}
-
-/* ================= CARD STYLE ================= */
-.gallery-item{
-    position:relative;
-    overflow:hidden;
-    border-radius:22px;
-    cursor:pointer;
-    transform-style: preserve-3d;
-    transition:0.6s ease;
-    box-shadow:0 20px 40px rgba(0,0,0,0.08);
-}
-
-.gallery-item img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    transition:0.6s ease;
-}
-
-/* 3D Hover */
-.gallery-item:hover{
-    transform: rotateX(4deg) rotateY(-4deg) scale(1.03);
-    box-shadow:0 30px 60px rgba(0,0,0,0.15);
-}
-
-.gallery-item:hover img{
-    transform:scale(1.1);
-}
-
-/* ================= OVERLAY ================= */
-.gallery-overlay{
-    position:absolute;
-    bottom:0;
-    left:0;
-    width:100%;
-    padding:30px;
-    background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-    color:white;
-    opacity:0;
-    transition:0.4s ease;
-}
-
-.gallery-item:hover .gallery-overlay{
-    opacity:1;
-}
-
-.gallery-overlay h3{
-    margin:0;
-    font-size:22px;
-    font-weight:600;
-}
-
-.gallery-overlay p{
-    margin-top:8px;
-    font-size:14px;
-    color:#ddd;
-}
-
-/* ================= DIFFERENT ENTRY ANIMATIONS ================= */
-
-.gallery-item:nth-child(1){
-    animation:slideLeft 1s ease forwards;
-}
-.gallery-item:nth-child(2){
-    animation:slideRight 1s ease forwards;
-}
-.gallery-item:nth-child(3){
-    animation:zoomIn 1.2s ease forwards;
-}
-.gallery-item:nth-child(4){
-    animation:rotateIn 1.2s ease forwards;
-}
-.gallery-item:nth-child(5){
-    animation:slideUp 1.2s ease forwards;
-}
-.gallery-item:nth-child(6){
-    animation:fadeIn 1.5s ease forwards;
-}
-
-.gallery-item{
-    opacity:0;
-}
-
-/* ================= ANIMATIONS ================= */
-
-@keyframes slideLeft{
-    from{opacity:0; transform:translateX(-80px);}
-    to{opacity:1; transform:translateX(0);}
-}
-
-@keyframes slideRight{
-    from{opacity:0; transform:translateX(80px);}
-    to{opacity:1; transform:translateX(0);}
-}
-
-@keyframes zoomIn{
-    from{opacity:0; transform:scale(0.7);}
-    to{opacity:1; transform:scale(1);}
-}
-
-@keyframes rotateIn{
-    from{opacity:0; transform:rotate(-8deg) scale(0.8);}
-    to{opacity:1; transform:rotate(0) scale(1);}
-}
-
-@keyframes slideUp{
-    from{opacity:0; transform:translateY(80px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-@keyframes fadeIn{
-    from{opacity:0;}
-    to{opacity:1;}
-}
-
-@keyframes slideDown{
-    from{opacity:0; transform:translateY(-60px);}
-    to{opacity:1; transform:translateY(0);}
-}
-
-/* ================= RESPONSIVE ================= */
-
-@media(max-width:1000px){
-    .gallery-grid{
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media(max-width:600px){
-    .gallery-grid{
-        grid-template-columns: 1fr;
-        grid-auto-rows: 220px;
-    }
-
-    .gallery-hero h1{
-        font-size:36px;
-    }
-}
-
-</style>
-
-<!-- HERO -->
-<div class="gallery-hero">
-    <h1>Travel Gallery</h1>
-    <p>Explore breathtaking destinations captured by our travelers.</p>
+<div class="g-hero">
+  <h1>Travel <span>Gallery</span></h1>
+  <p style="color:rgba(255,255,255,.5);font-size:14px;margin-top:.5rem;">
+    Real photos from real travellers · {{ photos|length }} photos shared
+  </p>
 </div>
 
-<!-- GALLERY -->
-<div class="gallery-section">
+<div class="pg">
+  <!-- TABS -->
+  <div class="tab-row" style="margin-bottom:1.5rem;">
+    <button class="tab-btn active" onclick="showTab('community',this)">📸 Community Photos ({{ photos|length }})</button>
+    <button class="tab-btn" onclick="showTab('destinations',this)">🌍 Destination Gallery</button>
+  </div>
+
+  <!-- COMMUNITY TAB -->
+  <div id="tab-community">
+    {% if photos %}
     <div class="gallery-grid">
-
-        <div class="gallery-item large">
-            <img src="https://images.pexels.com/photos/457882/pexels-photo-457882.jpeg">
-            <div class="gallery-overlay">
-                <h3>Goa Beaches</h3>
-                <p>Golden sunsets & nightlife vibes</p>
-            </div>
+      {% for p in photos %}
+      <div class="g-item" onclick="openLightbox('{{ p.url }}','{{ p.destination }}','{{ p.caption or '' }}')" style="animation-delay:{{ loop.index0 * 0.04 }}s">
+        <img src="{{ p.url }}" alt="{{ p.destination }}" loading="lazy"
+             onerror="this.closest('.g-item').style.display='none'">
+        <div class="g-overlay"></div>
+        <div class="g-info">
+          <div class="g-dest">📍 {{ p.destination }}</div>
+          {% if p.caption %}<div class="g-caption">{{ p.caption[:60] }}{% if p.caption|length > 60 %}...{% endif %}</div>{% endif %}
+          <div class="g-user">By {{ p.user_name }}</div>
         </div>
-
-        <div class="gallery-item tall">
-            <img src="https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg">
-            <div class="gallery-overlay">
-                <h3>Manali Snow</h3>
-                <p>Adventure in the Himalayas</p>
-            </div>
-        </div>
-
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/3672388/pexels-photo-3672388.jpeg">
-            <div class="gallery-overlay">
-                <h3>Jaipur Palace</h3>
-                <p>Royal heritage experience</p>
-            </div>
-        </div>
-
-        <div class="gallery-item wide">
-            <img src="https://images.pexels.com/photos/2044434/pexels-photo-2044434.jpeg">
-            <div class="gallery-overlay">
-                <h3>Dubai Skyline</h3>
-                <p>Luxury & modern lifestyle</p>
-            </div>
-        </div>
-
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/346885/pexels-photo-346885.jpeg">
-            <div class="gallery-overlay">
-                <h3>Mountain Trek</h3>
-                <p>Unforgettable adventure moments</p>
-            </div>
-        </div>
-
-        <div class="gallery-item">
-            <img src="https://images.pexels.com/photos/460672/pexels-photo-460672.jpeg">
-            <div class="gallery-overlay">
-                <h3>Backwater Cruise</h3>
-                <p>Luxury houseboat views</p>
-            </div>
-        </div>
-
+        {% if session.user_id %}
+        <button class="g-like" onclick="likePhoto(event,{{ p.id }},this)">
+          ♥ <span>{{ p.likes }}</span>
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+      <div style="font-size:3rem;margin-bottom:.8rem;">📷</div>
+      <h3 style="margin-bottom:.5rem;">No community photos yet</h3>
+      <p style="margin-bottom:1.5rem;">Be the first to share your travel memories!</p>
+      {% if session.user_id %}
+      <a href="{{ url_for('community') }}" class="cta-btn">Upload Your Photo →</a>
+      {% else %}
+      <a href="{{ url_for('signup') }}" class="cta-btn">Sign Up to Share →</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- DESTINATIONS TAB -->
+  <div id="tab-destinations" style="display:none;">
+    <div class="px-grid" id="pxGrid">
+      {% set dest_list = ['Goa','Manali','Jaipur','Kerala','Ladakh','Darjeeling','Kedarnath','Dubai','Maldives','Rishikesh','Coorg','Shimla','Ooty','Varanasi','Udaipur','Andaman','Leh','Spiti Valley','Hampi','Rann of Kutch'] %}
+      {% for d in dest_list %}
+      <div class="px-item" id="px_{{ loop.index }}">
+        <img src="" alt="{{ d }}" loading="lazy"
+             onerror="this.src='https://placehold.co/400x300/1a3a2e/c9a84c?text={{ d|urlencode }}'">
+        <div class="px-label">📍 {{ d }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- UPLOAD CTA -->
+  <div class="upload-cta">
+    <h2>📸 Share Your Travel Memories</h2>
+    <p>Upload your photos and inspire thousands of fellow explorers across India</p>
+    {% if session.user_id %}
+    <a href="{{ url_for('community') }}" class="cta-btn">Upload Photos →</a>
+    {% else %}
+    <a href="{{ url_for('signup') }}" class="cta-btn">Sign Up to Share →</a>
+    {% endif %}
+  </div>
 </div>
 
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">×</button>
+  <img class="lb-img" id="lbImg" src="" alt="">
+  <div class="lb-info">
+    <div class="lb-dest" id="lbDest"></div>
+    <div class="lb-cap" id="lbCap"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tabs
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-community').style.display = id==='community'?'block':'none';
+  document.getElementById('tab-destinations').style.display = id==='destinations'?'block':'none';
+  if(id==='destinations') loadPexels();
+}
+
+// Load Pexels images for destinations tab
+let pexelsLoaded = false;
+const dests = {{ dest_list|tojson if dest_list is defined else '["Goa","Manali","Jaipur","Kerala","Ladakh","Darjeeling","Kedarnath","Dubai","Maldives","Rishikesh","Coorg","Shimla","Ooty","Varanasi","Udaipur","Andaman","Leh","Spiti Valley","Hampi","Rann of Kutch"]' }};
+function loadPexels() {
+  if(pexelsLoaded) return;
+  pexelsLoaded = true;
+  dests.forEach((d,i) => {
+    fetch(`/api/pexels-image?q=${encodeURIComponent(d+' India travel landscape')}&page=${i+1}`)
+      .then(r=>r.json()).then(data=>{
+        const img = document.querySelector(`#px_${i+1} img`);
+        if(img && data.url) img.src = data.url;
+      }).catch(()=>{});
+  });
+}
+
+// Lightbox
+function openLightbox(url, dest, caption) {
+  document.getElementById('lbImg').src = url;
+  document.getElementById('lbDest').textContent = '📍 ' + dest;
+  document.getElementById('lbCap').textContent = caption;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox(); });
+
+// Like photo
+async function likePhoto(e, id, btn) {
+  e.stopPropagation();
+  try {
+    const r = await fetch(`/api/community-photo/like/${id}`, {method:'POST'});
+    const d = await r.json();
+    btn.querySelector('span').textContent = d.likes;
+    btn.style.color = '#e94560';
+  } catch {}
+}
+</script>
 {% endblock %}

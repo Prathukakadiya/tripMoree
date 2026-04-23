@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Travel Packages — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.hero{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);padding:3rem 1.5rem;text-align:center;color:#fff;}
+.hero h1{font-family:Georgia,serif;font-size:2.2rem;margin-bottom:.5rem;}
+.hero h1 span{color:#c9a84c;}
+.pg{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem;}
+.pkg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.5rem;}
+.pkg-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;transition:all .25s;}
+.pkg-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.1);}
+.pkg-img{height:180px;overflow:hidden;background:#f0ede8;position:relative;}
+.pkg-img img{width:100%;height:100%;object-fit:cover;}
+.pkg-nights{position:absolute;top:12px;left:12px;background:#0d0f0e;color:#c9a84c;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.pkg-save{position:absolute;top:12px;right:12px;background:#e94560;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.pkg-body{padding:1.4rem;}
+.pkg-name{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;margin-bottom:.4rem;}
+.pkg-dest{font-size:12px;color:#888;margin-bottom:.8rem;display:flex;align-items:center;gap:4px;}
+.pkg-includes{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem;}
+.inc-tag{padding:3px 10px;background:#f0faf8;color:#1a5c50;border-radius:20px;font-size:11px;font-weight:600;}
+.pkg-price-row{display:flex;align-items:center;justify-content:space-between;}
+.pkg-price{font-family:Georgia,serif;font-size:1.5rem;font-weight:600;color:#0d0f0e;}
+.pkg-orig{font-size:12px;color:#888;text-decoration:line-through;margin-left:6px;}
+.pkg-btn{padding:10px 20px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:700;transition:all .2s;}
+.pkg-btn:hover{background:#b8934a;color:#fff;}
+.empty{text-align:center;padding:4rem;color:#888;}
+</style>{% endblock %}
+{% block content %}
+<div class="hero">
+  <h1>Travel <span>Packages</span></h1>
+  <p style="color:rgba(255,255,255,.5);font-size:14px;margin-top:.5rem;">Curated packages with hotel, transport & activities bundled</p>
+</div>
+<div class="pg">
+  {% if packages %}
+  <div class="pkg-grid">
+    {% for p in packages %}
+    <div class="pkg-card">
+      <div class="pkg-img">
+        {% if p.dest_img %}<img src="{{ p.dest_img }}" alt="{{ p.dest.name if p.dest else '' }}" loading="lazy">{% endif %}
+        <div class="pkg-nights">{{ p.nights }}N / {{ p.days }}D</div>
+        {% if p.original_price and p.original_price > p.price %}
+        <div class="pkg-save">{{ ((p.original_price - p.price) / p.original_price * 100)|int }}% OFF</div>
+        {% endif %}
+      </div>
+      <div class="pkg-body">
+        <div class="pkg-name">{{ p.name }}</div>
+        <div class="pkg-dest">📍 {{ p.dest.name if p.dest else 'India' }}</div>
+        {% if p.includes_list %}
+        <div class="pkg-includes">
+          {% for inc in p.includes_list[:4] %}<span class="inc-tag">✓ {{ inc }}</span>{% endfor %}
+        </div>
+        {% endif %}
+        <div class="pkg-price-row">
+          <div>
+            <span class="pkg-price">₹{{ "{:,}".format(p.price) }}</span>
+            {% if p.original_price and p.original_price > p.price %}
+            <span class="pkg-orig">₹{{ "{:,}".format(p.original_price) }}</span>
+            {% endif %}
+            <div style="font-size:11px;color:#888;">per person</div>
+          </div>
+          <a href="{{ url_for('package_detail', pkg_id=p.id) }}" class="pkg-btn">View Details →</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <div style="font-size:3rem;margin-bottom:.8rem;">📦</div>
+    <h3 style="margin-bottom:.5rem;">No packages available yet</h3>
+    <p>Check back soon or <a href="{{ url_for('destinations_page') }}" style="color:#c9a84c;">browse destinations</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

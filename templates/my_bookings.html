@@ -1,177 +1,134 @@
-<!-- ════════════════════════════════════════════
-     my_bookings.html
-════════════════════════════════════════════ -->
 {% extends "base.html" %}
-{% block title %}My Trips — TripMore{% endblock %}
-
+{% block title %}My Bookings — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.pg{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+.pg-title{font-family:Georgia,serif;font-size:1.8rem;color:#0d0f0e;margin-bottom:.3rem;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.m-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.2rem;}
+.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;}
+.m-val{font-family:Georgia,serif;font-size:1.6rem;font-weight:600;color:#0d0f0e;}
+.b-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;margin-bottom:1.2rem;}
+.b-head{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;background:#f8f6f1;border-bottom:1px solid #f0ede8;flex-wrap:wrap;gap:.5rem;}
+.b-id{font-family:monospace;font-size:12px;color:#888;}
+.b-dest{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:#0d0f0e;}
+.b-total{font-family:Georgia,serif;font-size:1.2rem;font-weight:600;color:#1a5c50;}
+.status-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.status-active{background:#d1fae5;color:#065f46;}
+.status-cancelled{background:#fee2e2;color:#991b1b;}
+.status-completed{background:#e0e7ff;color:#3730a3;}
+.status-demo,.status-pending{background:#fef3c7;color:#92400e;}
+.b-body{padding:1.2rem 1.5rem;}
+.b-section{margin-bottom:1rem;}
+.b-section-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;font-weight:600;}
+.b-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #f8f6f1;}
+.b-row:last-child{border:none;}
+.b-label{color:#666;}
+.b-val{font-weight:600;color:#0d0f0e;}
+.b-actions{display:flex;gap:.6rem;flex-wrap:wrap;padding:1rem 1.5rem;border-top:1px solid #f0ede8;}
+.b-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:.2s;border:none;cursor:pointer;font-family:inherit;}
+.b-btn-primary{background:#c9a84c;color:#fff;}
+.b-btn-primary:hover{background:#b8934a;color:#fff;}
+.b-btn-outline{background:#fff;border:1px solid #e8e4de;color:#555;}
+.b-btn-outline:hover{border-color:#0d0f0e;color:#0d0f0e;}
+.b-btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+.b-btn-danger:hover{background:#fecaca;color:#991b1b;}
+.empty{text-align:center;padding:4rem;color:#888;background:#fff;border-radius:20px;border:1px solid #e8e4de;}
+@media(max-width:600px){.metrics{grid-template-columns:1fr 1fr;}.b-head{flex-direction:column;align-items:flex-start;}}
+</style>{% endblock %}
 {% block content %}
-<div class="page-hero">
-  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
-    <h1>My <span>Trips</span></h1>
-    <p>All your TripMore bookings in one place</p>
+<div class="pg">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="pg-title">My Bookings</div>
+      <div style="font-size:13px;color:#888;">All your TripMoree trips in one place</div>
+    </div>
+    <a href="{{ url_for('destinations_page') }}" style="padding:11px 22px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;">+ New Trip</a>
   </div>
-</div>
 
-<div style="padding:3rem 4rem;">
-
-  <!-- SUMMARY METRICS -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:2.5rem;">
-    <div class="metric-card">
-      <div class="metric-label">Total Bookings</div>
-      <div class="metric-value">{{ bookings | length }}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Total Spent</div>
-      <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Active Trips</div>
-      <div class="metric-value">{{ bookings | selectattr('booking.status', 'eq', 'active') | list | length }}</div>
-    </div>
-    <div class="metric-card">
-      <div class="metric-label">Destinations</div>
-      <div class="metric-value">{{ bookings | map(attribute='booking.destination') | list | unique | list | length }}</div>
-    </div>
+  <div class="metrics">
+    <div class="m-card"><div class="m-label">Total Bookings</div><div class="m-val">{{ bookings|length }}</div></div>
+    <div class="m-card"><div class="m-label">Total Spent</div><div class="m-val">₹{{ "{:,}".format(total_spent|int) }}</div></div>
+    <div class="m-card"><div class="m-label">Active</div><div class="m-val">{{ bookings|selectattr('booking.status','eq','active')|list|length }}</div></div>
+    <div class="m-card"><div class="m-label">Destinations</div><div class="m-val">{{ bookings|map(attribute='booking.destination')|list|unique|list|length }}</div></div>
   </div>
 
   {% if bookings %}
   {% for b in bookings %}
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;">
-
-    <!-- BOOKING HEADER -->
-    <div style="padding:1.2rem 1.5rem;background:var(--cream);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-      <div style="display:flex;align-items:center;gap:16px;">
-        <span style="font-family:monospace;font-size:12px;color:var(--muted);">#TM-{{ '%04d'|format(b.booking.id) }}</span>
-        <h3 style="font-family:var(--font-display);font-size:1.2rem;">{{ b.booking.destination }}</h3>
-        <span class="status-pill status-{{ b.booking.status }}">{{ b.booking.status | title }}</span>
+  <div class="b-card">
+    <div class="b-head">
+      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+        <span class="b-id">#TM-{{ '%04d'|format(b.booking.id) }}</span>
+        <span class="b-dest">{{ b.booking.destination }}</span>
+        <span class="status-pill status-{{ b.booking.status }}">{{ b.booking.status|title }}</span>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:1.3rem;font-weight:600;color:var(--teal);font-family:var(--font-display);">₹{{ "{:,}".format(b.grand_total) }}</span>
-        <a href="{{ url_for('download_invoice', booking_id=b.booking.id) }}" class="btn btn-outline" style="padding:7px 16px;font-size:12px;">
-          ↓ Invoice PDF
-        </a>
-        <button onclick="sendInvoice({{ b.booking.id }},this)" class="btn btn-teal" style="padding:7px 16px;font-size:12px;">
-          ✉ Email Invoice
-        </button>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <span class="b-total">₹{{ "{:,}".format(b.grand_total|int) }}</span>
+        <span style="font-size:12px;color:#888;">{{ b.booking.created_at.strftime('%d %b %Y') if b.booking.created_at else '' }}</span>
       </div>
     </div>
 
-    <!-- BOOKING DETAILS -->
-    <div style="padding:1.2rem 1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;">
-
+    <div class="b-body">
       {% if b.hotel %}
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Hotel</div>
-        <table style="width:100%;font-size:13px;">
-          <tr><td style="color:var(--muted);padding:3px 0;">Hotel</td><td style="text-align:right;">{{ b.hotel.hotel_id }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Check-in</td><td style="text-align:right;">{{ b.hotel.check_in }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Check-out</td><td style="text-align:right;">{{ b.hotel.check_out }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Guests</td><td style="text-align:right;">{{ b.hotel.persons }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Hotel Total</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(b.hotel_total) }}</td></tr>
-        </table>
+      <div class="b-section">
+        <div class="b-section-title">🏨 Hotel</div>
+        <div class="b-row"><span class="b-label">Check-in</span><span class="b-val">{{ b.hotel.check_in }}</span></div>
+        <div class="b-row"><span class="b-label">Check-out</span><span class="b-val">{{ b.hotel.check_out }}</span></div>
+        <div class="b-row"><span class="b-label">Guests</span><span class="b-val">{{ b.hotel.persons }}</span></div>
+        <div class="b-row"><span class="b-label">Payment</span>
+          <span class="b-val">
+            <span class="status-pill status-{{ b.hotel.payment_status or 'pending' }}">{{ (b.hotel.payment_status or 'pending')|title }}</span>
+            ₹{{ "{:,}".format(b.hotel_total|int) }}
+          </span>
+        </div>
       </div>
       {% endif %}
 
-      {% for t in b.transports %}
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">
-          Transport — {{ t.transport.transport_type | title }}
+      {% if b.transports %}
+      <div class="b-section">
+        <div class="b-section-title">✈️ Transport</div>
+        {% for t in b.transports %}
+        <div class="b-row">
+          <span class="b-label">{{ {'flight':'✈️','train':'🚆','bus':'🚌'}.get(t.transport.transport_type,'🚗') }} {{ t.transport.transport_type|title }}</span>
+          <span class="b-val">{{ t.transport.source }} → {{ t.transport.destination }} · ₹{{ "{:,}".format(t.transport.price or 0) }}</span>
         </div>
-        <table style="width:100%;font-size:13px;">
-          <tr><td style="color:var(--muted);padding:3px 0;">From</td><td style="text-align:right;">{{ t.transport.source }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">To</td><td style="text-align:right;">{{ t.transport.destination }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Passengers</td><td style="text-align:right;">{{ t.transport.persons }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Cost</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(t.transport.price) }}</td></tr>
-        </table>
+        {% endfor %}
       </div>
-      {% endfor %}
+      {% endif %}
 
       {% if b.cab %}
-      <div>
-        <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Cab Booking</div>
-        <table style="width:100%;font-size:13px;">
-          <tr><td style="color:var(--muted);padding:3px 0;">Days</td><td style="text-align:right;">{{ b.cab.days }}</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Total KM</td><td style="text-align:right;">{{ b.cab.total_km }} km</td></tr>
-          <tr><td style="color:var(--muted);padding:3px 0;">Cab Cost</td><td style="text-align:right;font-weight:500;">₹{{ "{:,}".format(b.cab_total) }}</td></tr>
-        </table>
+      <div class="b-section">
+        <div class="b-section-title">🚕 Cab</div>
+        <div class="b-row"><span class="b-label">Days · Distance</span><span class="b-val">{{ b.cab.days }} days · {{ b.cab.total_km }} km</span></div>
+        {% for day in b.cab_days %}
+        <div class="b-row">
+          <span class="b-label">Day {{ day.day }} · {{ day.spots|join(', ') if day.spots else 'No spots' }}</span>
+          <span class="b-val">{{ "%.1f"|format(day.km or 0) }} km · ₹{{ "{:,}".format((day.price or 0)|int) }}</span>
+        </div>
+        {% endfor %}
       </div>
       {% endif %}
-
     </div>
 
-    <!-- HYPE SPOTS if any -->
-    {% if b.cab_days %}
-    <div style="padding:0 1.5rem 1.2rem;">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Sightseeing Plan</div>
-      {% for day in b.cab_days %}
-      <div style="padding:8px 12px;background:var(--cream);border-radius:var(--radius-sm);margin-bottom:6px;font-size:13px;">
-        <strong>Day {{ day.day }}:</strong>
-        {{ day.spots | join(', ') if day.spots else 'Hotel only' }}
-        <span style="color:var(--muted);margin-left:8px;">{{ day.km }} km · ₹{{ day.price }}</span>
-      </div>
-      {% endfor %}
+    <div class="b-actions">
+      <a href="{{ url_for('download_invoice', booking_id=b.booking.id) }}" class="b-btn b-btn-primary" download>↓ Invoice PDF</a>
+      <a href="{{ url_for('information_page', location=b.booking.destination) }}" class="b-btn b-btn-outline">📖 Travel Guide</a>
+      {% if b.booking.status == 'active' %}
+      <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.booking.id) }}" style="display:inline;" onsubmit="return confirm('Cancel this booking?')">
+        <input type="hidden" name="reason" value="Cancelled by user">
+        <button type="submit" class="b-btn b-btn-danger">✕ Cancel</button>
+      </form>
+      {% endif %}
     </div>
-    {% endif %}
-
-    <!-- REVIEW SECTION -->
-    <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--cream);">
-      <details>
-        <summary style="cursor:pointer;font-size:13px;font-weight:500;color:var(--teal);">+ Write a review for {{ b.booking.destination }}</summary>
-        <form action="{{ url_for('add_review') }}" method="POST" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;max-width:500px;">
-          <input type="hidden" name="destination" value="{{ b.booking.destination }}">
-          <div>
-            <label class="form-label">Rating</label>
-            <select name="rating" class="form-select" style="width:auto;">
-              <option value="5">★★★★★ Excellent</option>
-              <option value="4">★★★★☆ Good</option>
-              <option value="3">★★★☆☆ Average</option>
-              <option value="2">★★☆☆☆ Poor</option>
-              <option value="1">★☆☆☆☆ Terrible</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label">Your experience</label>
-            <textarea name="comment" class="form-textarea" rows="3" placeholder="Share your experience..." style="resize:vertical;"></textarea>
-          </div>
-          <button type="submit" class="btn btn-gold" style="width:fit-content;">Submit Review</button>
-        </form>
-      </details>
-    </div>
-
   </div>
   {% endfor %}
 
   {% else %}
-  <div style="text-align:center;padding:6rem;color:var(--muted);">
-    <div style="font-size:3rem;margin-bottom:1rem;">✈️</div>
-    <h3 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">No bookings yet</h3>
-    <p>Start planning your first adventure with TripMore!</p>
-    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold" style="margin-top:1.5rem;">Explore Destinations</a>
+  <div class="empty">
+    <div style="font-size:3rem;margin-bottom:.8rem;">✈️</div>
+    <h3 style="margin-bottom:.5rem;">No bookings yet</h3>
+    <p style="margin-bottom:1.5rem;color:#888;">Your booked trips will appear here</p>
+    <a href="{{ url_for('destinations_page') }}" style="padding:12px 28px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">Browse Destinations →</a>
   </div>
   {% endif %}
-
-  <div style="display:flex;gap:12px;margin-top:2rem;">
-    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">Book New Trip</a>
-    <a href="{{ url_for('analytics') }}" class="btn btn-outline">View Analytics</a>
-  </div>
-
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-async function sendInvoice(bookingId, btn) {
-  btn.textContent = 'Sending...';
-  btn.disabled = true;
-  try {
-    const res  = await fetch(`/send-invoice/${bookingId}`);
-    const data = await res.json();
-    btn.textContent = data.success ? '✓ Sent!' : '✗ Failed';
-    setTimeout(() => { btn.textContent = '✉ Email Invoice'; btn.disabled = false; }, 3000);
-  } catch {
-    btn.textContent = '✗ Error';
-    btn.disabled = false;
-  }
-}
-</script>
 {% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if dest else 'Add' }} Destination — Admin{% endblock %}
+{% block content %}
+<div style="max-width:700px;margin:2rem auto;padding:0 1.5rem;">
+  <h1 style="font-family:Georgia,serif;font-size:1.4rem;margin-bottom:1.5rem;">{{ 'Edit' if dest else 'Add' }} Destination</h1>
+  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;">
+    <form method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      {% set f = [('name','Name','text',dest.name if dest else ''),('country_type','Type (Domestic/International)','text',dest.country_type if dest else ''),('category','Category','text',dest.category if dest else ''),('vacation_type','Vacation Type','text',dest.vacation_type if dest else ''),('rating','Rating (0-5)','number',dest.rating if dest else '4.0'),('best_time','Best Time to Visit','text',dest.best_time if dest else ''),('latitude','Latitude','number',dest.latitude if dest else ''),('longitude','Longitude','number',dest.longitude if dest else ''),('language','Language','text',dest.language if dest else ''),('currency','Currency','text',dest.currency if dest else 'INR')] %}
+      {% for name,label,type,val in f %}
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">{{ label }}</label>
+      <input type="{{ type }}" name="{{ name }}" value="{{ val or '' }}" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;" step="any"></div>
+      {% endfor %}
+      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Image URL</label>
+      <input type="text" name="image" value="{{ dest.image if dest else '' }}" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Description</label>
+      <textarea name="description" rows="3" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;">{{ dest.description if dest else '' }}</textarea></div>
+      {% if dest %}<div><label style="font-size:11px;color:#666;display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" name="is_active" {% if dest.is_active %}checked{% endif %}> Active</label></div>{% endif %}
+      <div><label style="font-size:11px;color:#666;display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" name="is_featured"> Featured</label></div>
+      <div style="grid-column:1/-1;display:flex;gap:1rem;">
+        <button type="submit" style="padding:12px 28px;background:#c9a84c;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;">Save</button>
+        <a href="{{ url_for('admin_destinations') }}" style="padding:12px 20px;border:1px solid #e8e4de;border-radius:10px;text-decoration:none;color:#666;font-size:14px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

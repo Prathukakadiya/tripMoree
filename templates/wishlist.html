@@ -1,67 +1,59 @@
 {% extends "base.html" %}
-{% block title %}My Wishlist — TripMore{% endblock %}
-
+{% block title %}My Wishlist — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.pg{max-width:1100px;margin:2rem auto;padding:0 1.5rem;}
+.pg-title{font-family:Georgia,serif;font-size:1.6rem;margin-bottom:1.5rem;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.2rem;}
+.w-card{background:#fff;border:1px solid #e8e4de;border-radius:18px;overflow:hidden;transition:.2s;}
+.w-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.1);}
+.w-img{height:160px;overflow:hidden;background:#f0ede8;position:relative;}
+.w-img img{width:100%;height:100%;object-fit:cover;}
+.w-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.5);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;backdrop-filter:blur(4px);}
+.w-body{padding:1.2rem;}
+.w-name{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;margin-bottom:.3rem;}
+.w-meta{font-size:12px;color:#888;margin-bottom:.8rem;}
+.w-actions{display:flex;gap:.6rem;}
+.btn-book{flex:1;padding:10px;background:#c9a84c;color:#fff;border-radius:8px;text-align:center;text-decoration:none;font-size:13px;font-weight:700;}
+.btn-remove{padding:10px 14px;border:1px solid #fca5a5;background:#fee2e2;color:#991b1b;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+.empty{text-align:center;padding:4rem;color:#888;background:#fff;border-radius:20px;border:1px solid #e8e4de;}
+</style>{% endblock %}
 {% block content %}
-<div class="page-hero">
-  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
-    <h1>My <span>Wishlist</span></h1>
-    <p>Destinations you're dreaming about</p>
-  </div>
-</div>
-
-<div style="padding:3rem 4rem;">
+<div class="pg">
+  <div class="pg-title">♡ My Wishlist</div>
   {% if destinations %}
-  <div class="dest-list-grid">
+  <div class="grid">
     {% for d in destinations %}
-    <div class="dest-list-card">
-      <div class="dest-list-img-wrap" style="cursor:pointer;" onclick="window.location='/hotels/{{ d.id }}'">
-        <img
-          src="{{ d.image or 'https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg' }}"
-          alt="{{ d.name }}"
-          onerror="this.src='https://images.pexels.com/photos/338515/pexels-photo-338515.jpeg'"
-        >
-        <button
-          class="wish-btn wishlisted"
-          onclick="event.stopPropagation(); removeWish({{ d.id }}, this)"
-          title="Remove from wishlist"
-        >
-          <svg width="16" height="16" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </button>
+    <div class="w-card">
+      <div class="w-img">
+        {% set img = d.image if d.image and d.image.startswith('http') else '' %}
+        <img src="{{ img }}" alt="{{ d.name }}" loading="lazy" onerror="this.closest('.w-img').style.background='#f0ede8'">
+        {% if d.rating %}<div class="w-badge">⭐ {{ d.rating }}</div>{% endif %}
       </div>
-      <div class="dest-list-body">
-        <div class="dest-list-meta">
-          <div class="dest-name">{{ d.name }}</div>
-          <div class="rating-pill"><span class="rating-star">★</span> {{ d.rating }}</div>
-        </div>
-        <p class="dest-desc">{{ d.category | title }} · Best: {{ d.best_time }}</p>
-        <div class="dest-list-footer">
-          <a href="{{ url_for('hotels_by_destination', destination_id=d.id) }}" class="btn btn-gold" style="padding:8px 18px;font-size:12px;">Book Now</a>
-          <span class="badge {% if d.country_type == 'national' %}badge-teal{% else %}badge-gold{% endif %}">
-            {{ 'India' if d.country_type == 'national' else 'International' }}
-          </span>
+      <div class="w-body">
+        <div class="w-name">{{ d.name }}</div>
+        <div class="w-meta">{{ d.category or '' }}{% if d.best_time %} · Best: {{ d.best_time }}{% endif %}</div>
+        <div class="w-actions">
+          <a href="{{ url_for('hotels_by_destination', destination_id=d.id) }}" class="btn-book">Book Now →</a>
+          <button class="btn-remove" onclick="removeWishlist({{ d.id }}, this)">✕</button>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <div style="text-align:center;padding:6rem;color:var(--muted);">
-    <div style="font-size:3rem;margin-bottom:1rem;">♡</div>
-    <h3 style="font-family:var(--font-display);font-size:1.6rem;margin-bottom:8px;">Your wishlist is empty</h3>
-    <p>Browse destinations and tap the heart icon to save them here.</p>
-    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold" style="margin-top:1.5rem;">Explore Destinations</a>
+  <div class="empty">
+    <div style="font-size:3rem;margin-bottom:.8rem;">♡</div>
+    <h3 style="margin-bottom:.5rem;">Your wishlist is empty</h3>
+    <p style="margin-bottom:1.5rem;">Browse destinations and tap ♡ to save them here</p>
+    <a href="{{ url_for('destinations_page') }}" style="padding:12px 28px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">Browse Destinations →</a>
   </div>
   {% endif %}
 </div>
 {% endblock %}
-
-{% block extra_js %}
-<script>
-async function removeWish(destId, btn) {
-  await fetch(`/wishlist/toggle/${destId}`, {method:'POST'});
-  btn.closest('.dest-list-card').style.opacity = '0';
-  btn.closest('.dest-list-card').style.transition = 'opacity .3s';
-  setTimeout(() => btn.closest('.dest-list-card').remove(), 300);
+{% block extra_js %}<script>
+async function removeWishlist(id, btn) {
+  const r = await fetch(`/wishlist/toggle/${id}`, {method:'POST'});
+  const d = await r.json();
+  if(d.status === 'removed') btn.closest('.w-card').remove();
 }
-</script>
-{% endblock %}
+</script>{% endblock %}

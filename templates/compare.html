@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Compare Destinations — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.pg{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+.pg h1{font-family:Georgia,serif;font-size:1.8rem;margin-bottom:1.5rem;}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;}
+.c-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;}
+.c-img{height:160px;overflow:hidden;background:#f0ede8;}
+.c-img img{width:100%;height:100%;object-fit:cover;}
+.c-body{padding:1.2rem;}
+.c-name{font-family:Georgia,serif;font-size:1.2rem;font-weight:600;margin-bottom:.8rem;}
+.c-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0ede8;font-size:13px;}
+.c-row:last-child{border:none;}
+.c-label{color:#666;}
+.c-val{font-weight:600;color:#0d0f0e;}
+.c-btn{display:block;padding:11px;background:#c9a84c;color:#fff;border-radius:10px;text-align:center;text-decoration:none;font-weight:700;font-size:13px;margin-top:1rem;}
+.stars{color:#f59e0b;}
+.empty{text-align:center;padding:4rem;color:#888;}
+</style>{% endblock %}
+{% block content %}
+<div class="pg">
+  <h1>Compare Destinations</h1>
+  {% if data %}
+  <div class="compare-grid">
+    {% for d in data %}
+    <div class="c-card">
+      <div class="c-img"><img src="{{ d.img }}" alt="{{ d.dest.name }}" loading="lazy"></div>
+      <div class="c-body">
+        <div class="c-name">{{ d.dest.name }}</div>
+        <div class="c-row"><span class="c-label">Rating</span><span class="c-val stars">{{ '★' * (d.avg_rating|int) }}{{ '☆' * (5 - d.avg_rating|int) }} {{ d.avg_rating }}</span></div>
+        <div class="c-row"><span class="c-label">Category</span><span class="c-val">{{ d.dest.category or '—' }}</span></div>
+        <div class="c-row"><span class="c-label">Best Time</span><span class="c-val">{{ d.dest.best_time or '—' }}</span></div>
+        <div class="c-row"><span class="c-label">Starting Price</span><span class="c-val">₹{{ "{:,}".format(d.min_price) if d.min_price else '—' }}</span></div>
+        <div class="c-row"><span class="c-label">Hotels</span><span class="c-val">{{ d.hotel_count }} available</span></div>
+        <div class="c-row"><span class="c-label">Type</span><span class="c-val">{{ d.dest.country_type or '—' }}</span></div>
+        <a href="{{ url_for('hotels_by_destination', destination_id=d.dest.id) }}" class="c-btn">Book Now →</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div style="margin-top:1.5rem;text-align:center;">
+    <a href="{{ url_for('destinations_page') }}" style="color:#888;font-size:13px;text-decoration:none;">← Change destinations</a>
+  </div>
+  {% else %}
+  <div class="empty">
+    <div style="font-size:3rem;margin-bottom:.8rem;">⚖️</div>
+    <p>No destinations selected for comparison.</p>
+    <a href="{{ url_for('destinations_page') }}" style="color:#c9a84c;font-weight:600;">Browse & Compare →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

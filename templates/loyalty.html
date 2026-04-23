@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Loyalty Points — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.pg{max-width:800px;margin:2rem auto;padding:0 1.5rem;}
+.hero-card{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:20px;padding:2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
+.pts-big{font-family:Georgia,serif;font-size:3.5rem;font-weight:600;color:#c9a84c;line-height:1;}
+.pts-label{font-size:14px;color:rgba(255,255,255,.5);margin-top:.3rem;}
+.tier-badge{padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700;}
+.tier-bronze{background:#92400e;color:#fde68a;}
+.tier-silver{background:#374151;color:#e5e7eb;}
+.tier-gold{background:#78350f;color:#fde68a;}
+.prog-bar{background:rgba(255,255,255,.1);border-radius:20px;height:8px;margin-top:.8rem;}
+.prog-fill{background:#c9a84c;border-radius:20px;height:100%;transition:width .5s;}
+.card{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:1.5rem;margin-bottom:1.2rem;}
+.card h3{font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1rem;color:#0d0f0e;}
+.earn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.8rem;}
+.earn-item{background:#f8f6f1;border-radius:12px;padding:1rem;text-align:center;}
+.earn-icon{font-size:1.8rem;margin-bottom:.3rem;}
+.earn-pts{font-weight:700;color:#1a5c50;font-size:14px;}
+.earn-how{font-size:11px;color:#888;margin-top:2px;}
+.log-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0ede8;font-size:13px;}
+.log-row:last-child{border:none;}
+.log-pts{font-weight:700;}
+.log-pts.plus{color:#27ae60;}
+.log-pts.minus{color:#e74c3c;}
+.redeem-form{display:flex;gap:10px;}
+.redeem-input{flex:1;padding:11px 14px;border:1.5px solid #e8e4de;border-radius:10px;font-size:14px;font-family:inherit;outline:none;}
+.redeem-input:focus{border-color:#c9a84c;}
+.redeem-btn{padding:11px 20px;background:#c9a84c;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;}
+</style>{% endblock %}
+{% block content %}
+<div class="pg">
+  <div class="hero-card">
+    <div style="flex:1;">
+      <div class="pts-big">{{ user.loyalty_points or 0 }}</div>
+      <div class="pts-label">Loyalty Points</div>
+      <div style="margin-top:.8rem;">
+        <span class="tier-badge tier-{{ tier.lower() }}">{{ tier }} Member</span>
+      </div>
+      {% if pts_needed > 0 %}
+      <div style="margin-top:1rem;font-size:13px;color:rgba(255,255,255,.5);">{{ pts_needed }} more points to reach {{ next_tier }}</div>
+      <div class="prog-bar">
+        <div class="prog-fill" style="width:{{ [((user.loyalty_points or 0) / ([user.loyalty_points or 0 + pts_needed, 1]|max)) * 100, 100]|min|int }}%"></div>
+      </div>
+      {% else %}
+      <div style="margin-top:.8rem;font-size:13px;color:rgba(255,255,255,.5);">{{ next_tier }}</div>
+      {% endif %}
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:3rem;">🏆</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:.3rem;">₹{{ (user.loyalty_points or 0) // 10 }} redeemable</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>💰 Redeem Points</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:1rem;">10 points = ₹1 discount · Generates a coupon code valid 30 days</p>
+    <form method="POST" action="{{ url_for('redeem_loyalty') }}" onsubmit="disableBtn(this)">
+      <div class="redeem-form">
+        <input type="number" name="points" class="redeem-input" placeholder="Enter points to redeem (min 100)"
+          min="100" max="{{ user.loyalty_points or 0 }}" step="10" required>
+        <button type="submit" class="redeem-btn">Redeem →</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>🌟 How to Earn Points</h3>
+    <div class="earn-grid">
+      <div class="earn-item"><div class="earn-icon">🏨</div><div class="earn-pts">1pt per ₹100</div><div class="earn-how">Hotel booking</div></div>
+      <div class="earn-item"><div class="earn-icon">✈️</div><div class="earn-pts">1pt per ₹100</div><div class="earn-how">Transport booking</div></div>
+      <div class="earn-item"><div class="earn-icon">⭐</div><div class="earn-pts">+20 pts</div><div class="earn-how">Write a review</div></div>
+      <div class="earn-item"><div class="earn-icon">📸</div><div class="earn-pts">+10 pts</div><div class="earn-how">Share photo</div></div>
+      <div class="earn-item"><div class="earn-icon">👥</div><div class="earn-pts">+100 pts</div><div class="earn-how">Refer a friend</div></div>
+      <div class="earn-item"><div class="earn-icon">🎉</div><div class="earn-pts">+50 pts</div><div class="earn-how">Welcome bonus</div></div>
+    </div>
+  </div>
+
+  {% if history %}
+  <div class="card">
+    <h3>📋 Points History</h3>
+    {% for h in history %}
+    <div class="log-row">
+      <div>
+        <div style="font-weight:600;font-size:13px;">{{ h.action }}</div>
+        <div style="font-size:11px;color:#888;">{{ h.created_at.strftime('%d %b %Y') if h.created_at else '' }}</div>
+      </div>
+      <div class="log-pts {{ 'plus' if h.points > 0 else 'minus' }}">{{ '+' if h.points > 0 else '' }}{{ h.points }} pts</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}<script>function disableBtn(f){const b=f.querySelector('[type=submit]');if(b){b.disabled=true;b.textContent='⏳ Processing...';}}{% endblock %}

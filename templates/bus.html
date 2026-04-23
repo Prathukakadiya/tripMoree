@@ -1,194 +1,232 @@
+<!-- 
+  SAVE THIS AS: templates/bus_payment.html
+  Then duplicate and change confirm/skip URLs for train, flight, cab
+-->
 {% extends "base.html" %}
-{% block title %}Buses to {{ destination }}{% endblock %}
-{% block extra_css %}
-<style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.tp{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
-.prog{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:#888;flex-wrap:wrap;}
-.prog .done{color:#1a5c50;font-weight:600;}
-.prog .act{color:#c9a84c;font-weight:700;}
-.sbox{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:16px;padding:2rem;margin-bottom:2rem;}
-.sbox h2{font-family:Georgia,serif;font-size:1.6rem;color:#fff;margin-bottom:1.5rem;}
-.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;}
-.fg label{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
-.fg select,.fg input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:inherit;outline:none;}
-.fg select option{background:#1a2e2a;}
-.sbtn{padding:12px 24px;background:#c9a84c;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;height:46px;}
-.sbtn:hover{background:#b8934a;}
-.sortbar{display:flex;align-items:center;gap:10px;padding:1rem 1.5rem;background:#fff;border:1px solid #e8e4de;border-radius:12px;margin-bottom:1rem;}
-.srt{padding:6px 16px;border:1px solid #e8e4de;border-radius:20px;font-size:13px;cursor:pointer;background:#fff;font-family:inherit;transition:all .2s;}
-.srt.active,.srt:hover{background:#0d0f0e;color:#fff;border-color:#0d0f0e;}
-.blist{display:flex;flex-direction:column;gap:12px;}
-.bcard{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:1.5rem;transition:all .25s;animation:fadeUp .4s ease both;}
-.bcard:hover{border-color:#c9a84c;box-shadow:0 8px 30px rgba(0,0,0,.08);}
-.binner{display:grid;grid-template-columns:1.5fr 1.2fr 1fr auto;gap:1.5rem;align-items:center;}
-.bop{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:#0d0f0e;}
-.bnum{font-size:12px;color:#888;margin-top:2px;}
-.ttags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-.tt{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-.ac{background:#e3f2fd;color:#1565c0;}
-.nac{background:#f3e5f5;color:#7b1fa2;}
-.sl{background:#e8f5e9;color:#2e7d32;}
-.st{background:#fff3e0;color:#e65100;}
-.rcol{text-align:center;}
-.tbig{font-family:Georgia,serif;font-size:1.4rem;font-weight:600;color:#0d0f0e;}
-.tcity{font-size:12px;color:#888;margin-top:2px;}
-.tarr{font-size:1.4rem;color:#c9a84c;margin:4px 0;}
-.scol{font-size:13px;}
-.sok{color:#27ae60;font-weight:600;}
-.slow{color:#e67e22;font-weight:600;}
-.sno{color:#e74c3c;font-weight:600;}
-.pcol{text-align:right;}
-.pbig{font-family:Georgia,serif;font-size:1.4rem;font-weight:600;color:#0d0f0e;}
-.ptot{font-family:Georgia,serif;font-size:1rem;color:#1a5c50;margin-top:4px;}
-.bkbtn{display:block;padding:10px 22px;background:#0d0f0e;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;margin-top:8px;transition:all .2s;}
-.bkbtn:hover{background:#1a5c50;color:#fff;}
-.bkbtn.dis{background:#ccc;cursor:not-allowed;pointer-events:none;}
-.empty{text-align:center;padding:3rem;color:#888;}
-.skipbar{text-align:center;padding:1.2rem;background:#f8f6f1;border-radius:12px;border:1px dashed #e8e4de;margin-top:1rem;font-size:13px;}
-.skipbar a{color:#c9a84c;font-weight:600;text-decoration:none;}
-.skipbar a:hover{text-decoration:underline;}
-@media(max-width:768px){.sgrid{grid-template-columns:1fr 1fr;}.binner{grid-template-columns:1fr 1fr;gap:1rem;}}
-</style>
-{% endblock %}
-
+{% block title %}Bus Payment — TripMoree{% endblock %}
 {% block content %}
-<div class="tp">
-  <div class="prog">
-    <span class="done">✓ Hotel</span> → <span class="done">✓ Payment</span> →
-    <span class="act">🚌 Bus Booking</span> → <span>📍 Spots</span> → <span>🚕 Cab</span>
+<style>
+body { background: #f0f4f8; }
+.tp-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #27ae60 100%);
+  padding: 50px 0 80px;
+  color: white;
+  text-align: center;
+}
+.tp-hero h1 { font-size: 2rem; font-weight: 900; }
+.tp-hero .amt { font-size: 2.8rem; font-weight: 900; color: #f6c90e; }
+.tp-wrapper { margin-top: -50px; position: relative; z-index: 10; padding-bottom: 60px; }
+.tp-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  overflow: hidden;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.tp-header {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: white;
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.tp-icon { font-size: 3rem; }
+.tp-header h3 { font-weight: 800; margin: 0; font-size: 1.3rem; }
+.tp-header p  { margin: 0; opacity: .7; font-size: .88rem; }
+.tp-body { padding: 32px; }
+.upi-id-box {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.upi-id-box .id { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
+.btn-copy {
+  background: #27ae60; color: white;
+  border: none; border-radius: 8px;
+  padding: 8px 16px; font-size: .8rem; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.btn-copy:hover { background: #1e8449; }
+.upi-apps { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+.upi-app-btn {
+  flex: 1; min-width: 80px; padding: 12px 8px;
+  border-radius: 12px; border: 2px solid #e0e0e0;
+  background: white; text-align: center; cursor: pointer;
+  font-size: .75rem; font-weight: 700; color: #444;
+  transition: all .2s; text-decoration: none;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.upi-app-btn:hover { border-color: #27ae60; color: #27ae60; }
+.upi-app-btn .app-icon { font-size: 1.8rem; }
+.steps { margin: 20px 0; }
+.step  { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+.step-num {
+  width: 26px; height: 26px;
+  background: #27ae60; color: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .78rem; flex-shrink: 0;
+}
+.step-text { font-size: .88rem; color: #444; padding-top: 3px; }
+.ref-group { background: #f8f9fa; border-radius: 14px; padding: 20px; }
+.ref-group label { font-weight: 700; font-size: .9rem; margin-bottom: 8px; display: block; }
+.ref-input {
+  width: 100%; padding: 13px 16px;
+  border: 2px solid #dee2e6; border-radius: 10px;
+  font-size: 1rem; transition: border-color .2s;
+}
+.ref-input:focus { outline: none; border-color: #27ae60; }
+.btn-pay {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #27ae60, #1e8449);
+  color: white; border: none; border-radius: 14px;
+  font-size: 1.1rem; font-weight: 800;
+  cursor: pointer; transition: all .3s; margin-top: 18px;
+}
+.btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(39,174,96,.35); }
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid #f0f0f0;
+  font-size: .88rem;
+}
+.summary-row .lbl { color: #888; }
+.summary-row .val { font-weight: 700; }
+.trust-badges {
+  display: flex; justify-content: center; gap: 16px;
+  flex-wrap: wrap; padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  font-size: .75rem; color: #888;
+}
+</style>
+
+<div class="tp-hero">
+  <div class="container">
+    <p style="font-size:.85rem; opacity:.7; margin-bottom:6px;">COMPLETE BUS BOOKING</p>
+    <h1>🚌 Bus Payment</h1>
+    <div class="amt">₹{{ "{:,}".format(tb.price) }}</div>
+    <p>{{ tb.source }} → {{ tb.destination }} · {{ tb.persons }} passenger{{ 's' if tb.persons > 1 }}</p>
   </div>
+</div>
 
-  <div class="sbox">
-    <h2>🚌 Buses to {{ destination }}</h2>
-    <form method="POST">
-      <div class="sgrid">
-        <div class="fg">
-          <label>From City</label>
-          <input type="text" name="source" placeholder="e.g. Ahmedabad, Delhi" value="{{ request.form.get('source','') }}" required>
-        </div>
-        <div class="fg">
-          <label>AC Type</label>
-          <select name="ac_type">
-            <option value="AC"     {% if request.form.get('ac_type','AC')=='AC'     %}selected{% endif %}>AC</option>
-            <option value="Non-AC" {% if request.form.get('ac_type')=='Non-AC'      %}selected{% endif %}>Non-AC</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Seat Type</label>
-          <select name="seat_type">
-            <option value="Sleeper" {% if request.form.get('seat_type','Sleeper')=='Sleeper' %}selected{% endif %}>Sleeper</option>
-            <option value="Seater"  {% if request.form.get('seat_type')=='Seater'             %}selected{% endif %}>Seater</option>
-          </select>
-        </div>
-        <div class="fg">
-          <label>Passengers</label>
-          <select name="persons">
-            {% for i in range(1,7) %}
-            <option value="{{ i }}" {% if persons == i %}selected{% endif %}>{{ i }} Passenger{{ 's' if i>1 }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <button type="submit" class="sbtn">🔍 Search</button>
-      </div>
-    </form>
-  </div>
-
-  {% if buses %}
-  <div class="sortbar">
-    <strong style="font-size:13px;">{{ buses|length }} buses found</strong>
-    <button class="srt active" onclick="sortIt('price',this)">💰 Cheapest</button>
-    <button class="srt" onclick="sortIt('time',this)">🕐 Earliest</button>
-    <span style="margin-left:auto;font-size:13px;color:#888;">Destination: {{ destination }}</span>
-  </div>
-
-  <div class="blist" id="blist">
-    {% for b in buses %}
-    <div class="bcard" data-price="{{ b.price or 0 }}" data-time="{{ b.departure_time or '00:00' }}" style="animation-delay:{{ loop.index0*.06 }}s;">
-      <div class="binner">
-
+<div class="tp-wrapper">
+  <div class="container">
+    <div class="tp-card">
+      <div class="tp-header">
+        <span class="tp-icon">🚌</span>
         <div>
-          <div class="bop">{{ b.operator }}</div>
-          <div class="bnum">🚌 {{ b.bus_number }}</div>
-          <div class="ttags">
-            <span class="tt {{ 'ac' if b.ac_type=='AC' else 'nac' }}">{{ b.ac_type }}</span>
-            <span class="tt {{ 'sl' if b.seat_type=='Sleeper' else 'st' }}">{{ b.seat_type }}</span>
+          <h3>{{ tb.source }} → {{ tb.destination }}</h3>
+          <p>{{ tb.persons }} passenger{{ 's' if tb.persons > 1 }} · Pay via UPI to confirm your seats</p>
+        </div>
+      </div>
+      <div class="tp-body">
+
+        <!-- Summary -->
+        <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Booking Summary</h6>
+        <div class="mb-4">
+          <div class="summary-row">
+            <span class="lbl">Route</span>
+            <span class="val">{{ tb.source }} → {{ tb.destination }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Passengers</span>
+            <span class="val">{{ tb.persons }}</span>
+          </div>
+          {% if hb %}
+          <div class="summary-row">
+            <span class="lbl">Linked Hotel Booking</span>
+            <span class="val">#{{ hb.id }}</span>
+          </div>
+          {% endif %}
+          <div class="summary-row" style="border:none;">
+            <span class="lbl"><strong>Total Amount</strong></span>
+            <span class="val" style="color:#e94560; font-size:1.1rem;">₹{{ "{:,}".format(tb.price) }}</span>
           </div>
         </div>
 
-        {# ✅ FIX: departure_time is a STRING like "16:00:00" — just slice first 5 chars #}
-        <div class="rcol">
-          <div class="tbig">{{ (b.departure_time or '??:??')[:5] }}</div>
-          <div class="tcity">{{ b.source }}</div>
-          <div class="tarr">↓</div>
-          <div class="tbig">{{ (b.arrival_time or '??:??')[:5] }}</div>
-          <div class="tcity">{{ b.destination }}</div>
+        <!-- UPI ID -->
+        <div class="upi-id-box">
+          <div>
+            <div style="font-size:.72rem; color:#888;">Pay to UPI ID</div>
+            <div class="id">{{ upi_id }}</div>
+          </div>
+          <button class="btn-copy" onclick="copyUPI()">Copy</button>
         </div>
 
-        <div class="scol">
-          {% if b.available_seats > 15 %}<span class="sok">🟢 {{ b.available_seats }} seats</span>
-          {% elif b.available_seats > 0 %}<span class="slow">🟠 Only {{ b.available_seats }} left!</span>
-          {% else %}<span class="sno">❌ Sold out</span>{% endif %}
-          <div style="font-size:12px;color:#888;margin-top:4px;">{{ b.total_seats }} total seats</div>
+        <!-- UPI Apps -->
+        <div class="upi-apps">
+          <a href="{{ upi_link }}" class="upi-app-btn">
+            <span class="app-icon">🟣</span> PhonePe
+          </a>
+          <a href="{{ upi_link }}" class="upi-app-btn">
+            <span class="app-icon">🔵</span> GPay
+          </a>
+          <a href="{{ upi_link }}" class="upi-app-btn">
+            <span class="app-icon">🟡</span> Paytm
+          </a>
+          <a href="{{ upi_link }}" class="upi-app-btn">
+            <span class="app-icon">🔴</span> BHIM
+          </a>
         </div>
 
-        <div class="pcol">
-          <div class="pbig">₹{{ "{:,}".format(b.price or 0) }}</div>
-          <div style="font-size:11px;color:#888;">per seat</div>
-          <div class="ptot">₹{{ "{:,}".format((b.price or 0) * persons) }} total</div>
-          {% if b.available_seats and b.available_seats >= persons %}
-            <a href="{{ url_for('confirm_bus', bus_id=b.id) }}" class="bkbtn">Book Now →</a>
-          {% else %}
-            <span class="bkbtn dis">Sold Out</span>
-          {% endif %}
+        <!-- Steps -->
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">Open any UPI app and pay <strong>₹{{ "{:,}".format(tb.price) }}</strong> to <strong>{{ upi_id }}</strong></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">Note the 12-digit transaction ID from your UPI app</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">Enter it below and confirm to complete your bus booking</div>
+          </div>
         </div>
 
+        <!-- Confirm form -->
+        <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}">
+          <div class="ref-group">
+            <label>UPI Transaction ID</label>
+            <input type="text" name="upi_ref" class="ref-input"
+                   placeholder="e.g. 426874291038" required>
+            <div style="font-size:.75rem; color:#888; margin-top:6px;">Find in your UPI app payment history</div>
+          </div>
+          <button type="submit" class="btn-pay">
+            ✅ Confirm Bus Payment — ₹{{ "{:,}".format(tb.price) }}
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="{{ url_for('skip_bus_payment', transport_booking_id=tb.id) }}"
+             style="color:#aaa; font-size:.82rem; text-decoration:none;">
+            Skip (Demo mode) →
+          </a>
+        </div>
+      </div>
+
+      <div class="trust-badges">
+        <span>🔒 256-bit SSL</span>
+        <span>✅ RBI Compliant</span>
+        <span>🛡️ Secure Payment</span>
+        <span>↩️ Easy Refund</span>
       </div>
     </div>
-    {% endfor %}
-  </div>
-
-  {% elif request.method == 'POST' %}
-  <div class="empty">
-    <div style="font-size:3rem;margin-bottom:1rem;">🚌</div>
-    <h3 style="color:#0d0f0e;margin-bottom:.5rem;">No buses found</h3>
-    <p>No {{ request.form.get('ac_type') }} {{ request.form.get('seat_type') }} buses from <strong>{{ request.form.get('source') }}</strong> to <strong>{{ destination }}</strong>.</p>
-    <p style="margin-top:.4rem;font-size:13px;color:#888;">Try cities: Ahmedabad · Delhi · Mumbai · Surat</p>
-    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
-      <a href="{{ url_for('flight', destination=destination) }}" style="padding:10px 20px;background:#0d0f0e;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;">✈ Try Flights</a>
-      <a href="{{ url_for('train',  destination=destination) }}" style="padding:10px 20px;background:#1a5c50;color:#fff;border-radius:8px;text-decoration:none;font-size:13px;">🚂 Try Trains</a>
-    </div>
-  </div>
-
-  {% else %}
-  <div class="empty">
-    <div style="font-size:3rem;margin-bottom:1rem;">🚌</div>
-    <p style="font-size:15px;color:#0d0f0e;">Enter your departure city above to find buses to <strong>{{ destination }}</strong>.</p>
-    <p style="font-size:13px;color:#888;margin-top:.4rem;">Try: Ahmedabad · Delhi · Mumbai · Surat</p>
-  </div>
-  {% endif %}
-
-  {% set hbid = session.get('hotel_booking_id', 0) %}
-  <div class="skipbar">
-    Already arranged transport? <a href="{{ url_for('hype_spots', hotel_booking_id=hbid) if hbid else url_for('my_bookings') }}">Skip → Select Spots & Cab</a>
-    &nbsp;·&nbsp;
-    <a href="{{ url_for('transport_choice', destination=destination) }}" style="color:#888;">← Other options</a>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-function sortIt(by, btn) {
-  document.querySelectorAll('.srt').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  const list  = document.getElementById('blist');
-  if (!list) return;
-  const cards = [...list.querySelectorAll('.bcard')];
-  cards.sort((a,b)=> by==='price'
-    ? parseInt(a.dataset.price)-parseInt(b.dataset.price)
-    : (a.dataset.time||'').localeCompare(b.dataset.time||''));
-  cards.forEach(c=>list.appendChild(c));
+function copyUPI() {
+  navigator.clipboard.writeText("{{ upi_id }}").then(() => {
+    alert("UPI ID copied!");
+  });
 }
 </script>
 {% endblock %}

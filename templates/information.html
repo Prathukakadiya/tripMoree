@@ -1,228 +1,356 @@
 {% extends "base.html" %}
-
-{% block title %}{{ location }} Culture & Safety{% endblock %}
+{% block title %}Travel Guide — {{ location }}{% endblock %}
+{% block extra_css %}
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.info-page{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+/* HERO */
+.info-hero{
+  border-radius:20px;overflow:hidden;height:280px;position:relative;
+  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);margin-bottom:2rem;
+}
+.info-hero-img{width:100%;height:100%;object-fit:cover;opacity:.6;}
+.info-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 60%);}
+.info-hero-content{position:absolute;bottom:0;left:0;right:0;padding:2rem;}
+.info-hero-title{font-family:Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;font-weight:600;}
+.info-hero-sub{font-size:14px;color:rgba(255,255,255,.6);margin-top:4px;}
+/* TABS */
+.info-tabs{display:flex;gap:0;background:#fff;border-radius:12px;padding:4px;
+  margin-bottom:2rem;border:1px solid #e8e4de;overflow-x:auto;flex-wrap:nowrap;
+  scrollbar-width:none;}
+.info-tab{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;border:none;background:none;font-family:inherit;color:#888;
+  transition:all .2s;white-space:nowrap;}
+.info-tab.active{background:#0d0f0e;color:#fff;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .3s ease;}
+/* SECTION */
+.info-section{margin-bottom:2rem;}
+.section-title{font-family:Georgia,serif;font-size:1.3rem;color:#0d0f0e;
+  margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;padding-bottom:.6rem;
+  border-bottom:2px solid #f0ede8;}
+/* CARDS */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.info-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.2rem;
+  transition:all .2s;animation:fadeUp .4s ease both;}
+.info-card:hover{border-color:#c9a84c;box-shadow:0 6px 20px rgba(0,0,0,.07);}
+.card-icon{font-size:1.8rem;margin-bottom:.5rem;}
+.card-title{font-weight:700;font-size:14px;color:#0d0f0e;margin-bottom:.4rem;}
+.card-text{font-size:13px;color:#666;line-height:1.5;}
+.card-badge{display:inline-block;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:600;background:#f0faf8;color:#1a5c50;margin-top:.5rem;}
+/* EMERGENCY */
+.emergency-box{background:linear-gradient(135deg,#1a1a2e,#2d1b3d);
+  border-radius:16px;padding:1.5rem;color:#fff;margin-bottom:1.5rem;}
+.emergency-title{font-family:Georgia,serif;font-size:1.1rem;color:#e94560;margin-bottom:1rem;}
+.emergency-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.em-item{background:rgba(255,255,255,.08);border-radius:10px;padding:1rem;}
+.em-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;}
+.em-phone{font-size:1.1rem;font-weight:700;color:#c9a84c;font-family:monospace;}
+.em-type{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;}
+/* SPOTS */
+.spots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+.spot-card{border-radius:12px;overflow:hidden;background:#fff;border:1px solid #e8e4de;transition:all .2s;}
+.spot-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.spot-img{height:130px;overflow:hidden;background:#f0ede8;}
+.spot-img img{width:100%;height:100%;object-fit:cover;}
+.spot-body{padding:.8rem;}
+.spot-name{font-size:13px;font-weight:700;color:#0d0f0e;}
+/* ALERTS */
+.alert-box{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;
+  padding:1rem 1.2rem;margin-bottom:.8rem;display:flex;gap:.8rem;align-items:flex-start;}
+.alert-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+.alert-text{font-size:13px;color:#856404;}
+.alert-title{font-weight:700;margin-bottom:2px;}
+/* EMPTY */
+.empty-state{text-align:center;padding:2rem;color:#888;background:#f8f6f1;
+  border-radius:12px;font-size:14px;}
+/* BOOK BTN */
+.book-cta{
+  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:16px;
+  padding:2rem;text-align:center;margin-top:2rem;
+}
+.book-cta h3{font-family:Georgia,serif;font-size:1.4rem;color:#c9a84c;margin-bottom:.5rem;}
+.book-cta p{color:rgba(255,255,255,.6);font-size:13px;margin-bottom:1.2rem;}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.cta-btn{padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .2s;display:inline-block;}
+.cta-primary{background:#c9a84c;color:#fff;}
+.cta-primary:hover{background:#b8934a;color:#fff;}
+.cta-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);}
+.cta-secondary:hover{background:rgba(255,255,255,.2);color:#fff;}
+@media(max-width:600px){.emergency-grid{grid-template-columns:1fr;}.info-grid{grid-template-columns:1fr;}.spots-grid{grid-template-columns:1fr 1fr;}}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="info-page">
 
-<style>
+  <!-- HERO -->
+  <div class="info-hero">
+    {% if dest_img %}
+    <img src="{{ dest_img }}" alt="{{ location }}" class="info-hero-img">
+    {% endif %}
+    <div class="info-hero-overlay"></div>
+    <div class="info-hero-content">
+      <div class="info-hero-title">📍 {{ location }}</div>
+      <div class="info-hero-sub">Travel Guide · Local Tips · Emergency Info · Hidden Gems</div>
+    </div>
+  </div>
 
-body{
-    background: linear-gradient(135deg,#fdf6ec,#f5e6d3);
-    font-family:'Poppins',sans-serif;
-}
+  <!-- TABS -->
+  <div class="info-tabs">
+    <button class="info-tab active" onclick="showTab('spots',this)">🌟 Hype Spots</button>
+    <button class="info-tab" onclick="showTab('food',this)">🍜 Hidden Food</button>
+    <button class="info-tab" onclick="showTab('safety',this)">🌙 Night Safety</button>
+    <button class="info-tab" onclick="showTab('etiquette',this)">🤝 Local Etiquette</button>
+    <button class="info-tab" onclick="showTab('alerts',this)">⚠️ Tourist Alerts</button>
+    <button class="info-tab" onclick="showTab('emergency',this)">🚨 Emergency</button>
+  </div>
 
-/* HERO SECTION */
-.hero-section{
-    background: linear-gradient(rgba(120,94,70,0.75),rgba(120,94,70,0.75)),
-    url("https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80");
-    background-size:cover;
-    background-position:center;
-    padding:100px 20px;
-    text-align:center;
-    color:white;
-    border-radius:0 0 40px 40px;
-}
-
-.hero-section h1{
-    font-size:42px;
-    font-weight:700;
-    animation: fadeDown 1s ease;
-}
-
-.hero-section p{
-    opacity:0.9;
-    animation: fadeUp 1.2s ease;
-}
-
-/* SECTION TITLE */
-.section-title{
-    font-weight:700;
-    margin-bottom:10px;
-    color:#6b4f3b;
-}
-
-.subtitle{
-    color:#8c6d55;
-    font-size:14px;
-}
-
-/* PREMIUM CARD */
-.premium-card{
-    background:#fffaf3;
-    border-radius:20px;
-    box-shadow:0 12px 30px rgba(0,0,0,0.08);
-    transition:0.4s ease;
-    padding:22px;
-    height:100%;
-    border:1px solid rgba(0,0,0,0.05);
-    animation: fadeUp 0.8s ease;
-}
-
-.premium-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 18px 40px rgba(0,0,0,0.15);
-}
-
-.premium-card h5{
-    font-weight:600;
-    color:#5a3f2e;
-}
-
-.star{
-    color:#d4a373;
-}
-
-/* SPACING */
-.section-space{
-    margin-top:80px;
-}
-
-/* ANIMATIONS */
-@keyframes fadeUp{
-    from{
-        opacity:0;
-        transform:translateY(30px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-@keyframes fadeDown{
-    from{
-        opacity:0;
-        transform:translateY(-30px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
-
-</style>
-
-<!-- HERO -->
-<div class="hero-section">
-    <h1>Explore {{ location }}</h1>
-    <p>Your Complete Culture & Safety Travel Guide</p>
-</div>
-
-<div class="container my-5">
-
-<!-- ================= FOOD ================= -->
-<div class="text-center mb-5">
-  <h2 class="section-title">🍴 Hidden Street Food</h2>
-  <p class="subtitle">Rated by locals • Authentic taste</p>
-</div>
-
-<div class="row">
-{% for f in foods %}
-<div class="col-md-6 col-lg-4 mb-4">
-  <div class="premium-card">
-      <h5>{{ f.food_name }}</h5>
-      <p class="small text-muted">{{ f.description }}</p>
-      <div>
-          <span class="star">★★★★★</span>
-          <small>({{ f.rating }})</small>
+  <!-- HYPE SPOTS TAB -->
+  <div class="tab-panel active" id="tab-spots">
+    <div class="info-section">
+      <div class="section-title">🌟 Must-Visit Spots in {{ location }}</div>
+      {% if spots %}
+      <div class="spots-grid">
+        {% for s in spots %}
+        <div class="spot-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+          <div class="spot-img">
+            {% if s.pexels_img %}
+            <img src="{{ s.pexels_img }}" alt="{{ s.spot_name }}" loading="lazy"
+                 onerror="this.style.display='none'">
+            {% else %}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#aaa;">📍</div>
+            {% endif %}
+          </div>
+          <div class="spot-body">
+            <div class="spot-name">{{ s.spot_name }}</div>
+            <div style="font-size:11px;color:#888;margin-top:3px;">📍 {{ location }}</div>
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      <div class="mt-2 small text-muted">
-          📍 {{ f.place }}
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🌟</div>
+        <p>Spots for {{ location }} coming soon!</p>
       </div>
-  </div>
-</div>
-{% endfor %}
-</div>
-
-
-<!-- ================= NIGHT SAFETY ================= -->
-<div class="text-center section-space mb-5">
-  <h2 class="section-title">🌙 Night Safety Zones</h2>
-  <p class="subtitle">Travel smart • Stay safe</p>
-</div>
-
-<div class="row">
-{% for s in safety %}
-<div class="col-md-6 col-lg-4 mb-4">
-  <div class="premium-card">
-      <h5>{{ s.title }}</h5>
-      <p class="small text-muted">{{ s.description }}</p>
-  </div>
-</div>
-{% endfor %}
-</div>
-
-
-<!-- ================= ETIQUETTES ================= -->
-<div class="text-center section-space mb-5">
-  <h2 class="section-title">🤝 Local Etiquettes</h2>
-  <p class="subtitle">Respect culture • Enjoy more</p>
-</div>
-
-<div class="row">
-{% for e in etiquettes %}
-<div class="col-md-6 col-lg-4 mb-4">
-  <div class="premium-card">
-      <h5>{{ e.title }}</h5>
-      <p class="small text-muted">{{ e.description }}</p>
-  </div>
-</div>
-{% endfor %}
-</div>
-
-
-<!-- ================= ALERTS ================= -->
-<div class="text-center section-space mb-5">
-  <h2 class="section-title">🚨 Tourist Alerts & Tips</h2>
-  <p class="subtitle">Smart travel guide</p>
-</div>
-
-<div class="row">
-{% for a in alerts %}
-<div class="col-md-6 col-lg-4 mb-4">
-  <div class="premium-card">
-      <h5>{{ a.title }}</h5>
-      <p class="small text-muted">{{ a.description }}</p>
-  </div>
-</div>
-{% endfor %}
-</div>
-
-
-<!-- ================= LOCAL ESSENTIALS ================= -->
-<div class="text-center section-space mb-5">
-  <h2 class="section-title">🧭 Local Essentials</h2>
-  <p class="subtitle">Health • Safety • Weather</p>
-</div>
-
-<div class="row">
-
-  <div class="col-md-6 col-lg-4 mb-4">
-    <div class="premium-card">
-        <h5>🧑‍⚕️ Local Doctors</h5>
-        <p class="small text-muted">
-          {{ essentials.doctor1_name }} – {{ essentials.doctor1_phone }}<br>
-          {{ essentials.doctor2_name }} – {{ essentials.doctor2_phone }}
-        </p>
+      {% endif %}
     </div>
   </div>
 
-  <div class="col-md-6 col-lg-4 mb-4">
-    <div class="premium-card">
-        <h5>🚨 Local Scam Alert</h5>
-        <p class="small text-muted">{{ essentials.scam_alert }}</p>
+  <!-- FOOD TAB -->
+  <div class="tab-panel" id="tab-food">
+    <div class="info-section">
+      <div class="section-title">🍜 Hidden Street Food of {{ location }}</div>
+      {% if foods %}
+      <div class="info-grid">
+        {% for f in foods %}
+        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+          <div class="card-icon">🍽️</div>
+          <div class="card-title">{{ f.food_name }}</div>
+          <div class="card-text">{{ f.description or '' }}</div>
+          {% if f.place %}
+          <div class="card-badge">📍 {{ f.place }}</div>
+          {% endif %}
+          {% if f.rating %}
+          <div style="font-size:12px;color:#c9a84c;margin-top:.4rem;">
+            {% for i in range(f.rating|int) %}⭐{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🍜</div>
+        <p>Street food guide for {{ location }} coming soon!</p>
+      </div>
+      {% endif %}
     </div>
   </div>
 
-  <div class="col-md-6 col-lg-4 mb-4">
-    <div class="premium-card">
-        <h5>🌦️ Weather Alert</h5>
-        <p class="small text-muted">{{ essentials.weather_alert }}</p>
+  <!-- SAFETY TAB -->
+  <div class="tab-panel" id="tab-safety">
+    <div class="info-section">
+      <div class="section-title">🌙 Night Safety Zones</div>
+      {% if safety %}
+      <div class="info-grid">
+        {% for s in safety %}
+        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+          <div class="card-icon">🛡️</div>
+          <div class="card-title">{{ s.title }}</div>
+          <div class="card-text">{{ s.description or '' }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🌙</div>
+        <p>Safety info for {{ location }} coming soon!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ETIQUETTE TAB -->
+  <div class="tab-panel" id="tab-etiquette">
+    <div class="info-section">
+      <div class="section-title">🤝 Local Etiquette & Culture</div>
+      {% if etiquettes %}
+      <div class="info-grid">
+        {% for e in etiquettes %}
+        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+          <div class="card-icon">🙏</div>
+          <div class="card-title">{{ e.title }}</div>
+          <div class="card-text">{{ e.description or '' }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🤝</div>
+        <p>Etiquette guide for {{ location }} coming soon!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ALERTS TAB -->
+  <div class="tab-panel" id="tab-alerts">
+    <div class="info-section">
+      <div class="section-title">⚠️ Tourist Alerts & Tips</div>
+      {% if alerts %}
+      {% for a in alerts %}
+      <div class="alert-box" style="animation-delay:{{ loop.index0*.05 }}s;">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-text">
+          <div class="alert-title">{{ a.title }}</div>
+          {{ a.description or '' }}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">⚠️</div>
+        <p>Tourist tips for {{ location }} coming soon!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- EMERGENCY TAB -->
+  <div class="tab-panel" id="tab-emergency">
+    <div class="info-section">
+      <div class="section-title">🚨 Emergency Contacts</div>
+
+      <!-- Standard emergency numbers -->
+      <div class="emergency-box">
+        <div class="emergency-title">🚨 National Emergency Numbers</div>
+        <div class="emergency-grid">
+          <div class="em-item">
+            <div class="em-name">Police</div>
+            <div class="em-phone">📞 100</div>
+            <div class="em-type">24×7 Available</div>
+          </div>
+          <div class="em-item">
+            <div class="em-name">Ambulance</div>
+            <div class="em-phone">📞 108</div>
+            <div class="em-type">24×7 Available</div>
+          </div>
+          <div class="em-item">
+            <div class="em-name">Fire Brigade</div>
+            <div class="em-phone">📞 101</div>
+            <div class="em-type">24×7 Available</div>
+          </div>
+          <div class="em-item">
+            <div class="em-name">Women Helpline</div>
+            <div class="em-phone">📞 1091</div>
+            <div class="em-type">24×7 Available</div>
+          </div>
+          <div class="em-item">
+            <div class="em-name">Tourist Helpline</div>
+            <div class="em-phone">📞 1800-111-363</div>
+            <div class="em-type">India Tourism</div>
+          </div>
+          <div class="em-item">
+            <div class="em-name">Disaster Mgmt</div>
+            <div class="em-phone">📞 1078</div>
+            <div class="em-type">NDRF</div>
+          </div>
+        </div>
+      </div>
+
+      {% if essentials %}
+      <!-- Local doctors/contacts -->
+      <div style="background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.5rem;margin-bottom:1rem;">
+        <div style="font-weight:700;font-size:14px;color:#0d0f0e;margin-bottom:1rem;">🏥 Local Doctors in {{ location }}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          {% if essentials.doctor1_name %}
+          <div style="background:#f0faf8;border-radius:10px;padding:1rem;">
+            <div style="font-size:13px;font-weight:600;color:#0d0f0e;">Dr. {{ essentials.doctor1_name }}</div>
+            <div style="font-size:1.1rem;font-weight:700;color:#1a5c50;font-family:monospace;margin-top:4px;">
+              📞 {{ essentials.doctor1_phone or 'N/A' }}
+            </div>
+          </div>
+          {% endif %}
+          {% if essentials.doctor2_name %}
+          <div style="background:#f0faf8;border-radius:10px;padding:1rem;">
+            <div style="font-size:13px;font-weight:600;color:#0d0f0e;">Dr. {{ essentials.doctor2_name }}</div>
+            <div style="font-size:1.1rem;font-weight:700;color:#1a5c50;font-family:monospace;margin-top:4px;">
+              📞 {{ essentials.doctor2_phone or 'N/A' }}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% if essentials.scam_alert %}
+        <div style="margin-top:1rem;background:#fff3cd;border-radius:10px;padding:1rem;">
+          <div style="font-weight:700;font-size:13px;color:#856404;margin-bottom:4px;">⚠️ Scam Alert</div>
+          <div style="font-size:13px;color:#856404;">{{ essentials.scam_alert }}</div>
+        </div>
+        {% endif %}
+        {% if essentials.weather_alert %}
+        <div style="margin-top:.8rem;background:#e3f2fd;border-radius:10px;padding:1rem;">
+          <div style="font-weight:700;font-size:13px;color:#1565c0;margin-bottom:4px;">🌤️ Weather Alert</div>
+          <div style="font-size:13px;color:#1565c0;">{{ essentials.weather_alert }}</div>
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div style="font-size:2rem;margin-bottom:.5rem;">🏥</div>
+        <p>Local emergency contacts for {{ location }} will be added soon.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- BOOK CTA -->
+  <div class="book-cta">
+    <h3>Ready to visit {{ location }}?</h3>
+    <p>Book your hotel, transport and plan your whole trip on TripMoree</p>
+    <div class="cta-btns">
+      {% if dest %}
+      <a href="{{ url_for('hotels_by_destination', destination_id=dest.id) }}" class="cta-btn cta-primary">🏨 Book Hotel</a>
+      <a href="{{ url_for('destination_detail', dest_id=dest.id) }}" class="cta-btn cta-secondary">📍 View Destination</a>
+      {% else %}
+      <a href="{{ url_for('destinations_page') }}" class="cta-btn cta-primary">🌍 Explore Destinations</a>
+      {% endif %}
+      <a href="{{ url_for('my_bookings') }}" class="cta-btn cta-secondary">📋 My Bookings</a>
     </div>
   </div>
 
 </div>
+{% endblock %}
 
-</div>
-
+{% block extra_js %}
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.info-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
 {% endblock %}

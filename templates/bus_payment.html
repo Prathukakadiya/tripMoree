@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}🚌 Bus Payment — TripMoree{% endblock %}
+{% block extra_css %}<style>
+.pay-page{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
+.prog{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:#888;flex-wrap:wrap;}
+.prog .done{color:#1a5c50;font-weight:600;}.prog .act{color:#c9a84c;font-weight:700;background:#fffdf5;padding:4px 12px;border-radius:20px;border:1px solid #c9a84c;}
+.pay-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;margin-bottom:1rem;}
+.pay-header{text-align:center;padding-bottom:1.5rem;border-bottom:1px solid #f0ede8;margin-bottom:1.5rem;}
+.pay-icon{font-size:3rem;margin-bottom:.5rem;}
+.pay-title{font-family:Georgia,serif;font-size:1.5rem;color:#0d0f0e;margin-bottom:.4rem;}
+.pay-amount{font-family:Georgia,serif;font-size:2.8rem;font-weight:600;color:#1a5c50;}
+.pay-sub{font-size:13px;color:#888;margin-top:.3rem;}
+.info-box{background:#f0faf8;border:1px solid #b2dfdb;border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;}
+.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e0f0ee;font-size:13px;}
+.info-row:last-child{border:none;font-weight:700;}
+.info-label{color:#555;}.info-value{color:#0d0f0e;font-weight:600;}
+.upi-box{text-align:center;background:#f8f6f1;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.upi-id{display:inline-block;background:#fff;border:2px dashed #c9a84c;border-radius:10px;padding:.6rem 1.2rem;font-family:monospace;font-size:1.05rem;font-weight:700;color:#0d0f0e;cursor:pointer;margin:.5rem 0;}
+.upi-id:hover{background:#fffdf5;}
+.steps{list-style:none;padding:0;margin:.8rem auto 0;display:inline-block;text-align:left;}
+.steps li{font-size:13px;color:#555;padding:4px 0;display:flex;align-items:center;gap:8px;}
+.form-row{display:flex;gap:10px;margin-bottom:1rem;}
+.ref-input{flex:1;padding:12px 14px;border:1.5px solid #e8e4de;border-radius:10px;font-size:14px;font-family:inherit;outline:none;}
+.ref-input:focus{border-color:#c9a84c;}
+.pay-btn{padding:13px 24px;background:linear-gradient(135deg,#c9a84c,#b8934a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.pay-btn:hover{box-shadow:0 6px 20px rgba(201,168,76,.3);}
+.skip-link{text-align:center;margin-top:.8rem;}
+.skip-link a{color:#aaa;font-size:12px;text-decoration:none;}
+</style>{% endblock %}
+{% block content %}
+<div class="pay-page">
+  <div class="prog">
+    <span class="done">✓ Hotel</span> →
+    <span class="done">✓ Hotel Payment</span> →
+    <span class="done">✓ Bus Booked</span> →
+    <span class="act">🚌 Bus Payment</span> →
+    <span>📍 Spots & Cab</span>
+  </div>
+  <div class="pay-card">
+    <div class="pay-header">
+      <div class="pay-icon">🚌</div>
+      <div class="pay-title">Bus Payment</div>
+      <div class="pay-amount">₹{{ "{:,}".format(tb.price or 0) }}</div>
+      <div class="pay-sub">{{ tb.source }} → {{ tb.destination }} · {{ tb.persons }} passenger{{ 's' if (tb.persons or 1) > 1 }}</div>
+    </div>
+    <div class="info-box">
+      <div class="info-row"><span class="info-label">Route</span><span class="info-value">{{ tb.source }} → {{ tb.destination }}</span></div>
+      <div class="info-row"><span class="info-label">Passengers</span><span class="info-value">{{ tb.persons }}</span></div>
+      <div class="info-row"><span class="info-label">Type</span><span class="info-value">🚌 Bus</span></div>
+      <div class="info-row"><span class="info-label">Amount Due</span><span class="info-value" style="color:#1a5c50;font-size:15px;">₹{{ "{:,}".format(tb.price or 0) }}</span></div>
+    </div>
+    <div class="upi-box">
+      <div style="font-weight:700;font-size:1rem;color:#0d0f0e;margin-bottom:.3rem;">Pay via UPI</div>
+      <div style="font-size:13px;color:#888;">Open any UPI app and pay to:</div>
+      <div class="upi-id" onclick="copyUPI('{{ upi_id }}','cm2')">{{ upi_id }} 📋</div>
+      <div id="cm2" style="font-size:11px;color:#27ae60;height:16px;"></div>
+      <ul class="steps">
+        <li>1️⃣ Open PhonePe / GPay / Paytm</li>
+        <li>2️⃣ Pay <strong>₹{{ "{:,}".format(tb.price or 0) }}</strong> to {{ upi_id }}</li>
+        <li>3️⃣ Note the UPI reference number</li>
+        <li>4️⃣ Enter below and confirm</li>
+      </ul>
+    </div>
+    <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
+      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:8px;">UPI Reference / Transaction ID *</label>
+      <div class="form-row">
+        <input type="text" name="upi_ref" class="ref-input" placeholder="e.g. 412345678901" required>
+        <button type="submit" class="pay-btn">✅ Confirm Payment</button>
+      </div>
+    </form>
+    <div class="skip-link"><a href="{{ url_for('skip_bus_payment', transport_booking_id=tb.id) }}">Skip (Demo mode) →</a></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script>
+function copyUPI(upi,msgId){navigator.clipboard.writeText(upi).then(()=>{document.getElementById(msgId).textContent='✓ Copied!';setTimeout(()=>document.getElementById(msgId).textContent='',2000);});}
+function disableBtn(f){const b=f.querySelector('[type="submit"]');if(b){b.disabled=true;b.textContent='⏳ Confirming...';}}
+</script>{% endblock %}

@@ -1,194 +1,583 @@
 {% extends "base.html" %}
 {% block title %}Choose Transport — {{ destination }}{% endblock %}
-{% block extra_css %}
-<style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.tc-hero{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);padding:3rem var(--page-pad) 2rem;text-align:center;}
-.tc-hero-label{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.5rem;}
-.tc-hero-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;margin-bottom:.4rem;}
-.tc-hero-sub{font-size:14px;color:rgba(255,255,255,.5);}
-.tc-wrap{max-width:960px;margin:0 auto;padding:2.5rem var(--page-pad);}
-.step-bar{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:2.5rem;flex-wrap:wrap;}
-.step{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:12px;font-weight:500;color:var(--muted);}
-.step.done{color:var(--teal);}
-.step.active{color:var(--ink);font-weight:700;}
-.step-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:#f0ede8;color:var(--muted);flex-shrink:0;}
-.step.done .step-num{background:var(--teal);color:#fff;}
-.step.active .step-num{background:var(--ink);color:#fff;}
-.step-line{width:32px;height:1px;background:var(--border);}
-.source-row{display:flex;gap:10px;margin-bottom:1.5rem;}
-.source-input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:var(--font-body);outline:none;transition:border-color .2s;}
-.source-input:focus{border-color:var(--gold);}
-.check-btn{padding:12px 20px;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:var(--font-body);cursor:pointer;font-size:14px;white-space:nowrap;}
-.route-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;}
-.route-visual{display:flex;align-items:center;gap:12px;background:var(--paper);border-radius:10px;padding:1rem;flex-wrap:wrap;}
-.route-city{text-align:center;min-width:80px;}
-.route-city-name{font-weight:600;font-size:14px;}
-.route-city-sub{font-size:11px;color:var(--muted);}
-.route-arr{flex:1;text-align:center;color:var(--gold);font-size:1.1rem;}
-.indirect-note{margin-top:1rem;padding:.8rem 1rem;background:#fff9f0;border-left:3px solid var(--gold);border-radius:0 8px 8px 0;font-size:13px;}
-.options-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.tc-opt{background:var(--white);border:2px solid var(--border);border-radius:var(--radius-lg);padding:1.8rem 1.2rem;text-align:center;cursor:pointer;text-decoration:none;transition:all .25s;animation:fadeUp .4s ease both;display:block;position:relative;}
-.tc-opt:hover{border-color:var(--gold);transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.1);}
-.tc-opt.best{border-color:var(--gold);background:linear-gradient(135deg,#fff9ee,#fff);}
-.tc-opt.disabled{opacity:.4;pointer-events:none;}
-.opt-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:3px 12px;background:var(--gold);color:#fff;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
-.opt-icon{font-size:2.5rem;display:block;margin-bottom:.6rem;}
-.opt-name{font-family:var(--font-display);font-size:1.1rem;font-weight:600;color:var(--ink);margin-bottom:.3rem;}
-.opt-desc{font-size:11px;color:var(--muted);margin-bottom:.6rem;line-height:1.4;}
-.opt-price{font-size:13px;font-weight:600;color:var(--teal);}
-.warn-box{background:#fff9f0;border:1px solid #f0d090;border-radius:10px;padding:1rem 1.2rem;margin-bottom:1.2rem;font-size:13px;display:none;}
-.skip-link{text-align:center;font-size:13px;color:var(--muted);}
-.skip-link a{color:var(--gold);text-decoration:none;}
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="tc-hero">
-  <div class="tc-hero-label">Booking Step 2 of 4</div>
-  <div class="tc-hero-title">How are you reaching {{ destination }}?</div>
-  <div class="tc-hero-sub">We'll suggest the best options based on your origin city</div>
+
+<style>
+:root {
+  --brand: #e94560;
+  --dark: #1a1a2e;
+  --accent: #0f3460;
+  --card-bg: #ffffff;
+  --muted: #6c757d;
+}
+.transport-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 60%, #e94560 100%);
+  padding: 60px 0 40px;
+  color: white;
+  text-align: center;
+}
+.transport-hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; }
+.transport-hero p  { font-size: 1.05rem; opacity: .8; }
+
+/* Smart Route Banner */
+.smart-route-banner {
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+  color: white;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: none;
+  animation: slideDown .4s ease;
+}
+.smart-route-banner .route-steps {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.route-step {
+  background: rgba(255,255,255,.2);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-weight: 700;
+  font-size: .9rem;
+}
+.route-arrow { font-size: 1.4rem; }
+
+/* Alert banners */
+.alert-banner {
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  display: none;
+  animation: slideDown .3s ease;
+}
+.alert-ban-int  { background: #fff3cd; border-left: 4px solid #f39c12; color: #856404; }
+.alert-ban-far  { background: #d1ecf1; border-left: 4px solid #17a2b8; color: #0c5460; }
+.alert-ban-only { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+
+/* Transport Cards */
+.transport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 40px 0;
+}
+.transport-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  overflow: hidden;
+  transition: transform .3s, box-shadow .3s;
+  position: relative;
+  cursor: pointer;
+}
+.transport-card:hover:not(.disabled-card) {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(233,69,96,.18);
+}
+.transport-card.disabled-card {
+  opacity: .5;
+  cursor: not-allowed;
+  filter: grayscale(.6);
+}
+.transport-card.recommended::before {
+  content: "✦ RECOMMENDED";
+  position: absolute;
+  top: 14px; right: 14px;
+  background: #e94560;
+  color: white;
+  font-size: .65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+.transport-card.cheapest::before {
+  content: "💰 CHEAPEST";
+  position: absolute;
+  top: 14px; right: 14px;
+  background: #27ae60;
+  color: white;
+  font-size: .65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.card-icon-area {
+  padding: 32px 24px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+.card-icon-area .icon { font-size: 3.5rem; margin-bottom: 8px; display: block; }
+.card-icon-area h3    { font-size: 1.3rem; font-weight: 800; color: var(--dark); }
+.card-body { padding: 20px 24px 24px; }
+.info-row  { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: .88rem; }
+.info-row .label { color: var(--muted); }
+.info-row .value { font-weight: 700; color: var(--dark); }
+.price-tag {
+  background: linear-gradient(135deg, var(--brand), #c0392b);
+  color: white;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: center;
+  margin: 14px 0;
+}
+.price-tag .from  { font-size: .75rem; opacity: .85; }
+.price-tag .price { font-size: 1.5rem; font-weight: 800; }
+.btn-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid var(--brand);
+  background: white;
+  color: var(--brand);
+  font-weight: 700;
+  font-size: .95rem;
+  transition: all .2s;
+  cursor: pointer;
+}
+.btn-select:hover:not(:disabled) {
+  background: var(--brand);
+  color: white;
+}
+.btn-select:disabled { opacity: .5; cursor: not-allowed; border-color: #ccc; color: #ccc; }
+.unavailable-reason {
+  font-size: .8rem;
+  color: #e74c3c;
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Via route display inside card */
+.via-route {
+  background: #fff8e7;
+  border: 1px dashed #f39c12;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: .82rem;
+  color: #856404;
+}
+.via-route strong { display: block; margin-bottom: 4px; }
+
+/* Skip section */
+.skip-section {
+  text-align: center;
+  padding: 20px 0 60px;
+  border-top: 1px solid #eee;
+  margin-top: 10px;
+}
+.skip-section p { color: var(--muted); margin-bottom: 12px; }
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,26,46,.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+.loading-overlay.active { display: flex; }
+.spinner {
+  width: 60px; height: 60px;
+  border: 5px solid rgba(255,255,255,.2);
+  border-top-color: #e94560;
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+
+/* Progress bar at top */
+.progress-steps {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 24px 0 0;
+}
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.step-circle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .85rem;
+  background: rgba(255,255,255,.2);
+  color: white;
+  border: 2px solid rgba(255,255,255,.4);
+}
+.step-circle.done  { background: #27ae60; border-color: #27ae60; }
+.step-circle.active{ background: #e94560; border-color: #e94560; }
+.step-label { font-size: .72rem; margin-top: 4px; color: rgba(255,255,255,.7); text-align: center; }
+.step-line  { width: 60px; height: 2px; background: rgba(255,255,255,.25); }
+.step-line.done { background: #27ae60; }
+.step-wrap  { display: flex; flex-direction: column; align-items: center; }
+</style>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="text-center text-white">
+    <div class="spinner mx-auto mb-3"></div>
+    <p class="fw-bold">Finding best transport options…</p>
+  </div>
 </div>
 
-<div class="tc-wrap">
-  <div class="step-bar">
-    <div class="step done"><div class="step-num">✓</div>Hotel</div>
-    <div class="step-line"></div>
-    <div class="step active"><div class="step-num">2</div>Transport</div>
-    <div class="step-line"></div>
-    <div class="step"><div class="step-num">3</div>Spots & Cab</div>
-    <div class="step-line"></div>
-    <div class="step"><div class="step-num">4</div>Payment</div>
-  </div>
-
-  <!-- SOURCE INPUT -->
-  <div style="margin-bottom:1.5rem;">
-    <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px;">Where are you travelling from?</label>
-    <div class="source-row">
-      <input type="text" id="srcInput" class="source-input" placeholder="Enter your city e.g. Delhi, Mumbai, Ahmedabad..." oninput="onSrcChange(this.value)">
-      <button class="check-btn" onclick="onSrcChange(document.getElementById('srcInput').value)">Check Routes →</button>
-    </div>
-  </div>
-
-  <!-- ROUTE VISUAL -->
-  <div class="route-card">
-    <div style="font-weight:600;margin-bottom:.8rem;">🗺 Your Route</div>
-    <div class="route-visual">
-      <div class="route-city">
-        <div class="route-city-name" id="srcName">Your City</div>
-        <div class="route-city-sub">Origin</div>
+<!-- Hero -->
+<div class="transport-hero">
+  <div class="container">
+    <!-- Progress Steps -->
+    <div class="progress-steps mb-4">
+      <div class="step-item">
+        <div class="step-wrap">
+          <div class="step-circle done">✓</div>
+          <div class="step-label">Hotel</div>
+        </div>
+        <div class="step-line done"></div>
       </div>
-      <div class="route-arr" id="routeArrow">──▶</div>
-      <div class="route-city">
-        <div class="route-city-name">{{ destination }}</div>
-        <div class="route-city-sub">Destination</div>
+      {% if booked %}
+      <div class="step-item">
+        <div class="step-wrap">
+          <div class="step-circle done">✓</div>
+          <div class="step-label">Payment</div>
+        </div>
+        <div class="step-line"></div>
+      </div>
+      {% endif %}
+      <div class="step-item">
+        <div class="step-wrap">
+          <div class="step-circle active">3</div>
+          <div class="step-label">Transport</div>
+        </div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-item">
+        <div class="step-wrap">
+          <div class="step-circle">4</div>
+          <div class="step-label">Sightseeing</div>
+        </div>
       </div>
     </div>
-    <div class="indirect-note" id="indirectNote" style="display:none;"></div>
+
+    <h1>✈️ How will you travel to <span style="color:#f6c90e">{{ destination }}</span>?</h1>
+    <p>We'll show you the best options based on distance and availability</p>
+  </div>
+</div>
+
+<div class="container" style="max-width:960px; padding-top:32px;">
+
+  <!-- Smart Route Banner -->
+  <div class="smart-route-banner" id="smartRouteBanner">
+    <div class="d-flex align-items-center gap-2">
+      <span style="font-size:1.5rem">🗺️</span>
+      <div>
+        <strong>Smart Route Suggestion</strong>
+        <div style="font-size:.85rem; opacity:.9;">No direct service found — here's the best connecting route:</div>
+      </div>
+    </div>
+    <div class="route-steps" id="routeSteps"></div>
   </div>
 
-  <!-- WARNING -->
-  <div class="warn-box" id="warnBox"></div>
-
-  <!-- OPTIONS -->
-  <div class="options-grid">
-    <a href="{{ url_for('flight', destination=destination) }}" class="tc-opt best" style="animation-delay:.0s">
-      <div class="opt-badge">✦ Fastest</div>
-      <span class="opt-icon">✈️</span>
-      <div class="opt-name">Flight</div>
-      <div class="opt-desc">Available for all destinations. Quickest travel.</div>
-      <div class="opt-price" id="flightPriceLabel">From ₹2,500</div>
-    </a>
-
-    <a href="{{ url_for('train', destination=destination) }}" class="tc-opt" id="trainOpt" style="animation-delay:.1s">
-      <span class="opt-icon">🚂</span>
-      <div class="opt-name">Train</div>
-      <div class="opt-desc">Comfortable, scenic. Ideal for domestic destinations.</div>
-      <div class="opt-price">From ₹800</div>
-    </a>
-
-    <a href="{{ url_for('bus', destination=destination) }}" class="tc-opt" id="busOpt" style="animation-delay:.2s">
-      <span class="opt-icon">🚌</span>
-      <div class="opt-name">Bus</div>
-      <div class="opt-desc">Most budget-friendly for nearby destinations.</div>
-      <div class="opt-price">From ₹500</div>
-    </a>
-
-    {% if session.get('hotel_booking_id') %}
-    <a href="{{ url_for('hype_spots', hotel_booking_id=session.get('hotel_booking_id')) }}" class="tc-opt" style="animation-delay:.3s">
-      <span class="opt-icon">🚗</span>
-      <div class="opt-name">Own Vehicle</div>
-      <div class="opt-desc">Already have transport? Skip this and book spots.</div>
-      <div class="opt-price">No charge</div>
-    </a>
-    {% endif %}
+  <!-- Alert banners -->
+  <div class="alert-banner alert-ban-int" id="intlAlert">
+    ✈️ <strong>International Destination:</strong> Only flights are available for {{ destination }}. Bus and train services are not offered for international travel.
+  </div>
+  <div class="alert-banner alert-ban-far" id="farAlert">
+    🚌 <strong>Long Distance:</strong> {{ destination }} is far from most cities. Bus may not be practical — train or flight recommended.
+  </div>
+  <div class="alert-banner alert-ban-only" id="onlyFlightAlert">
+    ✈️ Only <strong>flight</strong> service is available for this destination.
   </div>
 
-  <div class="skip-link">
-    {% if session.get('hotel_booking_id') %}
-    <a href="{{ url_for('hype_spots', hotel_booking_id=session.get('hotel_booking_id')) }}">
-      Skip transport → Go to spot & cab selection
+  <!-- Transport Cards Grid -->
+  <div class="transport-grid" id="transportGrid">
+
+    <!-- FLIGHT CARD -->
+    <div class="transport-card" id="flightCard">
+      <div class="card-icon-area">
+        <span class="icon">✈️</span>
+        <h3>Flight</h3>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">Speed</span>
+          <span class="value">Fastest</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Available flights</span>
+          <span class="value" id="flightCount">—</span>
+        </div>
+        <div class="price-tag" id="flightPrice">
+          <div class="from">Starting from</div>
+          <div class="price" id="flightPriceVal">₹—</div>
+          <div class="from">per person</div>
+        </div>
+        <div class="info-row">
+          <span class="label">Best for</span>
+          <span class="value">Far & International</span>
+        </div>
+        <button class="btn-select" id="flightBtn"
+          onclick="selectTransport('flight')">Select Flight</button>
+        <div class="unavailable-reason" id="flightUnavail" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- TRAIN CARD -->
+    <div class="transport-card" id="trainCard">
+      <div class="card-icon-area">
+        <span class="icon">🚆</span>
+        <h3>Train</h3>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">Speed</span>
+          <span class="value">Comfortable</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Available trains</span>
+          <span class="value" id="trainCount">—</span>
+        </div>
+        <div class="price-tag" id="trainPrice">
+          <div class="from">Starting from</div>
+          <div class="price" id="trainPriceVal">₹—</div>
+          <div class="from">per person</div>
+        </div>
+        <div class="via-route" id="trainVia" style="display:none">
+          <strong>🗺️ Via connecting route:</strong>
+          <span id="trainViaText"></span>
+        </div>
+        <div class="info-row">
+          <span class="label">Best for</span>
+          <span class="value">Medium distances</span>
+        </div>
+        <button class="btn-select" id="trainBtn"
+          onclick="selectTransport('train')">Select Train</button>
+        <div class="unavailable-reason" id="trainUnavail" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- BUS CARD -->
+    <div class="transport-card" id="busCard">
+      <div class="card-icon-area">
+        <span class="icon">🚌</span>
+        <h3>Bus</h3>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">Speed</span>
+          <span class="value">Economy</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Available buses</span>
+          <span class="value" id="busCount">—</span>
+        </div>
+        <div class="price-tag" id="busPrice">
+          <div class="from">Starting from</div>
+          <div class="price" id="busPriceVal">₹—</div>
+          <div class="from">per person</div>
+        </div>
+        <div class="via-route" id="busVia" style="display:none">
+          <strong>🗺️ Via connecting route:</strong>
+          <span id="busViaText"></span>
+        </div>
+        <div class="info-row">
+          <span class="label">Best for</span>
+          <span class="value">Short distances</span>
+        </div>
+        <button class="btn-select" id="busBtn"
+          onclick="selectTransport('bus')">Select Bus</button>
+        <div class="unavailable-reason" id="busUnavail" style="display:none"></div>
+      </div>
+    </div>
+
+  </div><!-- /transport-grid -->
+
+  <!-- Skip -->
+  <div class="skip-section">
+    <p>Already have your own transport arranged?</p>
+    {% if hotel_booking_id %}
+    <a href="{{ url_for('hype_spots', hotel_booking_id=hotel_booking_id) }}"
+       class="btn btn-outline-secondary px-4">
+      Skip Transport &amp; Plan Sightseeing →
     </a>
     {% else %}
-    <a href="{{ url_for('my_bookings') }}">Skip → View my bookings</a>
+    <a href="{{ url_for('my_bookings') }}" class="btn btn-outline-secondary px-4">
+      Skip &amp; Go to My Bookings →
+    </a>
     {% endif %}
   </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
+</div><!-- /container -->
+
 <script>
-const DEST = {{ destination | tojson }};
-const INTL = ['Bali','Paris','Dubai','Singapore','Switzerland','New Zealand','Mecca','Vatican City','Amsterdam','Iceland'];
-const FAR  = ['Ladakh','Spiti Valley','Kedarnath','Kasol','Rishikesh'];
-const INDIRECT = {
-  'Spiti Valley': 'No direct trains/buses. Route: Your City → Chandigarh → Manali → Spiti Valley.',
-  'Kedarnath':    'Take train to Haridwar/Rishikesh, then taxi/shared jeep to Gaurikund → Kedarnath.',
-  'Kasol':        'Take bus/train to Chandigarh or Delhi, then HRTC bus to Bhuntar, then local bus to Kasol.',
-  'Iceland':      'No direct flights from most Indian cities. Connect via Dubai, London, or Frankfurt.',
-  'New Zealand':  'Common routes connect via Singapore, Hong Kong, or Dubai.',
-  'Mecca':        'Flights available from major Indian cities. Saudi visa required.',
-};
+const DESTINATION    = {{ destination | tojson }};
+const HOTEL_BOOKING  = {{ hotel_booking_id | tojson }};
 
-function onSrcChange(val) {
-  if(!val || val.length < 2) return;
-  document.getElementById('srcName').textContent = val;
-  const isIntl = INTL.includes(DEST);
-  const isFar  = FAR.includes(DEST);
-  const warn   = document.getElementById('warnBox');
-  const train  = document.getElementById('trainOpt');
-  const bus    = document.getElementById('busOpt');
-  const arrow  = document.getElementById('routeArrow');
-  const inNote = document.getElementById('indirectNote');
+// International destinations list (must match app.py)
+const INTERNATIONAL = [
+  "Bali","Paris","Dubai","Singapore","Switzerland",
+  "New Zealand","Mecca","Vatican City","Iceland","Amsterdam"
+];
 
-  // Reset
-  train.classList.remove('disabled');
-  bus.classList.remove('disabled');
-  warn.style.display = 'none';
+// Far destinations (>800 km from most Indian cities — bus impractical)
+const FAR_DESTINATIONS = [
+  "Ladakh","Andaman","Lakshadweep","Meghalaya","Arunachal Pradesh",
+  "Nagaland","Manipur","Mizoram","Port Blair"
+];
 
-  if(isIntl) {
-    train.classList.add('disabled');
-    bus.classList.add('disabled');
-    arrow.textContent = '──✈──▶';
-    warn.style.display = 'block';
-    warn.innerHTML = `✈️ <strong>${DEST}</strong> is an international destination. <strong>Only flights available.</strong> Bus and train are not applicable for international travel.`;
-  } else if(isFar) {
-    bus.classList.add('disabled');
-    arrow.textContent = '──🚂/✈──▶';
-    warn.style.display = 'block';
-    warn.innerHTML = `ℹ️ Direct bus to <strong>${DEST}</strong> is generally not available. We recommend <strong>Flight or Train</strong>.`;
-  } else {
-    arrow.textContent = '──▶';
-  }
+const isInternational = INTERNATIONAL.includes(DESTINATION);
+const isFar           = FAR_DESTINATIONS.includes(DESTINATION);
 
-  if(INDIRECT[DEST]) {
-    inNote.style.display = 'block';
-    inNote.innerHTML = `💡 <strong>Smart Route Suggestion:</strong> ${val} → ${DEST}<br><small style="color:var(--muted)">${INDIRECT[DEST]}</small>`;
-  } else {
-    inNote.style.display = 'none';
+async function loadTransportOptions() {
+  document.getElementById("loadingOverlay").classList.add("active");
+  try {
+    const res  = await fetch(`/api/transport-availability?destination=${encodeURIComponent(DESTINATION)}`);
+    const data = await res.json();
+    renderCards(data);
+  } catch(e) {
+    console.error(e);
+    renderCards({ flights:{available:false,count:0,min_price:0}, trains:{available:false,count:0,min_price:0}, buses:{available:false,count:0,min_price:0} });
+  } finally {
+    document.getElementById("loadingOverlay").classList.remove("active");
   }
 }
 
-window.addEventListener('load', () => onSrcChange('Your City'));
+function renderCards(data) {
+  const { flights, trains, buses, smart_route } = data;
+
+  // ── FLIGHT ──
+  document.getElementById("flightCount").textContent = flights.count + " options";
+  if (flights.available && flights.min_price > 0) {
+    document.getElementById("flightPriceVal").textContent = "₹" + flights.min_price.toLocaleString("en-IN");
+  } else {
+    document.getElementById("flightPriceVal").textContent = "—";
+  }
+  if (!flights.available) {
+    disableCard("flight", "No flights available to this destination");
+  }
+
+  // ── TRAIN ──
+  document.getElementById("trainCount").textContent = trains.count + " options";
+  if (trains.available && trains.min_price > 0) {
+    document.getElementById("trainPriceVal").textContent = "₹" + trains.min_price.toLocaleString("en-IN");
+  } else {
+    document.getElementById("trainPriceVal").textContent = "—";
+  }
+  if (isInternational) {
+    disableCard("train", "Trains not available for international destinations");
+  } else if (!trains.available) {
+    if (smart_route) {
+      document.getElementById("trainVia").style.display = "block";
+      document.getElementById("trainViaText").textContent =
+        smart_route.join(" → ") + " (connecting)";
+    } else {
+      disableCard("train", "No direct train available");
+    }
+  }
+
+  // ── BUS ──
+  document.getElementById("busCount").textContent = buses.count + " options";
+  if (buses.available && buses.min_price > 0) {
+    document.getElementById("busPriceVal").textContent = "₹" + buses.min_price.toLocaleString("en-IN");
+  } else {
+    document.getElementById("busPriceVal").textContent = "—";
+  }
+  if (isInternational) {
+    disableCard("bus", "Bus not available for international travel");
+  } else if (isFar) {
+    disableCard("bus", "Bus not practical for this distance — try train or flight");
+  } else if (!buses.available) {
+    if (smart_route) {
+      document.getElementById("busVia").style.display = "block";
+      document.getElementById("busViaText").textContent =
+        smart_route.join(" → ") + " (connecting)";
+    } else {
+      disableCard("bus", "No bus service available for this route");
+    }
+  }
+
+  // ── Smart Route Banner ──
+  if (smart_route && smart_route.length >= 2) {
+    const banner = document.getElementById("smartRouteBanner");
+    banner.style.display = "block";
+    const stepsEl = document.getElementById("routeSteps");
+    stepsEl.innerHTML = "";
+    smart_route.forEach((stop, i) => {
+      const span = document.createElement("span");
+      span.className = "route-step";
+      span.textContent = stop;
+      stepsEl.appendChild(span);
+      if (i < smart_route.length - 1) {
+        const arrow = document.createElement("span");
+        arrow.className = "route-arrow";
+        arrow.textContent = "→";
+        stepsEl.appendChild(arrow);
+      }
+    });
+  }
+
+  // ── Alert banners ──
+  if (isInternational) {
+    document.getElementById("intlAlert").style.display = "block";
+    // Mark flight as recommended
+    document.getElementById("flightCard").classList.add("recommended");
+  } else if (isFar) {
+    document.getElementById("farAlert").style.display = "block";
+    if (flights.available) document.getElementById("flightCard").classList.add("recommended");
+    else if (trains.available) document.getElementById("trainCard").classList.add("recommended");
+  }
+
+  // Only one available → mark it
+  const availCount = [flights.available, trains.available, buses.available].filter(Boolean).length;
+  if (availCount === 1 && !isInternational) {
+    document.getElementById("onlyFlightAlert").style.display = "block";
+  }
+
+  // ── Cheapest tag ──
+  if (!isInternational && !isFar) {
+    const prices = [];
+    if (flights.available && flights.min_price) prices.push({type:"flight", price:flights.min_price});
+    if (trains.available  && trains.min_price)  prices.push({type:"train",  price:trains.min_price});
+    if (buses.available   && buses.min_price)   prices.push({type:"bus",    price:buses.min_price});
+    if (prices.length > 1) {
+      prices.sort((a,b) => a.price - b.price);
+      const cheapestCard = document.getElementById(prices[0].type + "Card");
+      if (!cheapestCard.classList.contains("recommended")) {
+        cheapestCard.classList.add("cheapest");
+      }
+    }
+  }
+}
+
+function disableCard(type, reason) {
+  const card = document.getElementById(type + "Card");
+  const btn  = document.getElementById(type + "Btn");
+  const msg  = document.getElementById(type + "Unavail");
+  card.classList.add("disabled-card");
+  btn.disabled = true;
+  btn.textContent = "Not Available";
+  msg.textContent = reason;
+  msg.style.display = "block";
+}
+
+function selectTransport(type) {
+  document.getElementById("loadingOverlay").classList.add("active");
+  const params = HOTEL_BOOKING ? `?hotel_booking_id=${HOTEL_BOOKING}` : "";
+  const urls = {
+    flight: `/flight/${encodeURIComponent(DESTINATION)}${params}`,
+    train:  `/train/${encodeURIComponent(DESTINATION)}${params}`,
+    bus:    `/bus/${encodeURIComponent(DESTINATION)}${params}`,
+  };
+  setTimeout(() => { window.location.href = urls[type]; }, 300);
+}
+
+loadTransportOptions();
 </script>
 {% endblock %}

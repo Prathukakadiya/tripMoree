@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if hotel else 'Add' }} Hotel — Admin{% endblock %}
+{% block content %}
+<div style="max-width:700px;margin:2rem auto;padding:0 1.5rem;">
+  <h1 style="font-family:Georgia,serif;font-size:1.4rem;margin-bottom:1.5rem;">{{ 'Edit' if hotel else 'Add' }} Hotel</h1>
+  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;">
+    <form method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Hotel Name</label><input type="text" name="name" value="{{ hotel.name if hotel else '' }}" required style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Destination</label>
+      <select name="destination_id" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
+        {% for d in destinations %}<option value="{{ d.id }}" {% if hotel and hotel.destination_id==d.id %}selected{% endif %}>{{ d.name }}</option>{% endfor %}
+      </select></div>
+      {% set hf = [('stars','Stars (1-5)','number',hotel.stars if hotel else '3'),('starting_price','Starting Price ₹','number',hotel.starting_price if hotel else '1000'),('latitude','Latitude','number',hotel.latitude if hotel else ''),('longitude','Longitude','number',hotel.longitude if hotel else ''),('lunch_price','Lunch Price ₹','number',hotel.lunch_price if hotel else '500'),('dinner_price','Dinner Price ₹','number',hotel.dinner_price if hotel else '600'),('pickup_price','Pickup Price ₹','number',hotel.pickup_price if hotel else '800')] %}
+      {% for name,label,type,val in hf %}
+      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">{{ label }}</label><input type="{{ type }}" name="{{ name }}" value="{{ val or '' }}" step="any" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      {% endfor %}
+      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Address</label><input type="text" name="address" value="{{ hotel.address if hotel else '' }}" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Description</label><textarea name="description" rows="3" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;">{{ hotel.description if hotel else '' }}</textarea></div>
+      {% if hotel %}<div><label style="font-size:11px;color:#666;display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" name="is_active" {% if hotel.is_active %}checked{% endif %}> Active</label></div>{% endif %}
+      <div style="grid-column:1/-1;display:flex;gap:1rem;">
+        <button type="submit" style="padding:12px 28px;background:#c9a84c;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;">Save Hotel</button>
+        <a href="{{ url_for('admin_hotels') }}" style="padding:12px 20px;border:1px solid #e8e4de;border-radius:10px;text-decoration:none;color:#666;font-size:14px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

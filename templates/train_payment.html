@@ -1,0 +1,100 @@
+<!-- ========== TRAIN PAYMENT ========== -->
+<!-- Save as: templates/train_payment.html -->
+{% extends "base.html" %}
+{% block title %}Train Payment — TripMoree{% endblock %}
+{% block content %}
+<style>
+body { background: #f0f4f8; }
+.tp-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 60%, #3498db 100%);
+  padding: 50px 0 80px; color: white; text-align: center;
+}
+.tp-hero h1 { font-size: 2rem; font-weight: 900; }
+.tp-hero .amt { font-size: 2.8rem; font-weight: 900; color: #f6c90e; }
+.tp-wrapper { margin-top: -50px; position: relative; z-index: 10; padding-bottom: 60px; }
+.tp-card { background: white; border-radius: 24px; box-shadow: 0 8px 40px rgba(0,0,0,.12); overflow: hidden; max-width: 700px; margin: 0 auto; }
+.tp-header { background: linear-gradient(135deg, #0f3460, #3498db); color: white; padding: 28px 32px; display: flex; align-items: center; gap: 16px; }
+.tp-icon { font-size: 3rem; }
+.tp-header h3 { font-weight: 800; margin: 0; font-size: 1.3rem; }
+.tp-header p  { margin: 0; opacity: .7; font-size: .88rem; }
+.tp-body { padding: 32px; }
+.upi-id-box { background: #eff6ff; border: 2px solid #93c5fd; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.upi-id-box .id { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
+.btn-copy { background: #3498db; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: .8rem; font-weight: 700; cursor: pointer; }
+.upi-apps { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+.upi-app-btn { flex: 1; min-width: 80px; padding: 12px 8px; border-radius: 12px; border: 2px solid #e0e0e0; background: white; text-align: center; cursor: pointer; font-size: .75rem; font-weight: 700; color: #444; transition: all .2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.upi-app-btn:hover { border-color: #3498db; color: #3498db; }
+.upi-app-btn .app-icon { font-size: 1.8rem; }
+.steps { margin: 20px 0; }
+.step  { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+.step-num { width: 26px; height: 26px; background: #3498db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .78rem; flex-shrink: 0; }
+.step-text { font-size: .88rem; color: #444; padding-top: 3px; }
+.ref-group { background: #f8f9fa; border-radius: 14px; padding: 20px; }
+.ref-group label { font-weight: 700; font-size: .9rem; margin-bottom: 8px; display: block; }
+.ref-input { width: 100%; padding: 13px 16px; border: 2px solid #dee2e6; border-radius: 10px; font-size: 1rem; }
+.ref-input:focus { outline: none; border-color: #3498db; }
+.btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #0f3460, #3498db); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 18px; }
+.btn-pay:hover { opacity: .9; }
+.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: .88rem; }
+.summary-row .lbl { color: #888; }
+.summary-row .val { font-weight: 700; }
+.trust-badges { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 16px; border-top: 1px solid #f0f0f0; font-size: .75rem; color: #888; }
+</style>
+
+<div class="tp-hero">
+  <div class="container">
+    <p style="font-size:.85rem; opacity:.7; margin-bottom:6px;">COMPLETE TRAIN BOOKING</p>
+    <h1>🚆 Train Payment</h1>
+    <div class="amt">₹{{ "{:,}".format(tb.price) }}</div>
+    <p>{{ tb.source }} → {{ tb.destination }} · {{ tb.persons }} passenger{{ 's' if tb.persons > 1 }}</p>
+  </div>
+</div>
+
+<div class="tp-wrapper">
+  <div class="container">
+    <div class="tp-card">
+      <div class="tp-header">
+        <span class="tp-icon">🚆</span>
+        <div>
+          <h3>{{ tb.source }} → {{ tb.destination }}</h3>
+          <p>{{ tb.persons }} passenger{{ 's' if tb.persons > 1 }} · Pay via UPI to confirm seats</p>
+        </div>
+      </div>
+      <div class="tp-body">
+        <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Booking Summary</h6>
+        <div class="mb-4">
+          <div class="summary-row"><span class="lbl">Route</span><span class="val">{{ tb.source }} → {{ tb.destination }}</span></div>
+          <div class="summary-row"><span class="lbl">Passengers</span><span class="val">{{ tb.persons }}</span></div>
+          <div class="summary-row" style="border:none;"><span class="lbl"><strong>Amount</strong></span><span class="val" style="color:#e94560; font-size:1.1rem;">₹{{ "{:,}".format(tb.price) }}</span></div>
+        </div>
+        <div class="upi-id-box">
+          <div><div style="font-size:.72rem; color:#888;">Pay to UPI ID</div><div class="id">{{ upi_id }}</div></div>
+          <button class="btn-copy" onclick="navigator.clipboard.writeText('{{ upi_id }}')">Copy</button>
+        </div>
+        <div class="upi-apps">
+          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🟣</span> PhonePe</a>
+          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🔵</span> GPay</a>
+          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🟡</span> Paytm</a>
+          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🔴</span> BHIM</a>
+        </div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text">Pay <strong>₹{{ "{:,}".format(tb.price) }}</strong> to <strong>{{ upi_id }}</strong> via any UPI app</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text">Get the 12-digit transaction ID from your app</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text">Enter it below to confirm your train booking</div></div>
+        </div>
+        <form method="POST" action="{{ url_for('confirm_train_payment', transport_booking_id=tb.id) }}">
+          <div class="ref-group">
+            <label>UPI Transaction ID</label>
+            <input type="text" name="upi_ref" class="ref-input" placeholder="e.g. 426874291038" required>
+          </div>
+          <button type="submit" class="btn-pay">✅ Confirm Train Payment — ₹{{ "{:,}".format(tb.price) }}</button>
+        </form>
+        <div class="text-center mt-3">
+          <a href="{{ url_for('skip_train_payment', transport_booking_id=tb.id) }}" style="color:#aaa; font-size:.82rem; text-decoration:none;">Skip (Demo mode) →</a>
+        </div>
+      </div>
+      <div class="trust-badges"><span>🔒 256-bit SSL</span><span>✅ RBI Compliant</span><span>🛡️ Secure</span><span>↩️ Easy Refund</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

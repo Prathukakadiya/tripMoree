@@ -1,366 +1,719 @@
 {% extends "base.html" %}
-{% block title %}Payment — TripMore{% endblock %}
+{% block title %}Payment — TripMoree{% endblock %}
+{% block content %}
 
-{% block extra_css %}
 <style>
-@keyframes pulse  { 0%,100%{transform:scale(1)}  50%{transform:scale(1.04)} }
-@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-@keyframes spin   { to{transform:rotate(360deg)} }
-@keyframes checkIn{ from{stroke-dashoffset:100} to{stroke-dashoffset:0} }
-
-.payment-wrap {
-  min-height: calc(100vh - 64px);
-  background: linear-gradient(135deg, #0d0f0e 0%, #1a2e2a 100%);
-  display: flex; align-items: center; justify-content: center;
-  padding: 3rem 1rem;
+:root {
+  --brand: #e94560;
+  --dark: #1a1a2e;
+  --accent: #0f3460;
+  --success: #27ae60;
+  --gold: #f6c90e;
 }
-.payment-card {
-  background: #fff; border-radius: 20px; overflow: hidden;
-  width: 100%; max-width: 900px;
-  box-shadow: 0 24px 80px rgba(0,0,0,.4);
-  animation: fadeUp .6s ease both;
-  display: grid; grid-template-columns: 1fr 1fr;
-}
-.pay-left {
-  background: linear-gradient(160deg, #0d1a1a, #1a3a2e);
-  padding: 3rem 2.5rem; color: #fff;
-  display: flex; flex-direction: column; justify-content: space-between;
-}
-.pay-logo { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:600; margin-bottom:2rem; }
-.pay-logo span { color: #c9a84c; }
-.pay-amount-label { font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:6px; }
-.pay-amount-value { font-family:'Playfair Display',serif; font-size:3rem; font-weight:600; color:#c9a84c; line-height:1; }
-.pay-dest { font-size:14px; color:rgba(255,255,255,.6); margin-top:8px; }
-.pay-detail-row { display:flex; justify-content:space-between; font-size:13px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08); }
-.pay-detail-label { color:rgba(255,255,255,.5); }
-.pay-detail-value { color:#fff; font-weight:500; }
-.pay-secure { display:flex; align-items:center; gap:8px; font-size:12px; color:rgba(255,255,255,.4); margin-top:1.5rem; }
+body { background: #f0f4f8; }
 
-.pay-right { padding: 3rem 2.5rem; }
-.pay-title { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:.4rem; }
-.pay-subtitle { font-size:14px; color:#6b6860; margin-bottom:2rem; }
+/* Hero */
+.pay-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #e94560 100%);
+  padding: 48px 0 80px;
+  color: white;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.pay-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.pay-hero h1    { font-size: 2.2rem; font-weight: 900; position: relative; }
+.pay-hero .amt  {
+  font-size: 3rem; font-weight: 900; color: #f6c90e;
+  text-shadow: 0 2px 20px rgba(246,201,14,.4);
+  position: relative;
+}
+.pay-hero p     { opacity: .8; position: relative; }
 
-.pay-tabs { display:flex; gap:0; border:1px solid #ddd9d0; border-radius:8px; overflow:hidden; margin-bottom:2rem; }
+/* Main card */
+.pay-wrapper {
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+  padding-bottom: 60px;
+}
+.pay-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.12);
+  overflow: hidden;
+}
+
+/* Tabs */
+.pay-tabs {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  background: #fafafa;
+}
 .pay-tab {
-  flex:1; padding:12px; text-align:center; font-size:13px; font-weight:500;
-  cursor:pointer; background:#f8f6f1; color:#6b6860; border:none; transition:all .2s;
-  font-family:'Outfit',sans-serif;
+  flex: 1;
+  padding: 18px 12px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #888;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
-.pay-tab.active { background:#0d0f0e; color:#fff; }
+.pay-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  background: white;
+}
+.pay-tab .tab-icon { font-size: 1.3rem; }
 
-.tab-content { display:none; }
-.tab-content.active { display:block; animation:fadeUp .3s ease; }
+/* Tab panels */
+.tab-panel { display: none; padding: 32px; }
+.tab-panel.active { display: block; animation: fadeIn .3s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 
 /* UPI Section */
-.upi-qr-wrap {
-  text-align:center; padding:1.5rem;
-  background:#f8f6f1; border-radius:12px; margin-bottom:1.5rem;
+.upi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
 }
-.upi-qr-wrap img { width:200px; height:200px; border-radius:8px; margin:0 auto 1rem; }
+@media(max-width:600px) { .upi-grid { grid-template-columns: 1fr; } }
+
+.qr-box {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: 16px;
+  border: 2px dashed #dee2e6;
+}
+.qr-box canvas { border-radius: 12px; }
+.qr-label { font-size: .78rem; color: #888; margin-top: 10px; }
+.qr-label strong { color: var(--dark); font-size: .92rem; display: block; margin-top: 4px; }
+
 .upi-id-box {
-  display:flex; align-items:center; justify-content:space-between;
-  background:#fff; border:1px solid #ddd9d0; border-radius:8px;
-  padding:12px 16px; margin-bottom:1rem;
+  background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+  border: 2px solid #a5d6a7;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.upi-id-text { font-size:15px; font-weight:600; color:#0d0f0e; font-family:monospace; }
-.copy-btn {
-  padding:6px 14px; background:#c9a84c; color:#fff; border:none;
-  border-radius:6px; font-size:12px; cursor:pointer; font-family:'Outfit',sans-serif;
-  transition:background .2s;
+.upi-id-box .id { font-size: 1.1rem; font-weight: 800; color: var(--dark); letter-spacing: .5px; }
+.btn-copy {
+  background: var(--success);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
 }
-.copy-btn:hover { background:#b8934a; }
-.upi-apps { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:1rem; }
+.btn-copy:hover { background: #1e8449; transform: scale(1.05); }
+.btn-copy.copied { background: #17a2b8; }
+
+.upi-apps {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
 .upi-app-btn {
-  padding:8px 16px; border:1px solid #ddd9d0; border-radius:8px;
-  font-size:12px; font-weight:500; cursor:pointer; background:#fff;
-  transition:all .2s; text-decoration:none; color:#0d0f0e; display:flex;
-  align-items:center; gap:6px;
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  text-align: center;
+  cursor: pointer;
+  font-size: .75rem;
+  font-weight: 700;
+  color: #444;
+  transition: all .2s;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
-.upi-app-btn:hover { border-color:#c9a84c; color:#c9a84c; }
-.upi-ref-input {
-  width:100%; padding:11px 14px; border:1px solid #ddd9d0; border-radius:8px;
-  font-size:14px; font-family:'Outfit',sans-serif; outline:none; margin-top:1rem;
-  transition:border-color .2s;
+.upi-app-btn:hover { border-color: var(--brand); color: var(--brand); transform: translateY(-2px); }
+.upi-app-btn .app-icon { font-size: 1.8rem; }
+
+/* Steps */
+.pay-steps { margin: 20px 0; }
+.pay-step  {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 14px;
+  align-items: flex-start;
 }
-.upi-ref-input:focus { border-color:#c9a84c; }
-
-/* Card Section */
-.card-visual {
-  height:160px; border-radius:14px; padding:1.5rem;
-  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);
-  color:#fff; position:relative; overflow:hidden; margin-bottom:1.5rem;
+.step-num {
+  width: 28px; height: 28px;
+  background: var(--brand);
+  color: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .8rem;
+  flex-shrink: 0;
 }
-.card-chip { width:32px; height:24px; background:#c9a84c; border-radius:4px; margin-bottom:1rem; }
-.card-number-display { font-size:18px; letter-spacing:.2em; font-family:monospace; margin-bottom:.8rem; }
-.card-info-row { display:flex; justify-content:space-between; font-size:12px; opacity:.7; }
+.step-text { font-size: .9rem; color: #444; padding-top: 4px; }
 
-/* Confirm button */
-.pay-confirm-btn {
-  width:100%; padding:15px; background:#1a5c50; color:#fff; border:none;
-  border-radius:10px; font-size:15px; font-weight:600; cursor:pointer;
-  font-family:'Outfit',sans-serif; transition:all .2s; margin-top:1.5rem;
-  display:flex; align-items:center; justify-content:center; gap:10px;
+/* Ref input */
+.ref-group {
+  background: #f8f9fa;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 16px;
 }
-.pay-confirm-btn:hover { background:#154a40; transform:translateY(-1px); }
+.ref-group label { font-weight: 700; font-size: .9rem; color: var(--dark); margin-bottom: 8px; display: block; }
+.ref-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: border-color .2s;
+}
+.ref-input:focus { outline: none; border-color: var(--brand); }
 
-.skip-link { text-align:center; margin-top:1rem; font-size:13px; color:#6b6860; }
-.skip-link a { color:#c9a84c; text-decoration:none; }
+/* Submit button */
+.btn-pay {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--brand), #c0392b);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .3s;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: .5px;
+}
+.btn-pay:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(233,69,96,.35); }
+.btn-pay:active { transform: translateY(0); }
 
-/* Success overlay */
+/* Booking summary sidebar */
+.summary-card {
+  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  color: white;
+  border-radius: 20px;
+  padding: 28px;
+  position: sticky;
+  top: 20px;
+}
+.summary-card h4 { font-weight: 800; margin-bottom: 20px; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,.15); padding-bottom: 12px; }
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: .88rem;
+}
+.summary-row .lbl { opacity: .7; }
+.summary-row .val { font-weight: 700; }
+.summary-row .val.green { color: #6bffb8; }
+.summary-row .val.red   { color: #ff6b6b; }
+.summary-divider { border-top: 1px solid rgba(255,255,255,.15); margin: 14px 0; }
+.summary-total {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--gold);
+  text-align: right;
+}
+.summary-total-label { font-size: .8rem; opacity: .7; }
+.secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: .75rem;
+  opacity: .7;
+}
+
+/* Security badges */
+.trust-badges {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 20px 32px;
+  border-top: 1px solid #f0f0f0;
+}
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .78rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Card payment section */
+.card-form .form-group { margin-bottom: 18px; }
+.card-form label { font-weight: 700; font-size: .85rem; color: #444; margin-bottom: 6px; display: block; }
+.card-form input, .card-form select {
+  width: 100%;
+  padding: 13px 16px;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  font-size: .95rem;
+  transition: border-color .2s;
+}
+.card-form input:focus, .card-form select:focus { outline: none; border-color: var(--accent); }
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Net banking */
+.bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.bank-btn {
+  padding: 14px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: white;
+  text-align: center;
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 700;
+  transition: all .2s;
+}
+.bank-btn:hover, .bank-btn.selected { border-color: var(--accent); background: #eef2ff; color: var(--accent); }
+
+/* Success animation */
 .success-overlay {
-  display:none; position:fixed; inset:0; background:rgba(0,0,0,.6);
-  z-index:999; align-items:center; justify-content:center;
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(26,26,46,.85);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
 }
-.success-overlay.show { display:flex; }
+.success-overlay.show { display: flex; }
 .success-box {
-  background:#fff; border-radius:20px; padding:3rem; text-align:center;
-  max-width:400px; width:90%; animation:fadeUp .4s ease;
+  background: white;
+  border-radius: 24px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 420px;
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
 }
-.success-icon { width:80px; height:80px; margin:0 auto 1.5rem; }
-.success-icon circle { fill:#1a5c50; }
-.success-icon path { stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; fill:none; stroke-dasharray:100; stroke-dashoffset:100; animation:checkIn .6s ease .3s forwards; }
-.success-title { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:.5rem; }
-.success-sub { color:#6b6860; font-size:14px; }
-
-@media(max-width:700px) {
-  .payment-card { grid-template-columns:1fr; }
-  .pay-left { padding:2rem; }
+@keyframes popIn { from { transform: scale(.7); opacity:0; } to { transform: scale(1); opacity:1; } }
+.success-icon {
+  font-size: 5rem;
+  margin-bottom: 16px;
+  animation: bounce 1s ease infinite alternate;
 }
+@keyframes bounce { to { transform: translateY(-10px); } }
 </style>
-{% endblock %}
 
-{% block content %}
-<div class="payment-wrap">
-  <div class="payment-card">
-
-    <!-- LEFT — Booking Summary -->
-    <div class="pay-left">
-      <div>
-        <div class="pay-logo">Trip<span>More</span></div>
-        <div class="pay-amount-label">Total Payable</div>
-        <div class="pay-amount-value">₹{{ "{:,}".format(amount) }}</div>
-        <div class="pay-dest">{{ main_booking.destination }} · Booking #{{ booking.id }}</div>
-      </div>
-
-      <div style="margin:2rem 0;">
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Hotel</span>
-          <span class="pay-detail-value">{{ hotel.name }}</span>
-        </div>
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Check-in</span>
-          <span class="pay-detail-value">{{ booking.check_in }}</span>
-        </div>
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Check-out</span>
-          <span class="pay-detail-value">{{ booking.check_out }}</span>
-        </div>
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Guests</span>
-          <span class="pay-detail-value">{{ booking.persons }} persons</span>
-        </div>
-        {% if booking.lunch_added %}
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Lunch</span>
-          <span class="pay-detail-value">Included</span>
-        </div>
-        {% endif %}
-        {% if booking.dinner_added %}
-        <div class="pay-detail-row">
-          <span class="pay-detail-label">Dinner</span>
-          <span class="pay-detail-value">Included</span>
-        </div>
-        {% endif %}
-        <div class="pay-detail-row" style="border:none;padding-top:12px;margin-top:4px;">
-          <span style="color:#c9a84c;font-weight:600;">Total</span>
-          <span style="color:#c9a84c;font-weight:700;font-size:16px;">₹{{ "{:,}".format(amount) }}</span>
-        </div>
-      </div>
-
-      <div class="pay-secure">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        256-bit SSL encrypted · Secure payment
-      </div>
-    </div>
-
-    <!-- RIGHT — Payment Methods -->
-    <div class="pay-right">
-      <div class="pay-title">Complete Payment</div>
-      <div class="pay-subtitle">Choose your preferred payment method</div>
-
-      <div class="pay-tabs">
-        <button class="pay-tab active" onclick="switchTab('upi',this)">📱 UPI / QR</button>
-        <button class="pay-tab" onclick="switchTab('card',this)">💳 Card</button>
-        <button class="pay-tab" onclick="switchTab('netbanking',this)">🏦 Net Banking</button>
-      </div>
-
-      <!-- UPI TAB -->
-      <div id="tab-upi" class="tab-content active">
-        <div class="upi-qr-wrap">
-          <p style="font-size:12px;color:#6b6860;margin-bottom:.8rem;">Scan with any UPI app to pay ₹{{ "{:,}".format(amount) }}</p>
-          <!-- QR code generated via API -->
-          <img
-            src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ upi_link | urlencode }}&bgcolor=ffffff&color=0d1a1a&margin=10"
-            alt="UPI QR Code"
-          >
-          <p style="font-size:11px;color:#6b6860;margin-top:.5rem;">or pay directly to UPI ID</p>
-        </div>
-
-        <div class="upi-id-box">
-          <span class="upi-id-text" id="upiIdText">{{ upi_id }}</span>
-          <button class="copy-btn" onclick="copyUPI()">Copy</button>
-        </div>
-
-        <div class="upi-apps">
-          <a href="{{ upi_link }}" class="upi-app-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#1a5c50"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            PhonePe
-          </a>
-          <a href="{{ upi_link }}" class="upi-app-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#c9a84c"><circle cx="12" cy="12" r="10"/></svg>
-            Google Pay
-          </a>
-          <a href="{{ upi_link }}" class="upi-app-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#0d1a1a"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg>
-            Paytm
-          </a>
-          <a href="{{ upi_link }}" class="upi-app-btn">Any UPI App</a>
-        </div>
-
-        <form action="{{ url_for('confirm_payment', booking_id=booking.id) }}" method="POST" onsubmit="showSuccess()">
-          <input type="text" name="upi_ref" id="upiRef" class="upi-ref-input"
-                 placeholder="Enter UPI Transaction ID / Reference Number (optional)">
-          <button type="submit" class="pay-confirm-btn">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-            I've Completed the Payment
-          </button>
-        </form>
-      </div>
-
-      <!-- CARD TAB -->
-      <div id="tab-card" class="tab-content">
-        <div class="card-visual">
-          <div class="card-chip"></div>
-          <div class="card-number-display" id="cardDisplay">•••• •••• •••• ••••</div>
-          <div class="card-info-row">
-            <span id="cardNameDisplay">YOUR NAME</span>
-            <span id="cardExpDisplay">MM/YY</span>
-          </div>
-        </div>
-
-        <form action="{{ url_for('confirm_payment', booking_id=booking.id) }}" method="POST" onsubmit="showSuccess()">
-          <input type="hidden" name="upi_ref" value="CARD_PAYMENT">
-          <div style="margin-bottom:12px;">
-            <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;display:block;margin-bottom:6px;">Card Number</label>
-            <input type="text" class="upi-ref-input" placeholder="1234 5678 9012 3456" maxlength="19"
-                   oninput="formatCard(this)" style="margin-top:0;">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-            <div>
-              <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;display:block;margin-bottom:6px;">Expiry</label>
-              <input type="text" class="upi-ref-input" placeholder="MM / YY" maxlength="7"
-                     oninput="formatExpiry(this)" style="margin-top:0;">
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;display:block;margin-bottom:6px;">CVV</label>
-              <input type="text" class="upi-ref-input" placeholder="•••" maxlength="3"
-                     type="password" style="margin-top:0;">
-            </div>
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;display:block;margin-bottom:6px;">Name on Card</label>
-            <input type="text" class="upi-ref-input" placeholder="As on card"
-                   oninput="document.getElementById('cardNameDisplay').textContent=this.value.toUpperCase()||'YOUR NAME'"
-                   style="margin-top:0;">
-          </div>
-          <button type="submit" class="pay-confirm-btn">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-            Pay ₹{{ "{:,}".format(amount) }}
-          </button>
-        </form>
-      </div>
-
-      <!-- NET BANKING TAB -->
-      <div id="tab-netbanking" class="tab-content">
-        <form action="{{ url_for('confirm_payment', booking_id=booking.id) }}" method="POST" onsubmit="showSuccess()">
-          <input type="hidden" name="upi_ref" value="NET_BANKING">
-          <label style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6b6860;display:block;margin-bottom:8px;">Select Bank</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;">
-            {% for bank in [('HDFC Bank','🏦'),('SBI','🏛️'),('ICICI Bank','💼'),('Axis Bank','🏧'),('Kotak Bank','💳'),('Other Bank','🔐')] %}
-            <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #ddd9d0;border-radius:8px;cursor:pointer;font-size:13px;transition:border-color .2s;"
-                   onmouseenter="this.style.borderColor='#c9a84c'" onmouseleave="this.style.borderColor='#ddd9d0'">
-              <input type="radio" name="bank_choice" value="{{ bank[0] }}" style="accent-color:#c9a84c;">
-              {{ bank[1] }} {{ bank[0] }}
-            </label>
-            {% endfor %}
-          </div>
-          <div style="background:#f8f6f1;border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;color:#6b6860;">
-            You will be redirected to your bank's secure payment portal to complete the transaction.
-          </div>
-          <button type="submit" class="pay-confirm-btn">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-            Proceed to Bank — ₹{{ "{:,}".format(amount) }}
-          </button>
-        </form>
-      </div>
-
-      <div class="skip-link">
-        Testing the app? <a href="{{ url_for('skip_payment', booking_id=booking.id) }}">Skip payment (demo mode)</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SUCCESS OVERLAY -->
+<!-- Success overlay -->
 <div class="success-overlay" id="successOverlay">
   <div class="success-box">
-    <svg class="success-icon" viewBox="0 0 80 80">
-      <circle cx="40" cy="40" r="40"/>
-      <path d="M24 40l12 12 20-24" stroke-dasharray="100" stroke-dashoffset="100"
-            style="animation:checkIn .6s ease .3s forwards;stroke:#fff;stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round;"/>
-    </svg>
-    <div class="success-title">Payment Confirmed!</div>
-    <p class="success-sub">Your booking is confirmed. Redirecting to trip planning...</p>
-    <div style="margin-top:1.5rem;width:32px;height:32px;border:3px solid #1a5c50;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin:1.5rem auto 0;"></div>
+    <div class="success-icon">🎉</div>
+    <h3 style="font-size:1.6rem; font-weight:900; color:#1a1a2e; margin-bottom:8px;">Payment Confirmed!</h3>
+    <p style="color:#666; margin-bottom:4px;">Your booking at <strong>{{ hotel.name }}</strong> is confirmed.</p>
+    <p style="color:#888; font-size:.85rem; margin-bottom:24px;">A confirmation email has been sent.</p>
+    <div style="background:#f8f9fa; border-radius:12px; padding:16px; margin-bottom:24px; font-size:.85rem;">
+      <strong>₹{{ "{:,}".format(booking.final_payable) }}</strong> paid to TripMoree ✅
+    </div>
+    <button class="btn-pay" id="continueBtn" style="margin-top:0;">Continue to Transport →</button>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
+<!-- Hero -->
+<div class="pay-hero">
+  <div class="container">
+    <p style="font-size:.9rem; margin-bottom:8px;">COMPLETE YOUR BOOKING</p>
+    <h1>Secure Payment</h1>
+    <div class="amt">₹{{ "{:,}".format(booking.final_payable) }}</div>
+    <p>{{ hotel.name }} · {{ booking.persons }} guest{{ 's' if booking.persons > 1 }} · {{ (booking.check_out - booking.check_in).days }} night{{ 's' if (booking.check_out - booking.check_in).days > 1 }}</p>
+  </div>
+</div>
+
+<div class="pay-wrapper">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- LEFT: Payment Methods -->
+      <div class="col-lg-8">
+        <div class="pay-card">
+
+          <!-- Tabs -->
+          <div class="pay-tabs">
+            <div class="pay-tab active" onclick="switchTab('upi')">
+              <span class="tab-icon">📱</span> UPI
+            </div>
+            <div class="pay-tab" onclick="switchTab('card')">
+              <span class="tab-icon">💳</span> Card
+            </div>
+            <div class="pay-tab" onclick="switchTab('netbanking')">
+              <span class="tab-icon">🏦</span> Net Banking
+            </div>
+            <div class="pay-tab" onclick="switchTab('wallet')">
+              <span class="tab-icon">👛</span> Wallet
+            </div>
+          </div>
+
+          <!-- UPI Panel -->
+          <div class="tab-panel active" id="panel-upi">
+            <div class="upi-grid">
+              <!-- QR Code -->
+              <div>
+                <div class="qr-box">
+                  <canvas id="qrCanvas" width="200" height="200"></canvas>
+                  <div class="qr-label">
+                    Scan with any UPI app
+                    <strong>{{ upi_id }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- UPI options -->
+              <div>
+                <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Pay via UPI App</h6>
+
+                <div class="upi-id-box">
+                  <div>
+                    <div style="font-size:.72rem; color:#888;">UPI ID</div>
+                    <div class="id">{{ upi_id }}</div>
+                  </div>
+                  <button class="btn-copy" id="copyBtn" onclick="copyUPI()">Copy</button>
+                </div>
+
+                <div class="upi-apps">
+                  <a href="{{ upi_link }}" class="upi-app-btn">
+                    <span class="app-icon">🟣</span> PhonePe
+                  </a>
+                  <a href="{{ upi_link }}" class="upi-app-btn">
+                    <span class="app-icon">🔵</span> GPay
+                  </a>
+                  <a href="{{ upi_link }}" class="upi-app-btn">
+                    <span class="app-icon">🟡</span> Paytm
+                  </a>
+                  <a href="{{ upi_link }}" class="upi-app-btn">
+                    <span class="app-icon">🔴</span> BHIM
+                  </a>
+                </div>
+
+                <div class="pay-steps">
+                  <div class="pay-step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Open any UPI app and scan the QR <em>or</em> click an app above</div>
+                  </div>
+                  <div class="pay-step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Pay <strong>₹{{ "{:,}".format(booking.final_payable) }}</strong> to <strong>{{ upi_id }}</strong></div>
+                  </div>
+                  <div class="pay-step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Enter the 12-digit UPI transaction ID below and confirm</div>
+                  </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('confirm_payment', booking_id=booking.id) }}" id="upiForm">
+                  <div class="ref-group">
+                    <label>UPI Transaction ID / Reference Number</label>
+                    <input type="text" name="upi_ref" class="ref-input"
+                           placeholder="e.g. 426874291038"
+                           pattern="\d{12}"
+                           title="Enter 12-digit transaction ID"
+                           required id="upiRefInput">
+                    <div style="font-size:.75rem; color:#888; margin-top:6px;">
+                      Find it in your UPI app under payment history
+                    </div>
+                  </div>
+                  <button type="submit" class="btn-pay" onclick="showSuccess(event)">
+                    ✅ Confirm Payment of ₹{{ "{:,}".format(booking.final_payable) }}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div><!-- /upi -->
+
+          <!-- Card Panel -->
+          <div class="tab-panel" id="panel-card">
+            <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Credit / Debit Card</h6>
+            <form method="POST" action="{{ url_for('confirm_payment', booking_id=booking.id) }}" class="card-form">
+              <input type="hidden" name="upi_ref" value="CARD-{{ booking.id }}">
+              <div class="form-group">
+                <label>Cardholder Name</label>
+                <input type="text" placeholder="Name on card" required>
+              </div>
+              <div class="form-group">
+                <label>Card Number</label>
+                <input type="text" placeholder="1234 5678 9012 3456" maxlength="19"
+                       oninput="formatCard(this)" required>
+              </div>
+              <div class="card-grid">
+                <div class="form-group">
+                  <label>Expiry</label>
+                  <input type="text" placeholder="MM / YY" maxlength="7"
+                         oninput="formatExpiry(this)" required>
+                </div>
+                <div class="form-group">
+                  <label>CVV</label>
+                  <input type="password" placeholder="•••" maxlength="3" required>
+                </div>
+              </div>
+              <button type="submit" class="btn-pay">
+                🔒 Pay ₹{{ "{:,}".format(booking.final_payable) }} Securely
+              </button>
+            </form>
+          </div><!-- /card -->
+
+          <!-- Net Banking Panel -->
+          <div class="tab-panel" id="panel-netbanking">
+            <h6 class="fw-bold mb-2" style="color:#1a1a2e;">Select Your Bank</h6>
+            <p style="font-size:.85rem; color:#888;">You'll be redirected to your bank's secure payment page.</p>
+            <div class="bank-grid">
+              {% for bank in ['SBI', 'HDFC', 'ICICI', 'Axis', 'Kotak', 'PNB', 'BOB', 'Canara', 'Union', 'IDBI'] %}
+              <div class="bank-btn" onclick="selectBank(this, '{{ bank }}')">{{ bank }}</div>
+              {% endfor %}
+            </div>
+            <form method="POST" action="{{ url_for('confirm_payment', booking_id=booking.id) }}" id="bankForm">
+              <input type="hidden" name="upi_ref" value="" id="bankRef">
+              <button type="submit" class="btn-pay" style="margin-top:24px;">
+                🏦 Continue to Net Banking
+              </button>
+            </form>
+          </div>
+
+          <!-- Wallet Panel -->
+          <div class="tab-panel" id="panel-wallet">
+            <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Pay via Wallet</h6>
+            <div class="upi-apps" style="margin-bottom:20px;">
+              {% for w in [('🟣','PhonePe Wallet'),('🔵','Amazon Pay'),('🟡','Paytm Wallet'),('🔴','Mobikwik')] %}
+              <div class="upi-app-btn" onclick="selectWallet('{{ w[1] }}')">
+                <span class="app-icon">{{ w[0] }}</span> {{ w[1] }}
+              </div>
+              {% endfor %}
+            </div>
+            <form method="POST" action="{{ url_for('confirm_payment', booking_id=booking.id) }}" id="walletForm">
+              <input type="hidden" name="upi_ref" value="" id="walletRef">
+              <button type="submit" class="btn-pay">
+                👛 Pay ₹{{ "{:,}".format(booking.final_payable) }} via Wallet
+              </button>
+            </form>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="trust-badges">
+            <div class="trust-badge">🔒 256-bit SSL</div>
+            <div class="trust-badge">✅ RBI Compliant</div>
+            <div class="trust-badge">🛡️ Secure Payment</div>
+            <div class="trust-badge">💳 PCI DSS</div>
+            <div class="trust-badge">↩️ Easy Refund</div>
+          </div>
+
+        </div><!-- /pay-card -->
+
+        <!-- Demo skip -->
+        <div class="text-center mt-3">
+          <a href="{{ url_for('skip_payment', booking_id=booking.id) }}"
+             style="color:#aaa; font-size:.82rem; text-decoration:none;">
+            Skip payment (Demo mode) →
+          </a>
+        </div>
+      </div><!-- /col -->
+
+      <!-- RIGHT: Summary -->
+      <div class="col-lg-4">
+        <div class="summary-card">
+          <h4>📋 Booking Summary</h4>
+
+          <div class="summary-row">
+            <span class="lbl">Hotel</span>
+            <span class="val">{{ hotel.name }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Destination</span>
+            <span class="val">{{ main_booking.destination }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Check-in</span>
+            <span class="val">{{ booking.check_in }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Check-out</span>
+            <span class="val">{{ booking.check_out }}</span>
+          </div>
+          <div class="summary-row">
+            <span class="lbl">Guests</span>
+            <span class="val">{{ booking.persons }}</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row">
+            <span class="lbl">Room charges</span>
+            <span class="val">₹{{ "{:,}".format(booking.base_price) }}</span>
+          </div>
+          {% if booking.extra_price %}
+          <div class="summary-row">
+            <span class="lbl">Meals & extras</span>
+            <span class="val">₹{{ "{:,}".format(booking.extra_price) }}</span>
+          </div>
+          {% endif %}
+          {% if booking.insurance_price %}
+          <div class="summary-row">
+            <span class="lbl">Insurance</span>
+            <span class="val">₹{{ "{:,}".format(booking.insurance_price) }}</span>
+          </div>
+          {% endif %}
+          {% if booking.coupon_discount %}
+          <div class="summary-row">
+            <span class="lbl">Coupon ({{ booking.coupon_code }})</span>
+            <span class="val green">−₹{{ "{:,}".format(booking.coupon_discount) }}</span>
+          </div>
+          {% endif %}
+          {% if booking.bank_discount %}
+          <div class="summary-row">
+            <span class="lbl">Bank offer</span>
+            <span class="val green">−₹{{ "{:,}".format(booking.bank_discount) }}</span>
+          </div>
+          {% endif %}
+          {% if booking.loyalty_discount %}
+          <div class="summary-row">
+            <span class="lbl">Loyalty points</span>
+            <span class="val green">−₹{{ "{:,}".format(booking.loyalty_discount) }}</span>
+          </div>
+          {% endif %}
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-total-label">Total Payable</div>
+          <div class="summary-total">₹{{ "{:,}".format(booking.final_payable) }}</div>
+
+          <div class="secure-badge">
+            🔒 Payments are 100% secure &amp; encrypted
+          </div>
+
+          <div style="margin-top:20px; padding:14px; background:rgba(255,255,255,.08); border-radius:12px;">
+            <div style="font-size:.78rem; opacity:.7; margin-bottom:4px;">Paying to</div>
+            <div style="font-weight:800; font-size:.95rem; color:#f6c90e;">{{ upi_name }}</div>
+            <div style="font-size:.8rem; opacity:.6;">{{ upi_id }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </div>
+</div>
+
 <script>
-function switchTab(id, btn) {
-  document.querySelectorAll('.pay-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-' + id).classList.add('active');
+// Tab switching
+function switchTab(tab) {
+  document.querySelectorAll('.pay-tab').forEach((t,i) => {
+    const tabs = ['upi','card','netbanking','wallet'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
 }
 
+// Copy UPI ID
 function copyUPI() {
-  const text = document.getElementById('upiIdText').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
+  navigator.clipboard.writeText("{{ upi_id }}").then(() => {
+    const btn = document.getElementById('copyBtn');
     btn.textContent = 'Copied!';
-    btn.style.background = '#1a5c50';
-    setTimeout(() => { btn.textContent = 'Copy'; btn.style.background = '#c9a84c'; }, 2000);
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
   });
 }
 
+// Card formatting
 function formatCard(input) {
   let v = input.value.replace(/\D/g,'').substring(0,16);
-  input.value = v.match(/.{1,4}/g)?.join(' ') || v;
-  const display = v.padEnd(16,'•').match(/.{1,4}/g).join(' ');
-  document.getElementById('cardDisplay').textContent = display;
+  input.value = v.replace(/(.{4})/g,'$1 ').trim();
 }
-
 function formatExpiry(input) {
   let v = input.value.replace(/\D/g,'');
   if (v.length >= 2) v = v.substring(0,2) + ' / ' + v.substring(2,4);
   input.value = v;
-  document.getElementById('cardExpDisplay').textContent = v || 'MM/YY';
 }
 
-function showSuccess(e) {
-  document.getElementById('successOverlay').classList.add('show');
+// Bank select
+function selectBank(el, bank) {
+  document.querySelectorAll('.bank-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('bankRef').value = 'BANK-' + bank + '-{{ booking.id }}';
 }
+
+// Wallet select
+function selectWallet(name) {
+  document.getElementById('walletRef').value = 'WALLET-' + name + '-{{ booking.id }}';
+}
+
+// Show success overlay then submit
+function showSuccess(e) {
+  const ref = document.getElementById('upiRefInput').value;
+  if (!ref || ref.length < 6) return; // let form validation handle
+  e.preventDefault();
+  document.getElementById('successOverlay').classList.add('show');
+  document.getElementById('continueBtn').addEventListener('click', () => {
+    document.getElementById('upiForm').submit();
+  });
+}
+
+// QR Code generator (simple canvas-based)
+function generateQR() {
+  const canvas = document.getElementById('qrCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = 200;
+  // Draw placeholder QR pattern
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = '#1a1a2e';
+  // Corner squares
+  [[8,8],[8,152],[152,8]].forEach(([x,y]) => {
+    ctx.fillRect(x,y,40,40);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x+8,y+8,24,24);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(x+16,y+16,8,8);
+  });
+  // Random dots for pattern
+  const seed = {{ booking.final_payable }};
+  for (let i=0; i<300; i++) {
+    const s = Math.sin(i*seed*0.001)*10000;
+    const x = Math.floor((s - Math.floor(s))*180) + 10;
+    const y = Math.floor((Math.sin(i*0.3)*10000 - Math.floor(Math.sin(i*0.3)*10000))*180) + 10;
+    if (!((x<56 && y<56)||(x<56 && y>144)||(x>144 && y<56))) {
+      ctx.fillRect(x,y,6,6);
+    }
+  }
+  // UPI text
+  ctx.fillStyle = '#e94560';
+  ctx.font = 'bold 11px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('{{ upi_id }}', size/2, size-6);
+}
+
+generateQR();
 </script>
 {% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% block title %}Admin — Hotels{% endblock %}
+{% block content %}
+<div style="max-width:1100px;margin:2rem auto;padding:0 1.5rem;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <h1 style="font-family:Georgia,serif;font-size:1.5rem;">🏨 Hotels</h1>
+    <a href="{{ url_for('admin_add_hotel') }}" style="padding:10px 20px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:700;">+ Add Hotel</a>
+  </div>
+  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:#f8f6f1;">
+        {% for h in ['ID','Name','Stars','Price/Night','Status','Actions'] %}<th style="padding:12px 16px;text-align:left;font-size:11px;color:#888;font-weight:600;">{{ h }}</th>{% endfor %}
+      </tr></thead>
+      <tbody>
+      {% for h in hotels %}
+      <tr style="border-top:1px solid #f0ede8;">
+        <td style="padding:12px 16px;font-size:13px;color:#888;">#{{ h.id }}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:600;">{{ h.name }}</td>
+        <td style="padding:12px 16px;font-size:13px;color:#f59e0b;">{{ '★' * (h.stars|int if h.stars else 0) }}</td>
+        <td style="padding:12px 16px;font-size:13px;color:#1a5c50;font-weight:600;">₹{{ "{:,}".format(h.starting_price or 0) }}</td>
+        <td style="padding:12px 16px;"><span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;background:{% if h.is_active %}#d1fae5;color:#065f46{% else %}#fee2e2;color:#991b1b{% endif %};">{{ 'Active' if h.is_active else 'Hidden' }}</span></td>
+        <td style="padding:12px 16px;"><a href="{{ url_for('admin_edit_hotel', hotel_id=h.id) }}" style="font-size:12px;color:#1a5c50;text-decoration:none;font-weight:600;">Edit</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:1rem;"><a href="{{ url_for('admin_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Admin Dashboard</a></div>
+</div>
+{% endblock %}

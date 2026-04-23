@@ -1,193 +1,145 @@
 {% extends "base.html" %}
-{% block title %}My Analytics — TripMore{% endblock %}
-
+{% block title %}My Analytics — TripMoree{% endblock %}
 {% block extra_css %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+.pg{max-width:1000px;margin:2rem auto;padding:0 1.5rem;}
+.pg-title{font-family:Georgia,serif;font-size:1.6rem;margin-bottom:1.5rem;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.m-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.2rem;}
+.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;}
+.m-val{font-family:Georgia,serif;font-size:1.8rem;font-weight:600;color:#0d0f0e;}
+.m-sub{font-size:11px;color:#c9a84c;margin-top:.2rem;}
+.card{background:#fff;border:1px solid #e8e4de;border-radius:18px;padding:1.5rem;margin-bottom:1.5rem;}
+.card h3{font-family:Georgia,serif;font-size:1.1rem;margin-bottom:1.2rem;color:#0d0f0e;}
+.bar-row{display:flex;align-items:center;gap:.8rem;margin-bottom:.6rem;}
+.bar-label{font-size:12px;color:#555;width:140px;flex-shrink:0;text-align:right;}
+.bar-track{flex:1;background:#f0ede8;border-radius:20px;height:10px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#c9a84c,#1a5c50);transition:width .6s ease;}
+.bar-val{font-size:12px;font-weight:700;color:#0d0f0e;width:40px;text-align:right;}
+.chart-wrap{position:relative;height:180px;}
+.transport-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;}
+.tp-card{background:#f8f6f1;border-radius:12px;padding:1rem;text-align:center;}
+.tp-icon{font-size:1.8rem;margin-bottom:.4rem;}
+.tp-cnt{font-family:Georgia,serif;font-size:1.4rem;font-weight:600;color:#0d0f0e;}
+.tp-label{font-size:11px;color:#888;margin-top:2px;}
+@media(max-width:600px){.metrics{grid-template-columns:1fr 1fr;}}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="page-hero">
-  <div class="page-hero-content" style="max-width:1260px;margin:0 auto;padding:0 4rem;">
-    <h1>My Travel <span>Analytics</span></h1>
-    <p>Insights from your TripMore journey, {{ user.name }}</p>
-  </div>
-</div>
+<div class="pg">
+  <div class="pg-title">📊 My Travel Analytics</div>
 
-<div style="padding:3rem 4rem;">
-
-  <!-- METRIC CARDS -->
-  <div class="metrics-grid">
-    <div class="metric-card">
-      <div class="metric-label">Total Trips</div>
-      <div class="metric-value">{{ total_trips }}</div>
-      <div class="metric-change metric-up">All time</div>
+  <div class="metrics">
+    <div class="m-card">
+      <div class="m-label">Total Trips</div>
+      <div class="m-val">{{ total_trips }}</div>
+      <div class="m-sub">All time</div>
     </div>
-    <div class="metric-card">
-      <div class="metric-label">Total Spent</div>
-      <div class="metric-value">₹{{ "{:,}".format(total_spent) }}</div>
-      <div class="metric-change metric-up">Lifetime value</div>
+    <div class="m-card">
+      <div class="m-label">Total Spent</div>
+      <div class="m-val">₹{{ "{:,}".format(total_spent|int) }}</div>
+      <div class="m-sub">Lifetime</div>
     </div>
-    <div class="metric-card">
-      <div class="metric-label">Favourite Destination</div>
-      <div class="metric-value" style="font-size:1.4rem;">
-        {{ fav_dest[0][0] if fav_dest else '—' }}
-      </div>
-      <div class="metric-change" style="color:var(--gold);">
-        {{ fav_dest[0][1] if fav_dest else 0 }} bookings
-      </div>
+    <div class="m-card">
+      <div class="m-label">Destinations</div>
+      <div class="m-val">{{ fav_dest|length }}</div>
+      <div class="m-sub">Visited</div>
     </div>
-    <div class="metric-card">
-      <div class="metric-label">Destinations Explored</div>
-      <div class="metric-value">{{ fav_dest | length }}</div>
-      <div class="metric-change metric-up">Unique places</div>
+    <div class="m-card">
+      <div class="m-label">Loyalty Points</div>
+      <div class="m-val">{{ user.loyalty_points or 0 }}</div>
+      <div class="m-sub">Earned</div>
     </div>
   </div>
 
-  <!-- CHARTS GRID -->
-  <div class="analytics-grid">
-
-    <!-- Monthly Trend -->
-    <div class="chart-card">
-      <div class="chart-title">Monthly Booking Trend</div>
-      <canvas id="monthlyChart" height="200"></canvas>
-    </div>
-
-    <!-- Destination Distribution -->
-    <div class="chart-card">
-      <div class="chart-title">Your Top Destinations</div>
-      <canvas id="destChart" height="200"></canvas>
-    </div>
-
-    <!-- Transport Types -->
-    <div class="chart-card">
-      <div class="chart-title">Transport Preferences</div>
-      <canvas id="transportChart" height="180"></canvas>
-    </div>
-
-    <!-- Global vs My -->
-    <div class="chart-card">
-      <div class="chart-title">Global Popular vs Your Picks</div>
-      <div style="padding:1rem 0;">
-        {% for row in global_top %}
-        <div style="margin-bottom:12px;">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-            <span>{{ row.destination }}</span>
-            <span style="color:var(--muted);">{{ row.cnt }} bookings</span>
-          </div>
-          <div style="height:6px;background:var(--cream);border-radius:3px;overflow:hidden;">
-            <div style="height:100%;background:var(--gold);border-radius:3px;width:{{ [row.cnt * 10, 100] | min }}%;transition:width .6s;"></div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
-  </div>
-
-  <!-- SPENDING BREAKDOWN -->
   {% if fav_dest %}
-  <div style="margin-top:2rem;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;">
-    <div class="chart-title" style="margin-bottom:1.5rem;">Destination Breakdown</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
-      {% for dest_name, count in fav_dest %}
-      <div style="padding:1rem;background:var(--cream);border-radius:var(--radius-md);text-align:center;">
-        <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:600;color:var(--ink);">{{ count }}</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:4px;">{{ dest_name }}</div>
-        <div style="font-size:11px;color:var(--gold);margin-top:2px;letter-spacing:.06em;text-transform:uppercase;">bookings</div>
+  <div class="card">
+    <h3>📍 Your Top Destinations</h3>
+    {% set max_cnt = fav_dest[0][1] if fav_dest else 1 %}
+    {% for dest, cnt in fav_dest %}
+    <div class="bar-row">
+      <div class="bar-label">{{ dest }}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:{{ (cnt/max_cnt*100)|int }}%"></div></div>
+      <div class="bar-val">{{ cnt }}x</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if monthly %}
+  <div class="card">
+    <h3>📅 Trips Per Month</h3>
+    <div class="chart-wrap">
+      <canvas id="monthChart"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if transport_types %}
+  <div class="card">
+    <h3>✈️ Transport Preferences</h3>
+    <div class="transport-grid">
+      {% for t in transport_types %}
+      <div class="tp-card">
+        <div class="tp-icon">{{ {'flight':'✈️','train':'🚆','bus':'🚌','cab':'🚕'}.get(t.type,'🚗') }}</div>
+        <div class="tp-cnt">{{ t.count }}</div>
+        <div class="tp-label">{{ t.type|title }}</div>
       </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- QUICK ACTIONS -->
-  <div style="display:flex;gap:16px;margin-top:2rem;flex-wrap:wrap;">
-    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">Plan New Trip</a>
-    <a href="{{ url_for('my_bookings') }}"       class="btn btn-outline">View All Bookings</a>
-    <a href="{{ url_for('my_wishlist') }}"        class="btn btn-outline">My Wishlist</a>
+  {% if global_top %}
+  <div class="card">
+    <h3>🌍 Most Popular Destinations on TripMoree</h3>
+    {% set max_g = global_top[0].cnt if global_top else 1 %}
+    {% for g in global_top %}
+    <div class="bar-row">
+      <div class="bar-label">{{ g.destination }}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:{{ (g.cnt/max_g*100)|int }}%;background:linear-gradient(90deg,#1a5c50,#c9a84c);"></div></div>
+      <div class="bar-val">{{ g.cnt }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div style="text-align:center;margin-top:1rem;">
+    <a href="{{ url_for('user_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Back to Dashboard</a>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
-async function initCharts() {
-  const res  = await fetch('/api/analytics-data');
-  const data = await res.json();
-
-  const goldColor = 'rgba(201,168,76,0.85)';
-  const tealColor = 'rgba(26,92,80,0.85)';
-  const gridColor = 'rgba(0,0,0,0.06)';
-
-  Chart.defaults.font.family = "'Outfit', sans-serif";
-  Chart.defaults.font.size   = 12;
-
-  // Monthly
-  new Chart(document.getElementById('monthlyChart'), {
+{% if monthly %}
+const ctx = document.getElementById('monthChart');
+if(ctx) {
+  new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.monthly_labels,
-      datasets: [{
-        label: 'Bookings',
-        data: data.monthly_data,
-        backgroundColor: goldColor,
-        borderRadius: 4
+      labels: {{ monthly.keys()|list|tojson }},
+      datasets:[{
+        label:'Trips',
+        data: {{ monthly.values()|list|tojson }},
+        backgroundColor:'rgba(201,168,76,.6)',
+        borderColor:'#c9a84c',
+        borderWidth:2,
+        borderRadius:6
       }]
     },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { grid: { color: gridColor }, beginAtZero: true, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } }
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{grid:{display:false}}
       }
     }
   });
-
-  // Destinations Doughnut
-  if (data.dest_labels.length) {
-    new Chart(document.getElementById('destChart'), {
-      type: 'doughnut',
-      data: {
-        labels: data.dest_labels,
-        datasets: [{
-          data: data.dest_data,
-          backgroundColor: ['#c9a84c','#1a5c50','#e8d89a','#4a7c70','#e4f0ed'],
-          borderWidth: 2, borderColor: '#fff'
-        }]
-      },
-      options: {
-        cutout: '65%',
-        plugins: { legend: { position: 'right' } }
-      }
-    });
-  }
-
-  // Transport
-  const transports = {{ transport_types | tojson }};
-  if (transports.length) {
-    new Chart(document.getElementById('transportChart'), {
-      type: 'bar',
-      data: {
-        labels: transports.map(t => t[0].charAt(0).toUpperCase() + t[0].slice(1)),
-        datasets: [{
-          label: 'Trips',
-          data: transports.map(t => t[1]),
-          backgroundColor: tealColor,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: gridColor }, beginAtZero: true },
-          y: { grid: { display: false } }
-        }
-      }
-    });
-  }
 }
-
-initCharts();
+{% endif %}
 </script>
 {% endblock %}

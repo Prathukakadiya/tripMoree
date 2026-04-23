@@ -1,761 +1,370 @@
 {% extends "base.html" %}
-{% block title %}Spots & Cab — {{ destination_name }}{% endblock %}
-
+{% block title %}Plan Your Trip — {{ destination_name }}{% endblock %}
 {% block extra_css %}
 <style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* PAGE LAYOUT */
-.hs-page{max-width:1280px;margin:0 auto;padding:0 1.5rem 3rem;}
-
-/* HERO */
-.hs-hero{
-  background:linear-gradient(135deg,#0d1a1a,#1a3a2e);
-  padding:2.5rem 1.5rem 2rem;text-align:center;
-  margin-bottom:0;
-}
-.hs-hero h1{font-family:Georgia,serif;font-size:clamp(1.8rem,4vw,2.8rem);color:#fff;margin-bottom:.4rem;}
-.hs-hero p{color:rgba(255,255,255,.5);font-size:14px;}
-.prog{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:1rem;font-size:13px;color:rgba(255,255,255,.5);flex-wrap:wrap;}
-.prog .done{color:#c9a84c;font-weight:600;}
-.prog .act{color:#fff;font-weight:700;background:rgba(201,168,76,.2);padding:4px 12px;border-radius:20px;}
-
-/* WEATHER BAR */
-.weather-bar{
-  background:#fff;border:1px solid #e8e4de;border-radius:12px;
-  padding:1rem 1.5rem;margin:1.5rem 0 1rem;
-  display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;
-}
-.w-temp{font-family:Georgia,serif;font-size:2rem;font-weight:600;color:#0d0f0e;}
-.w-desc{font-size:13px;color:#888;}
-.w-meta{display:flex;gap:1rem;font-size:13px;color:#555;flex-wrap:wrap;}
-.w-meta span{display:flex;align-items:center;gap:4px;}
-
-/* TWO-COLUMN LAYOUT */
-.hs-layout{display:grid;grid-template-columns:1fr 380px;gap:1.5rem;margin-top:1.5rem;}
-
-/* LEFT — SPOTS */
-.spots-section{}
-.section-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:1rem;
-}
-.section-title{font-family:Georgia,serif;font-size:1.4rem;color:#0d0f0e;}
-.select-all-btn{
-  padding:6px 14px;border:1px solid #e8e4de;border-radius:20px;
-  font-size:12px;cursor:pointer;background:#fff;font-family:inherit;
-  transition:all .2s;
-}
-.select-all-btn:hover{background:#0d0f0e;color:#fff;border-color:#0d0f0e;}
-
-.spots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem;}
-
-.spot-card{
-  background:#fff;border:2px solid #e8e4de;border-radius:14px;
-  overflow:hidden;cursor:pointer;transition:all .3s;
-  animation:fadeUp .4s ease both;
-}
-.spot-card:hover{border-color:#c9a84c;transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.1);}
-.spot-card.selected{border-color:#1a5c50;background:#f0faf8;}
-.spot-card.selected .spot-check{background:#1a5c50;border-color:#1a5c50;color:#fff;}
-
-.spot-img{
-  height:150px;position:relative;overflow:hidden;
-  background:linear-gradient(135deg,#e8e4de,#f8f6f1);
-}
-.spot-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s;}
-.spot-card:hover .spot-img img{transform:scale(1.08);}
-.spot-img-placeholder{
-  width:100%;height:100%;display:flex;align-items:center;
-  justify-content:center;font-size:3rem;color:#aaa;
-}
-.spot-check{
-  position:absolute;top:10px;right:10px;
-  width:28px;height:28px;border-radius:50%;
-  background:#fff;border:2px solid #ddd;
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;transition:all .2s;
-}
-.spot-num{
-  position:absolute;top:10px;left:10px;
-  background:rgba(0,0,0,.6);color:#fff;
-  border-radius:20px;padding:2px 8px;font-size:11px;font-weight:600;
-  display:none;
-}
-.spot-card.selected .spot-num{display:block;}
-
-.spot-body{padding:1rem;}
-.spot-name{font-weight:700;font-size:14px;color:#0d0f0e;margin-bottom:4px;}
-.spot-dist{font-size:12px;color:#888;display:flex;align-items:center;gap:4px;}
-
-/* MAP */
-.map-wrap{
-  background:#e8e4de;border-radius:14px;overflow:hidden;
-  height:250px;margin-bottom:1.5rem;position:relative;
-}
-#spotMap{width:100%;height:100%;}
-.map-placeholder{
-  width:100%;height:100%;display:flex;align-items:center;
-  justify-content:center;flex-direction:column;gap:.5rem;color:#888;
-}
-
-/* RIGHT — CAB PLANNER */
-.cab-planner{
-  background:#fff;border:1px solid #e8e4de;border-radius:16px;
-  padding:1.5rem;position:sticky;top:80px;height:fit-content;
-}
-.cp-title{font-family:Georgia,serif;font-size:1.2rem;margin-bottom:1rem;color:#0d0f0e;}
-.cp-summary{
-  background:#f8f6f1;border-radius:10px;padding:1rem;
-  margin-bottom:1rem;font-size:13px;
-}
-.cp-sum-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e8e4de;}
-.cp-sum-row:last-child{border:none;font-weight:700;font-size:14px;color:#1a5c50;}
-
-/* VEHICLE SELECTOR */
-.vehicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
-.v-card{
-  border:2px solid #e8e4de;border-radius:10px;padding:10px;
-  cursor:pointer;transition:all .2s;text-align:center;
-}
-.v-card:hover{border-color:#c9a84c;}
-.v-card.selected{border-color:#1a5c50;background:#f0faf8;}
-.v-card input{display:none;}
-.v-icon{font-size:1.5rem;margin-bottom:4px;}
-.v-name{font-size:12px;font-weight:600;color:#0d0f0e;}
-.v-price{font-size:11px;color:#1a5c50;font-weight:600;}
-.v-ac{font-size:10px;color:#888;}
-
-/* DAY PLANNER */
-.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
-.day-tab{
-  padding:5px 14px;border:1px solid #e8e4de;border-radius:20px;
-  font-size:12px;font-weight:600;cursor:pointer;background:#fff;
-  font-family:inherit;transition:all .2s;
-}
-.day-tab.active{background:#c9a84c;color:#fff;border-color:#c9a84c;}
-.day-panel{display:none;}
-.day-panel.active{display:block;animation:fadeUp .3s ease;}
-
-.time-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.time-group label{font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;}
-.time-group input{
-  width:100%;padding:8px 10px;border:1px solid #e8e4de;
-  border-radius:8px;font-size:13px;font-family:inherit;outline:none;
-}
-.time-group input:focus{border-color:#c9a84c;}
-
-.pickup-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.pickup-group label{font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;}
-.pickup-group select{
-  width:100%;padding:8px 10px;border:1px solid #e8e4de;
-  border-radius:8px;font-size:13px;font-family:inherit;outline:none;
-}
-
-.spot-assignment{margin-bottom:8px;}
-.spot-assignment label{font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:4px;}
-.spot-chips{display:flex;flex-wrap:wrap;gap:6px;min-height:36px;background:#f8f6f1;border-radius:8px;padding:6px;}
-.spot-chip{
-  padding:4px 10px;background:#1a5c50;color:#fff;
-  border-radius:20px;font-size:11px;font-weight:600;
-  cursor:pointer;transition:background .2s;
-  display:flex;align-items:center;gap:4px;
-  user-select:none;
-}
-.spot-chip:hover{background:#c9a84c;}
-.day-cost{
-  background:#e8f5e9;border-radius:8px;padding:8px 12px;
-  font-size:12px;font-weight:600;color:#1a5c50;
-  display:flex;justify-content:space-between;
-  margin-bottom:8px;
-}
-
-.calc-btn{
-  width:100%;padding:11px;background:#0d0f0e;color:#fff;
-  border:none;border-radius:8px;font-size:13px;font-weight:600;
-  cursor:pointer;font-family:inherit;margin-bottom:8px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:all .2s;
-}
-.calc-btn:hover{background:#1a5c50;}
-
-.book-cab-btn{
-  width:100%;padding:13px;background:linear-gradient(135deg,#c9a84c,#b8934a);
-  color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;
-  cursor:pointer;font-family:inherit;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.book-cab-btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(201,168,76,.3);}
-
-/* SPINNER */
-.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
-
-/* SELECTED SPOTS SUMMARY */
-.selected-summary{
-  background:#f0faf8;border:1px solid #b2dfdb;border-radius:10px;
-  padding:1rem;margin-bottom:1rem;display:none;
-}
-.selected-summary.show{display:block;}
-.sel-spots-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
-.sel-spot{
-  padding:4px 10px;background:#1a5c50;color:#fff;
-  border-radius:20px;font-size:11px;font-weight:600;
-}
-
-@media(max-width:900px){.hs-layout{grid-template-columns:1fr;}.cab-planner{position:static;}}
-@media(max-width:600px){.spots-grid{grid-template-columns:1fr 1fr;}.vehicle-grid{grid-template-columns:1fr 1fr;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+:root{--gold:#c9a84c;--teal:#1a5c50;--ink:#0d0f0e;--paper:#f8f6f1;--white:#fff;--border:#e8e4de;}
+.page{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+.prog{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:#888;flex-wrap:wrap;}
+.prog .done{color:var(--teal);font-weight:600;}
+.prog .act{color:var(--gold);font-weight:700;background:#fffdf5;padding:4px 12px;border-radius:20px;border:1px solid var(--gold);}
+/* HEADER */
+.hero{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:20px;padding:2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;}
+.hero-text h1{font-family:Georgia,serif;font-size:1.8rem;margin:0 0 .3rem;}
+.hero-text p{font-size:13px;color:rgba(255,255,255,.5);margin:0;}
+.hero-badge{background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);border-radius:12px;padding:.6rem 1.2rem;text-align:center;}
+.hero-badge-num{font-family:Georgia,serif;font-size:1.6rem;color:var(--gold);font-weight:600;}
+.hero-badge-label{font-size:11px;color:rgba(255,255,255,.4);}
+/* SECTIONS */
+.section-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:1.5rem;margin-bottom:1.5rem;}
+.sec-title{font-family:Georgia,serif;font-size:1.2rem;color:var(--ink);margin:0 0 1rem;display:flex;align-items:center;gap:.5rem;}
+/* SPOTS GRID */
+.spots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;}
+.spot-card{border:2px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;}
+.spot-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1);}
+.spot-card.selected{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.2);}
+.spot-card.selected::after{content:"✓";position:absolute;top:8px;right:8px;background:var(--gold);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.spot-img{height:110px;overflow:hidden;background:#f0ede8;}
+.spot-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.spot-card:hover .spot-img img{transform:scale(1.06);}
+.spot-body{padding:.7rem .8rem;}
+.spot-name{font-size:12px;font-weight:700;color:var(--ink);}
+/* DAYS PLANNER */
+.days-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;flex-wrap:wrap;}
+.days-label{font-size:14px;font-weight:600;color:var(--ink);}
+.days-select{padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;color:var(--ink);background:#fff;cursor:pointer;transition:border-color .2s;}
+.days-select:focus{border-color:var(--gold);}
+.day-panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:1.4rem;margin-bottom:1rem;transition:all .3s;}
+.day-panel-header{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;cursor:pointer;}
+.day-num{width:32px;height:32px;background:var(--ink);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.day-title{font-family:Georgia,serif;font-size:1rem;font-weight:600;color:var(--ink);}
+.day-summary{font-size:12px;color:#888;margin-left:auto;}
+.day-body{display:block;}
+.day-times{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;}
+.day-times label{font-size:11px;font-weight:600;color:#666;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
+.day-times input,.day-times select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#fff;}
+.day-times input:focus,.day-times select:focus{border-color:var(--gold);}
+.day-spots-label{font-size:12px;font-weight:600;color:#666;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em;}
+.day-spots-mini{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+.spot-mini{border:1.5px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative;}
+.spot-mini:hover{border-color:var(--gold);}
+.spot-mini.selected{border-color:var(--gold);background:#fffdf5;}
+.spot-mini.selected::after{content:"✓";position:absolute;top:5px;right:5px;background:var(--gold);color:#fff;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+.spot-mini-img{height:60px;overflow:hidden;background:#f0ede8;}
+.spot-mini-img img{width:100%;height:100%;object-fit:cover;}
+.spot-mini-name{font-size:11px;font-weight:600;color:var(--ink);padding:5px 7px;}
+.spot-mini input[type=checkbox]{display:none;}
+/* VEHICLE SELECTION */
+.vehicle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+.v-card{border:2px solid var(--border);border-radius:14px;padding:1.2rem;cursor:pointer;transition:all .2s;position:relative;}
+.v-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.v-card.selected{border-color:var(--gold);background:#fffdf5;}
+.v-card.selected::after{content:"✓";position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.v-icon{font-size:2rem;margin-bottom:.4rem;}
+.v-name{font-weight:700;font-size:14px;color:var(--ink);}
+.v-type{font-size:11px;color:#888;margin-top:2px;}
+.v-price{font-family:Georgia,serif;font-size:1.2rem;color:var(--teal);font-weight:600;margin-top:.5rem;}
+.v-km{font-size:11px;color:#888;}
+/* SUMMARY BOX */
+.sum-box{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:16px;padding:1.5rem;color:#fff;margin-bottom:1rem;}
+.sum-title{font-family:Georgia,serif;font-size:1.1rem;color:var(--gold);margin-bottom:1rem;}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.sum-row:last-child{border:none;font-weight:700;font-size:16px;color:#fff;}
+.sum-label{color:rgba(255,255,255,.6);}
+.sum-val{color:#fff;font-weight:600;}
+/* BOOK BUTTON */
+.book-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),#b8934a);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.book-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.4);}
+.book-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+.skip-row{text-align:center;margin-top:1rem;}
+.skip-row a{color:#aaa;font-size:12px;text-decoration:none;}
+/* EMPTY */
+.empty-spots{text-align:center;padding:2rem;color:#888;background:var(--paper);border-radius:12px;}
+@media(max-width:600px){.spots-grid{grid-template-columns:1fr 1fr;}.vehicle-grid{grid-template-columns:1fr 1fr;}.day-times{grid-template-columns:1fr;}}
 </style>
 {% endblock %}
 
 {% block content %}
-
-<!-- HERO -->
-<div class="hs-hero">
-  <h1>📍 Explore {{ destination_name }}</h1>
-  <p>Select the spots you want to visit, then plan your cab day by day</p>
+<div class="page">
   <div class="prog">
     <span class="done">✓ Hotel</span> →
-    <span class="done">✓ Payment</span> →
+    <span class="done">✓ Hotel Payment</span> →
     <span class="done">✓ Transport</span> →
-    <span class="act">📍 Spots & 🚕 Cab</span> →
-    <span>✅ Done</span>
-  </div>
-</div>
-
-<div class="hs-page">
-
-  <!-- WEATHER BAR -->
-  <div class="weather-bar" id="weatherBar" style="display:none;">
-    <div>
-      <img id="wIcon" src="" alt="" style="width:48px;height:48px;">
-    </div>
-    <div>
-      <div class="w-temp" id="wTemp">--°C</div>
-      <div class="w-desc" id="wDesc">Loading weather...</div>
-    </div>
-    <div class="w-meta" id="wMeta"></div>
-    <div style="margin-left:auto;font-size:12px;color:#888;" id="wCity">{{ destination_name }}</div>
+    <span class="act">📍 Spots & Cab</span> →
+    <span>💳 Cab Payment</span>
   </div>
 
-  <div class="hs-layout">
-
-    <!-- LEFT: SPOTS + MAP -->
-    <div>
-
-      <!-- MAP -->
-      <div class="map-wrap">
-        <div class="map-placeholder" id="mapPlaceholder">
-          <div style="font-size:2rem;">🗺️</div>
-          <div>Select spots to see them on map</div>
-        </div>
-        <div id="spotMap" style="display:none;"></div>
-      </div>
-
-      <!-- SPOTS GRID -->
-      <div class="section-head">
-        <div class="section-title">🌟 Hype Spots ({{ spots|length }})</div>
-        <button class="select-all-btn" onclick="selectAll()">Select All</button>
-      </div>
-
-      {% if spots %}
-      <div class="spots-grid">
-        {% for spot in spots %}
-        <div class="spot-card" id="spot-{{ spot.id }}" onclick="toggleSpot({{ spot.id }}, '{{ spot.spot_name }}', {{ spot.latitude or 0 }}, {{ spot.longitude or 0 }})" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
-          <div class="spot-img">
-            {% if spot.pexels_img %}
-            <img src="{{ spot.pexels_img }}" alt="{{ spot.spot_name }}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=spot-img-placeholder>📍</div>'">
-            {% else %}
-            <div class="spot-img-placeholder">📍</div>
-            {% endif %}
-            <div class="spot-check" id="check-{{ spot.id }}">○</div>
-            <div class="spot-num" id="num-{{ spot.id }}"></div>
-          </div>
-          <div class="spot-body">
-            <div class="spot-name">{{ spot.spot_name }}</div>
-            <div class="spot-dist">
-              <span>📍</span>
-              <span id="dist-{{ spot.id }}">{{ destination_name }}</span>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div style="text-align:center;padding:3rem;color:#888;background:#f8f6f1;border-radius:14px;">
-        <div style="font-size:3rem;margin-bottom:1rem;">📍</div>
-        <p>No spots found for {{ destination_name }}.</p>
-      </div>
-      {% endif %}
-
-      <!-- SELECTED SUMMARY -->
-      <div class="selected-summary" id="selectedSummary">
-        <div style="font-weight:600;font-size:13px;color:#1a5c50;">✓ <span id="selCount">0</span> spots selected:</div>
-        <div class="sel-spots-list" id="selSpotsList"></div>
-      </div>
-
+  <div class="hero">
+    <div style="font-size:3rem;">📍</div>
+    <div class="hero-text" style="flex:1;">
+      <h1>Plan your days in {{ destination_name }}</h1>
+      <p>Select spots to visit each day, set timings, and book your cab — all in one place</p>
     </div>
+    {% if nights %}
+    <div class="hero-badge">
+      <div class="hero-badge-num">{{ nights }}</div>
+      <div class="hero-badge-label">Night{{ 's' if nights > 1 }}</div>
+    </div>
+    {% endif %}
+    {% if persons %}
+    <div class="hero-badge">
+      <div class="hero-badge-num">{{ persons }}</div>
+      <div class="hero-badge-label">Guest{{ 's' if persons > 1 }}</div>
+    </div>
+    {% endif %}
+  </div>
 
-    <!-- RIGHT: CAB PLANNER -->
-    <div class="cab-planner">
-      <div class="cp-title">🚕 Cab Planner</div>
+  <form id="cabForm" method="POST" action="{{ url_for('book_cab', hotel_booking_id=hotel_booking_id) }}">
+    <input type="hidden" name="cab_id" id="selectedCabId">
 
-      <!-- BOOKING SUMMARY -->
-      <div class="cp-summary">
-        <div class="cp-sum-row"><span>🏨 Hotel</span><span>{{ hotel.name if hotel else destination_name }}</span></div>
-        <div class="cp-sum-row"><span>👥 Guests</span><span>{{ persons or hotel_booking.persons }} persons</span></div>
-        <div class="cp-sum-row"><span>📅 Nights</span><span>{{ nights }} night{{ 's' if nights > 1 }}</span></div>
-        <div class="cp-sum-row"><span>📍 Spots</span><span id="sumSpots">0 selected</span></div>
-        <div class="cp-sum-row"><span>💰 Cab Cost</span><span id="sumCabCost">Calculating...</span></div>
-      </div>
-
-      <form id="cabForm" method="POST" action="{{ url_for('book_cab', hotel_booking_id=hotel_booking_id) }}">
-
-        <!-- VEHICLE SELECTOR -->
-        <div style="font-size:11px;font-weight:600;color:#555;margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em;">Choose Vehicle</div>
-        <div class="vehicle-grid" id="vehicleGrid">
-          {% for v in transports %}
-          <label class="v-card" for="v-{{ v.id }}" onclick="selectVehicle(this, {{ v.id }})">
-            <input type="radio" name="cab_id" id="v-{{ v.id }}" value="{{ v.id }}" {% if loop.first %}checked{% endif %}>
-            <div class="v-icon">
-              {% if v.vehicle_type == 'Hatchback' %}🚗
-              {% elif v.vehicle_type == 'Sedan' %}🚙
-              {% elif v.vehicle_type == 'SUV' %}🚐
-              {% elif v.vehicle_type == 'Van' %}🚌
-              {% elif v.vehicle_type == 'Luxury' %}🏎️
-              {% else %}🚕{% endif %}
-            </div>
-            <div class="v-name">{{ v.vehicle_name }}</div>
-            <div class="v-price">₹{{ v.price_per_km }}/km</div>
-            <div class="v-ac">{{ v.ac_type }} · {{ v.vehicle_type }}</div>
-          </label>
+    <!-- ① HOW MANY DAYS? -->
+    <div class="section-card">
+      <div class="sec-title">📅 How many days do you need a cab?</div>
+      <div class="days-header">
+        <span class="days-label">Select number of days:</span>
+        <select class="days-select" id="numDays" name="total_days" onchange="buildDayPanels()">
+          {% for d in range(1, (nights or 7) + 2) %}
+          <option value="{{ d }}" {% if d == (nights or 1) %}selected{% endif %}>{{ d }} day{{ 's' if d > 1 }}</option>
           {% endfor %}
-        </div>
-
-        <!-- TOTAL DAYS -->
-        <div style="margin-bottom:1rem;">
-          <label style="font-size:11px;font-weight:600;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;">Number of Cab Days</label>
-          <select name="total_days" id="totalDays" onchange="buildDayTabs()" style="width:100%;padding:10px;border:1px solid #e8e4de;border-radius:8px;font-size:14px;font-family:inherit;outline:none;">
-            {% for i in range(1, (nights + 2)) %}
-            <option value="{{ i }}">{{ i }} Day{{ 's' if i > 1 }}</option>
-            {% endfor %}
-          </select>
-        </div>
-
-        <!-- DAY TABS -->
-        <div class="day-tabs" id="dayTabs"></div>
-
-        <!-- DAY PANELS -->
-        <div id="dayPanels"></div>
-
-        <!-- HIDDEN SPOT INPUTS -->
-        <div id="hiddenSpotInputs"></div>
-
-        <!-- CALCULATE + BOOK -->
-        <button type="button" class="calc-btn" onclick="calculateCost()">
-          <div id="calcSpinner" class="spinner" style="display:none;"></div>
-          <span id="calcText">📊 Calculate Cost</span>
-        </button>
-
-        <div id="costResult" style="background:#f0faf8;border-radius:10px;padding:12px;margin-bottom:10px;display:none;">
-          <div style="font-size:13px;font-weight:700;color:#1a5c50;" id="costBreakdown"></div>
-        </div>
-
-        <button type="submit" class="book-cab-btn" id="bookCabBtn">
-          🚕 Confirm Cab Booking
-        </button>
-
-      </form>
+        </select>
+      </div>
+      <div id="dayPanels"></div>
     </div>
-  </div>
+
+    <!-- ② VEHICLE SELECTION -->
+    <div class="section-card">
+      <div class="sec-title">🚕 Select Your Vehicle</div>
+      <div class="vehicle-grid" id="vehicleGrid">
+        {% if transports %}
+          {% set icons = {'Sedan': '🚗', 'SUV': '🚙', 'Innova': '🚐', 'Tempo': '🚐', 'Bike': '🏍️', 'Auto': '🛺', 'Mini': '🚕'} %}
+          {% for v in transports %}
+          <div class="v-card" onclick="selectVehicle({{ v.id }}, this)">
+            <div class="v-icon">{{ icons.get(v.vehicle_type, '🚗') }}</div>
+            <div class="v-name">{{ v.vehicle_name }}</div>
+            <div class="v-type">{{ v.vehicle_type }} · {{ v.ac_type }}</div>
+            <div class="v-price" id="vprice_{{ v.id }}">₹ —</div>
+            <div class="v-km">₹{{ v.price_per_km }}/km</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="grid-column:1/-1;text-align:center;padding:2rem;color:#888;">
+            No vehicles available. Please contact support.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ③ SUMMARY + BOOK -->
+    <div class="sum-box" id="sumBox" style="display:none;">
+      <div class="sum-title">🧾 Cab Booking Summary</div>
+      <div id="sumRows"></div>
+    </div>
+
+    <button type="submit" class="book-btn" id="bookBtn" disabled>
+      Select vehicle to continue →
+    </button>
+    <div class="skip-row">
+      <a href="{{ url_for('my_bookings') }}">Skip cab → View My Bookings</a>
+    </div>
+  </form>
 </div>
-
-<!-- LEAFLET MAP (free, no API key needed) -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// ── DATA FROM FLASK ──────────────────────────────────────────
-const HOTEL_ID   = {{ hotel_id }};
-const HOTEL_LAT  = {{ hotel.latitude  or 0 }};
-const HOTEL_LON  = {{ hotel.longitude or 0 }};
-const DEST_NAME  = {{ destination_name | tojson }};
-const NIGHTS     = {{ nights or 1 }};
-const ALL_SPOTS  = [
+const SPOTS = [
   {% for s in spots %}
-  { id: {{ s.id }}, name: {{ s.spot_name | tojson }}, lat: {{ s.latitude or 0 }}, lon: {{ s.longitude or 0 }} }{% if not loop.last %},{% endif %}
+  { id: {{ s.id }}, name: {{ s.spot_name|tojson }}, img: {{ (s.pexels_img or '')|tojson }},
+    lat: {{ s.latitude or 0 }}, lng: {{ s.longitude or 0 }} }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+const HOTEL = { lat: {{ hotel.latitude or 0 }}, lng: {{ hotel.longitude or 0 }} };
+const TRANSPORTS = [
+  {% for v in transports %}
+  { id: {{ v.id }}, name: {{ v.vehicle_name|tojson }}, pricePerKm: {{ v.price_per_km or 10 }} }{% if not loop.last %},{% endif %}
   {% endfor %}
 ];
 
-let selectedSpots  = [];
-let spotOrder      = 0;
-let map            = null;
-let markers        = {};
-let selectedVehicle= {{ transports[0].id if transports else 0 }};
-let pricePerKm     = {{ transports[0].price_per_km if transports else 10 }};
+let selectedVehicleId = null;
+let selectedVehiclePpk = 0;
 
-const VEHICLE_PRICES = {
-  {% for v in transports %}
-  {{ v.id }}: {{ v.price_per_km }}{% if not loop.last %},{% endif %}
-  {% endfor %}
-};
-
-// ── WEATHER ──────────────────────────────────────────────────
-async function loadWeather() {
-  try {
-    const resp = await fetch(`/api/weather?city=${encodeURIComponent(DEST_NAME)}`);
-    const data = await resp.json();
-    if (!data.error) {
-      document.getElementById('weatherBar').style.display = 'flex';
-      document.getElementById('wTemp').textContent = data.temp + '°C';
-      document.getElementById('wDesc').textContent = data.desc;
-      document.getElementById('wIcon').src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
-      document.getElementById('wMeta').innerHTML = `
-        <span>💧 ${data.humidity}% humidity</span>
-        <span>💨 ${data.wind} km/h wind</span>
-        <span>🌡️ Feels like ${data.feels_like}°C</span>
-      `;
-    }
-  } catch(e) {}
-}
-loadWeather();
-
-// ── MAP ──────────────────────────────────────────────────────
-function initMap() {
-  if (map || !HOTEL_LAT) return;
-  document.getElementById('mapPlaceholder').style.display = 'none';
-  document.getElementById('spotMap').style.display = 'block';
-  map = L.map('spotMap').setView([HOTEL_LAT, HOTEL_LON], 12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-  // Hotel marker
-  L.marker([HOTEL_LAT, HOTEL_LON], {
-    icon: L.divIcon({className:'', html:'<div style="background:#c9a84c;color:#fff;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;">🏨 Hotel</div>'})
-  }).addTo(map).bindPopup('Your Hotel');
-}
-
-function updateMapMarker(spot, selected) {
-  if (!map) initMap();
-  if (!map || !spot.lat) return;
-  if (markers[spot.id]) {
-    map.removeLayer(markers[spot.id]);
-    delete markers[spot.id];
-  }
-  if (selected) {
-    const idx = selectedSpots.findIndex(s => s.id === spot.id) + 1;
-    markers[spot.id] = L.marker([spot.lat, spot.lon], {
-      icon: L.divIcon({className:'', html:`<div style="background:#1a5c50;color:#fff;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap;">${idx}. ${spot.name.substring(0,15)}</div>`})
-    }).addTo(map).bindPopup(spot.name);
-  }
-}
-
-// ── SPOT TOGGLE ──────────────────────────────────────────────
-function toggleSpot(id, name, lat, lon) {
-  const card  = document.getElementById(`spot-${id}`);
-  const check = document.getElementById(`check-${id}`);
-  const num   = document.getElementById(`num-${id}`);
-  const idx   = selectedSpots.findIndex(s => s.id === id);
-
-  if (idx > -1) {
-    selectedSpots.splice(idx, 1);
-    card.classList.remove('selected');
-    check.textContent = '○';
-    check.style.background = '#fff';
-    num.style.display = 'none';
-    updateMapMarker({id, lat, lon, name}, false);
-    // Re-number remaining
-    selectedSpots.forEach((s, i) => {
-      document.getElementById(`num-${s.id}`).textContent = i + 1;
-    });
-  } else {
-    selectedSpots.push({id, name, lat, lon});
-    card.classList.add('selected');
-    check.textContent = '✓';
-    check.style.background = '#1a5c50';
-    check.style.borderColor = '#1a5c50';
-    check.style.color = '#fff';
-    num.textContent  = selectedSpots.length;
-    num.style.display = 'block';
-    if (!map) initMap();
-    updateMapMarker({id, lat, lon, name}, true);
-  }
-
-  updateSelectedSummary();
-  updateDayPanelSpots();
-  updateHiddenInputs();
-}
-
-function selectAll() {
-  ALL_SPOTS.forEach(s => {
-    if (!selectedSpots.find(sel => sel.id === s.id)) {
-      toggleSpot(s.id, s.name, s.lat, s.lon);
-    }
-  });
-}
-
-function updateSelectedSummary() {
-  const box  = document.getElementById('selectedSummary');
-  const list = document.getElementById('selSpotsList');
-  const cnt  = document.getElementById('selCount');
-  const sum  = document.getElementById('sumSpots');
-  cnt.textContent = selectedSpots.length;
-  sum.textContent = selectedSpots.length + ' selected';
-  list.innerHTML  = selectedSpots.map(s =>
-    `<span class="sel-spot">${s.name}</span>`).join('');
-  box.classList.toggle('show', selectedSpots.length > 0);
-}
-
-// ── VEHICLE SELECTOR ─────────────────────────────────────────
-function selectVehicle(label, vid) {
-  document.querySelectorAll('.v-card').forEach(c => c.classList.remove('selected'));
-  label.classList.add('selected');
-  selectedVehicle = vid;
-  pricePerKm      = VEHICLE_PRICES[vid] || 10;
-}
-// Select first vehicle by default
-window.addEventListener('DOMContentLoaded', () => {
-  const first = document.querySelector('.v-card');
-  if (first) first.classList.add('selected');
-  buildDayTabs();
-});
-
-// ── DAY TABS ─────────────────────────────────────────────────
-function buildDayTabs() {
-  const days  = parseInt(document.getElementById('totalDays').value) || 1;
-  const tabs  = document.getElementById('dayTabs');
-  const panels= document.getElementById('dayPanels');
-  tabs.innerHTML  = '';
-  panels.innerHTML= '';
-  for (let d = 1; d <= days; d++) {
-    // Tab
-    const tab = document.createElement('button');
-    tab.type  = 'button';
-    tab.className = 'day-tab' + (d === 1 ? ' active' : '');
-    tab.textContent = `Day ${d}`;
-    tab.onclick = () => switchDay(d, days);
-    tabs.appendChild(tab);
-    // Panel
-    const panel = document.createElement('div');
-    panel.className = 'day-panel' + (d === 1 ? ' active' : '');
-    panel.id = `day-panel-${d}`;
-    panel.innerHTML = `
-      <div class="time-row">
-        <div class="time-group">
-          <label>Arrival Time</label>
-          <input type="time" name="arrival_time_${d}" value="09:00" id="arr-${d}" onchange="updateDayCost(${d})">
-        </div>
-        <div class="time-group">
-          <label>Departure Time</label>
-          <input type="time" name="departure_time_${d}" value="18:00" id="dep-${d}" onchange="updateDayCost(${d})">
-        </div>
-      </div>
-      <div class="pickup-row">
-        <div class="pickup-group">
-          <label>Pickup From</label>
-          <select name="pickup_type_${d}">
-            <option value="hotel">🏨 Hotel</option>
-            <option value="airport">✈️ Airport (+₹300)</option>
-            <option value="station">🚂 Station (+₹200)</option>
-            <option value="custom">📍 Custom (+₹500)</option>
-          </select>
-        </div>
-        <div class="pickup-group">
-          <label>Drop At</label>
-          <select name="drop_type_${d}">
-            <option value="hotel">🏨 Hotel</option>
-            <option value="airport">✈️ Airport (+₹300)</option>
-            <option value="station">🚂 Station (+₹200)</option>
-            <option value="custom">📍 Custom (+₹500)</option>
-          </select>
-        </div>
-      </div>
-      <div class="spot-assignment">
-        <label>Spots for Day ${d} (click to assign)</label>
-        <div class="spot-chips" id="chips-${d}">
-          <span style="font-size:11px;color:#888;padding:4px;">No spots assigned — select spots on left</span>
-        </div>
-      </div>
-      <div class="day-cost" id="dcost-${d}">
-        <span>Est. Day ${d} cost:</span>
-        <span id="dcost-val-${d}">Select spots first</span>
-      </div>
-    `;
-    panels.appendChild(panel);
-  }
-  updateDayPanelSpots();
-}
-
-function switchDay(d, total) {
-  document.querySelectorAll('.day-tab').forEach((t, i) => {
-    t.classList.toggle('active', i+1 === d);
-  });
-  document.querySelectorAll('.day-panel').forEach((p, i) => {
-    p.classList.toggle('active', i+1 === d);
-  });
-}
-
-function updateDayPanelSpots() {
-  const days = parseInt(document.getElementById('totalDays')?.value) || 1;
-  for (let d = 1; d <= days; d++) {
-    const chips = document.getElementById(`chips-${d}`);
-    if (!chips) continue;
-    if (selectedSpots.length === 0) {
-      chips.innerHTML = '<span style="font-size:11px;color:#888;padding:4px;">No spots selected yet</span>';
-      continue;
-    }
-    chips.innerHTML = selectedSpots.map(s =>
-      `<span class="spot-chip" onclick="assignSpotToDay(${s.id},'${s.name}',${d})" title="Add to day ${d}">${s.name}</span>`
-    ).join('');
-  }
-}
-
-// Track which spots are assigned to which day
-let daySpotAssignments = {};
-function assignSpotToDay(spotId, spotName, day) {
-  if (!daySpotAssignments[day]) daySpotAssignments[day] = [];
-  if (daySpotAssignments[day].includes(spotId)) {
-    daySpotAssignments[day] = daySpotAssignments[day].filter(id => id !== spotId);
-  } else {
-    daySpotAssignments[day].push(spotId);
-  }
-  updateHiddenInputs();
-  updateDayCost(day);
-}
-
-function updateHiddenInputs() {
-  const container = document.getElementById('hiddenSpotInputs');
-  container.innerHTML = '';
-  const days = parseInt(document.getElementById('totalDays')?.value) || 1;
-  // If no day assignments, assign all spots to day 1
-  let hasAny = Object.values(daySpotAssignments).some(arr => arr.length > 0);
-  if (!hasAny && selectedSpots.length > 0) {
-    selectedSpots.forEach(s => {
-      const inp = document.createElement('input');
-      inp.type = 'hidden';
-      inp.name = `day_1_spots`;
-      inp.value = s.id;
-      container.appendChild(inp);
-    });
-    return;
-  }
-  for (let d = 1; d <= days; d++) {
-    const spotIds = daySpotAssignments[d] || [];
-    spotIds.forEach(sid => {
-      const inp = document.createElement('input');
-      inp.type  = 'hidden';
-      inp.name  = `day_${d}_spots`;
-      inp.value = sid;
-      container.appendChild(inp);
-    });
-  }
-}
-
-// ── COST CALCULATION ─────────────────────────────────────────
-function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLon = (lon2-lon1)*Math.PI/180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+// ── Haversine distance ─────────────────────────
+function dist(lat1, lon1, lat2, lon2) {
+  const R = 6371, toR = Math.PI/180;
+  const dLat = (lat2-lat1)*toR, dLon = (lon2-lon1)*toR;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2;
   return R * 2 * Math.asin(Math.sqrt(a));
 }
 
-function updateDayCost(day) {
-  const spotIds = (daySpotAssignments[day] || selectedSpots.map(s => s.id));
+// ── Build day panels ────────────────────────────
+function buildDayPanels() {
+  const n = parseInt(document.getElementById('numDays').value) || 1;
+  const container = document.getElementById('dayPanels');
+  container.innerHTML = '';
+
+  for (let day = 1; day <= n; day++) {
+    const panel = document.createElement('div');
+    panel.className = 'day-panel';
+    panel.id = `day_panel_${day}`;
+    panel.innerHTML = `
+      <div class="day-panel-header" onclick="toggleDay(${day})">
+        <div class="day-num">${day}</div>
+        <div class="day-title">Day ${day} Plan</div>
+        <div class="day-summary" id="day_sum_${day}">No spots selected</div>
+      </div>
+      <div class="day-body" id="day_body_${day}">
+        <div class="day-times">
+          <div>
+            <label>🕐 Arrival Time</label>
+            <input type="time" name="arrival_time_${day}" value="09:00" onchange="recalcAll()">
+          </div>
+          <div>
+            <label>🕐 Departure Time</label>
+            <input type="time" name="departure_time_${day}" value="18:00" onchange="recalcAll()">
+          </div>
+          <div>
+            <label>🚏 Pickup From</label>
+            <select name="pickup_type_${day}" onchange="recalcAll()">
+              <option value="hotel">Hotel</option>
+              <option value="airport">Airport (+₹300)</option>
+              <option value="railway_station">Railway Station (+₹200)</option>
+              <option value="bus_stand">Bus Stand (+₹150)</option>
+            </select>
+          </div>
+          <div>
+            <label>🚏 Drop To</label>
+            <select name="drop_type_${day}" onchange="recalcAll()">
+              <option value="hotel">Hotel</option>
+              <option value="airport">Airport (+₹300)</option>
+              <option value="railway_station">Railway Station (+₹200)</option>
+              <option value="bus_stand">Bus Stand (+₹150)</option>
+            </select>
+          </div>
+        </div>
+        <div class="day-spots-label">📍 Select spots for Day ${day}</div>
+        <div class="day-spots-mini" id="day_spots_${day}">
+          ${SPOTS.length === 0
+            ? '<div style="grid-column:1/-1;text-align:center;padding:1.5rem;color:#888;font-size:13px;">No spots data for this destination yet.</div>'
+            : SPOTS.map(s => `
+            <div class="spot-mini" onclick="toggleDaySpot(${day},${s.id},this)" id="dayspot_${day}_${s.id}">
+              <input type="checkbox" name="day_${day}_spots" value="${s.id}" id="chk_${day}_${s.id}">
+              <div class="spot-mini-img"><img src="${s.img}" onerror="this.style.display='none'" loading="lazy"></div>
+              <div class="spot-mini-name">${s.name}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    container.appendChild(panel);
+  }
+  recalcAll();
+}
+
+function toggleDay(day) {
+  const body = document.getElementById(`day_body_${day}`);
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleDaySpot(day, spotId, el) {
+  el.classList.toggle('selected');
+  const chk = document.getElementById(`chk_${day}_${spotId}`);
+  chk.checked = !chk.checked;
+  updateDaySummary(day);
+  recalcAll();
+}
+
+function updateDaySummary(day) {
+  const checked = document.querySelectorAll(`input[name="day_${day}_spots"]:checked`);
+  const sum = document.getElementById(`day_sum_${day}`);
+  sum.textContent = checked.length > 0 ? `${checked.length} spot${checked.length > 1 ? 's' : ''} selected` : 'No spots selected';
+}
+
+// ── Calculate km and price for a day ────────────
+function calcDay(day) {
+  const spotIds = [...document.querySelectorAll(`input[name="day_${day}_spots"]:checked`)].map(c => parseInt(c.value));
   let km = 0;
-  let curLat = HOTEL_LAT, curLon = HOTEL_LON;
-  spotIds.forEach(sid => {
-    const spot = ALL_SPOTS.find(s => s.id === sid);
-    if (!spot || !spot.lat) return;
-    km += haversine(curLat, curLon, spot.lat, spot.lon);
-    curLat = spot.lat; curLon = spot.lon;
-  });
-  if (spotIds.length > 0) km += haversine(curLat, curLon, HOTEL_LAT, HOTEL_LON);
+  let cur = { lat: HOTEL.lat, lng: HOTEL.lng };
+  for (const sid of spotIds) {
+    const s = SPOTS.find(x => x.id === sid);
+    if (!s) continue;
+    km += dist(cur.lat, cur.lng, s.lat, s.lng);
+    cur = { lat: s.lat, lng: s.lng };
+  }
+  if (spotIds.length > 0) km += dist(cur.lat, cur.lng, HOTEL.lat, HOTEL.lng);
   km = Math.max(km, 5);
-  const cost = Math.round(km * pricePerKm + 1200);
-  const el   = document.getElementById(`dcost-val-${day}`);
-  if (el) el.textContent = `₹${cost.toLocaleString('en-IN')} (~${Math.round(km)} km)`;
+
+  const pickup = document.querySelector(`select[name="pickup_type_${day}"]`)?.value || 'hotel';
+  const drop   = document.querySelector(`select[name="drop_type_${day}"]`)?.value   || 'hotel';
+  const surcharges = { airport: 300, railway_station: 200, bus_stand: 150, hotel: 0 };
+  const extra = (surcharges[pickup] || 0) + (surcharges[drop] || 0);
+
+  return { km: km.toFixed(1), price: (km * selectedVehiclePpk + extra).toFixed(0) };
 }
 
-async function calculateCost() {
-  if (selectedSpots.length === 0) {
-    alert('Please select at least one spot first!');
-    return;
+// ── Recalculate all days ─────────────────────────
+function recalcAll() {
+  const n = parseInt(document.getElementById('numDays').value) || 1;
+  let totalKm = 0, totalPrice = 0;
+  const rows = [];
+
+  for (let day = 1; day <= n; day++) {
+    const { km, price } = calcDay(day);
+    totalKm    += parseFloat(km);
+    totalPrice += parseFloat(price);
+    rows.push(`<div class="sum-row"><span class="sum-label">Day ${day}</span><span class="sum-val">${km} km · ₹${parseInt(price).toLocaleString('en-IN')}</span></div>`);
   }
-  const spinner = document.getElementById('calcSpinner');
-  const txt     = document.getElementById('calcText');
-  spinner.style.display = 'inline-block';
-  txt.textContent = 'Calculating...';
+  rows.push(`<div class="sum-row"><span class="sum-label">Total</span><span class="sum-val">₹${Math.round(totalPrice).toLocaleString('en-IN')}</span></div>`);
 
-  const days    = parseInt(document.getElementById('totalDays').value) || 1;
-  const arr     = document.getElementById('arr-1')?.value || '09:00';
-  const dep     = document.getElementById('dep-1')?.value || '18:00';
-  const spotIds = selectedSpots.map(s => s.id);
+  const sumBox  = document.getElementById('sumBox');
+  const sumRows = document.getElementById('sumRows');
+  if (selectedVehicleId) {
+    sumBox.style.display  = 'block';
+    sumRows.innerHTML     = rows.join('');
+  }
 
-  try {
-    const resp = await fetch('/api/calculate-transport', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        hotel_id: HOTEL_ID,
-        spot_ids: spotIds,
-        total_days: days,
-        arrival_time: arr,
-        departure_time: dep
-      })
-    });
-    const data = await resp.json();
-    const my   = data.find(v => v.cab_id === selectedVehicle) || data[0];
-    if (my) {
-      document.getElementById('costResult').style.display = 'block';
-      document.getElementById('costBreakdown').innerHTML = `
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span>Distance:</span><span>${my.distance} km × ₹${pricePerKm}/km</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <span>Driver charge:</span><span>₹1,200 × ${my.days} days</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:14px;color:#0d0f0e;border-top:1px solid #b2dfdb;padding-top:6px;margin-top:4px;">
-          <span><strong>Total Cab Cost:</strong></span><span><strong>₹${Math.round(my.price).toLocaleString('en-IN')}</strong></span>
-        </div>
-      `;
-      document.getElementById('sumCabCost').textContent = '₹' + Math.round(my.price).toLocaleString('en-IN');
+  // Update vehicle price labels
+  TRANSPORTS.forEach(v => {
+    const el = document.getElementById(`vprice_${v.id}`);
+    if (!el) return;
+    const n2 = parseInt(document.getElementById('numDays').value) || 1;
+    let tot = 0;
+    for (let d = 1; d <= n2; d++) {
+      const spotIds = [...document.querySelectorAll(`input[name="day_${d}_spots"]:checked`)].map(c=>parseInt(c.value));
+      let km = 0, cur={lat:HOTEL.lat,lng:HOTEL.lng};
+      for(const sid of spotIds){const s=SPOTS.find(x=>x.id===sid);if(!s)continue;km+=dist(cur.lat,cur.lng,s.lat,s.lng);cur={lat:s.lat,lng:s.lng};}
+      if(spotIds.length>0)km+=dist(cur.lat,cur.lng,HOTEL.lat,HOTEL.lng);
+      km=Math.max(km,5);
+      tot += km * v.pricePerKm;
     }
-  } catch(e) {
-    console.error(e);
-  }
-
-  spinner.style.display = 'none';
-  txt.textContent = '📊 Recalculate';
+    el.textContent = `₹${Math.round(tot).toLocaleString('en-IN')}`;
+  });
 }
 
-// ── FORM SUBMIT VALIDATION ───────────────────────────────────
+function selectVehicle(id, el) {
+  document.querySelectorAll('.v-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedVehicleId  = id;
+  selectedVehiclePpk = TRANSPORTS.find(v => v.id === id)?.pricePerKm || 10;
+  document.getElementById('selectedCabId').value = id;
+
+  const btn = document.getElementById('bookBtn');
+  btn.disabled    = false;
+  btn.textContent = '✅ Confirm Cab Booking & Pay →';
+
+  recalcAll();
+}
+
+// Form submit validation
 document.getElementById('cabForm').addEventListener('submit', function(e) {
-  updateHiddenInputs();
-  if (selectedSpots.length === 0) {
-    if (!confirm('No spots selected. Continue with just cab (hotel pickup/drop only)?')) {
-      e.preventDefault();
-      return;
-    }
-  }
-  // Ensure cab_id is selected
-  const cabId = document.querySelector('input[name="cab_id"]:checked');
-  if (!cabId) {
+  if (!selectedVehicleId) {
     e.preventDefault();
-    alert('Please select a vehicle.');
+    alert('Please select a vehicle first!');
     return;
   }
-  document.getElementById('bookCabBtn').textContent = '⏳ Booking...';
-  document.getElementById('bookCabBtn').disabled = true;
+  const btn = document.getElementById('bookBtn');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Booking your cab...';
 });
 
-// ── INIT ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  buildDayTabs();
-  if (HOTEL_LAT) initMap();
-});
+// Init
+buildDayPanels();
 </script>
 {% endblock %}

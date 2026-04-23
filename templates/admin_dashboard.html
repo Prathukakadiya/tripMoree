@@ -1,194 +1,153 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard - TripMoreee</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — TripMoree{% endblock %}
+{% block extra_css %}
+<style>
+.adm-wrap{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px);}
+.adm-side{background:#0d0f0e;padding:1.5rem 1rem;display:flex;flex-direction:column;gap:.2rem;}
+.adm-logo{font-family:Georgia,serif;font-size:1.1rem;color:#c9a84c;padding:.8rem;margin-bottom:.5rem;border-bottom:1px solid rgba(255,255,255,.08);}
+.adm-link{display:flex;align-items:center;gap:.6rem;padding:9px 12px;border-radius:8px;text-decoration:none;font-size:13px;color:rgba(255,255,255,.5);transition:.2s;}
+.adm-link:hover{background:rgba(255,255,255,.06);color:#fff;}
+.adm-link.active{background:rgba(201,168,76,.15);color:#c9a84c;}
+.adm-section{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.2);padding:8px 12px 2px;margin-top:.5rem;}
+.adm-main{background:#f8f6f1;padding:2rem 1.5rem;}
+.adm-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.adm-title{font-family:Georgia,serif;font-size:1.5rem;color:#0d0f0e;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.m-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.2rem;}
+.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;}
+.m-val{font-family:Georgia,serif;font-size:1.8rem;font-weight:600;color:#0d0f0e;}
+.m-sub{font-size:11px;color:#c9a84c;margin-top:.2rem;}
+.cards-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;}
+.card{background:#fff;border:1px solid #e8e4de;border-radius:16px;padding:1.5rem;}
+.card h3{font-family:Georgia,serif;font-size:1rem;margin-bottom:1rem;color:#0d0f0e;}
+.dest-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0ede8;font-size:13px;}
+.dest-row:last-child{border:none;}
+.status-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+.sb-item{background:#fff;border:1px solid #e8e4de;border-radius:12px;padding:1rem;text-align:center;}
+.sb-num{font-family:Georgia,serif;font-size:1.5rem;font-weight:600;}
+.sb-label{font-size:11px;color:#888;margin-top:.2rem;}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;margin-bottom:2rem;}
+.qa{display:block;background:#fff;border:1px solid #e8e4de;border-radius:12px;padding:1rem;text-decoration:none;text-align:center;color:#0d0f0e;transition:.2s;}
+.qa:hover{border-color:#c9a84c;background:#fffdf5;}
+.qa-icon{font-size:1.5rem;display:block;margin-bottom:.3rem;}
+.qa-label{font-size:12px;font-weight:600;}
+@media(max-width:900px){.adm-wrap{grid-template-columns:1fr;}.adm-side{display:none;}.metrics{grid-template-columns:1fr 1fr;}.cards-row{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
 
-    <style>
-        body{
-            margin:0;
-            padding-top:90px;
-            font-family:'Poppins',sans-serif;
-            background:linear-gradient(rgba(0,0,0,0.75),rgba(0,0,0,0.75)),
-            url("https://images.unsplash.com/photo-1506929562872-bb421503ef21") center/cover no-repeat;
-            color:white;
-        }
+{% block content %}
+<div class="adm-wrap">
+  <!-- SIDEBAR -->
+  <div class="adm-side">
+    <div class="adm-logo">⚙️ TripMoree Admin</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="adm-link active">📊 Dashboard</a>
+    <div class="adm-section">Manage</div>
+    <a href="{{ url_for('admin_bookings') }}" class="adm-link">📋 Bookings</a>
+    <a href="{{ url_for('admin_users') }}" class="adm-link">👥 Users</a>
+    <a href="{{ url_for('admin_hotels') }}" class="adm-link">🏨 Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="adm-link">📍 Destinations</a>
+    <div class="adm-section">Marketing</div>
+    <a href="{{ url_for('admin_coupons') }}" class="adm-link">🎟 Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="adm-link">⚡ Flash Sales</a>
+    <a href="{{ url_for('admin_packages') }}" class="adm-link">📦 Packages</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="adm-link">📧 Newsletter</a>
+    <div class="adm-section">Support</div>
+    <a href="{{ url_for('admin_support') }}" class="adm-link">🎧 Support
+      {% if open_tickets %}<span style="margin-left:auto;background:#e94560;color:#fff;padding:1px 7px;border-radius:10px;font-size:10px;">{{ open_tickets }}</span>{% endif %}
+    </a>
+    <a href="{{ url_for('admin_analytics') }}" class="adm-link">📈 Analytics</a>
+    <div style="flex:1;"></div>
+    <a href="{{ url_for('home') }}" class="adm-link" style="border-top:1px solid rgba(255,255,255,.08);margin-top:.5rem;padding-top:10px;">🌍 View Site</a>
+    <a href="{{ url_for('admin_logout') }}" class="adm-link">↩ Logout</a>
+  </div>
 
-        .navbar{
-            position:fixed;
-            top:0;
-            left:0;
-            width:100%;
-            height:70px;
-            background:rgba(0,0,0,0.95);
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            padding:0 50px;
-            box-sizing:border-box;
-            z-index:1000;
-        }
-
-        .logo{
-            color:gold;
-            font-size:24px;
-            font-weight:700;
-        }
-
-        .nav-buttons a{
-            background:gold;
-            color:black;
-            padding:8px 18px;
-            border-radius:8px;
-            font-weight:600;
-            text-decoration:none;
-            margin-left:10px;
-            transition:0.3s;
-        }
-
-        .nav-buttons a:hover{
-            background:#ffd700;
-            transform:translateY(-2px);
-        }
-
-        .container{
-            width:90%;
-            margin:auto;
-        }
-
-        .admin-title{
-            text-align:center;
-            font-size:42px;
-            color:gold;
-            margin-bottom:50px;
-            animation:fadeDown 1s ease;
-        }
-
-        .card-grid{
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-            gap:25px;
-        }
-
-        .card{
-            background:rgba(0,0,0,0.9);
-            padding:35px;
-            border-radius:18px;
-            text-align:center;
-            box-shadow:0 15px 35px rgba(0,0,0,0.6);
-            transition:0.4s;
-            animation:fadeUp 1s ease;
-        }
-
-        .card:hover{
-            transform:translateY(-8px);
-            background:rgba(255,215,0,0.1);
-        }
-
-        .card h3{
-            color:gold;
-            margin-bottom:12px;
-        }
-
-        .card p{
-            font-size:26px;
-            font-weight:600;
-        }
-
-        @keyframes fadeDown{
-            from{opacity:0;transform:translateY(-20px);}
-            to{opacity:1;transform:translateY(0);}
-        }
-
-        @keyframes fadeUp{
-            from{opacity:0;transform:translateY(30px);}
-            to{opacity:1;transform:translateY(0);}
-        }
-
-        .footer{
-            margin-top:80px;
-            background:#000;
-            padding:60px 20px;
-            text-align:center;
-        }
-
-        .footer h2{
-            color:gold;
-            font-size:36px;
-        }
-
-        .footer p{
-            color:#ccc;
-            margin-bottom:30px;
-        }
-
-        .footer-btn{
-            background:gold;
-            padding:12px 35px;
-            border-radius:25px;
-            color:black;
-            text-decoration:none;
-            font-weight:600;
-            transition:0.3s;
-        }
-
-        .footer-btn:hover{
-            background:#ffd700;
-        }
-    </style>
-</head>
-<body>
-
-<div class="navbar">
-    <div class="logo">TripMoreee Admin</div>
-    <div class="nav-buttons">
-        <a href="/admin/users">Manage Users</a>
-        <a href="/admin/logout">Logout</a>
+  <!-- MAIN -->
+  <div class="adm-main">
+    <div class="adm-header">
+      <div>
+        <div class="adm-title">Admin Dashboard</div>
+        <div style="font-size:12px;color:#888;">TripMoree Control Panel</div>
+      </div>
+      <a href="{{ url_for('admin_bookings') }}" style="padding:10px 20px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:700;">View All Bookings →</a>
     </div>
-</div>
 
-<div class="container">
-    <h1 class="admin-title">Admin Dashboard</h1>
-
-    <div class="card-grid">
-        <div class="card">
-            <h3>Total Users</h3>
-            <p>{{ users }}</p>
-        </div>
-
-        <div class="card">
-            <h3>Total Hotels</h3>
-            <p>{{ hotels }}</p>
-        </div>
-
-        <div class="card">
-            <h3>Total Bookings</h3>
-            <p>{{ bookings }}</p>
-        </div>
-
-        <div class="card">
-            <h3>Total Revenue</h3>
-            <p>₹{{ revenue }}</p>
-        </div>
-
-        <div class="card">
-            <h3>Active</h3>
-            <p>{{ active }}</p>
-        </div>
-
-        <div class="card">
-            <h3>Completed</h3>
-            <p>{{ completed }}</p>
-        </div>
+    <!-- METRICS -->
+    <div class="metrics">
+      <div class="m-card">
+        <div class="m-label">Total Revenue</div>
+        <div class="m-val">₹{{ "{:,}".format(revenue|int) }}</div>
+        <div class="m-sub">Hotel + Transport + Cab</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Total Bookings</div>
+        <div class="m-val">{{ bookings }}</div>
+        <div class="m-sub">All time</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Users</div>
+        <div class="m-val">{{ users }}</div>
+        <div class="m-sub">Registered</div>
+      </div>
+      <div class="m-card">
+        <div class="m-label">Hotels</div>
+        <div class="m-val">{{ hotels }}</div>
+        <div class="m-sub">Listed</div>
+      </div>
     </div>
-</div>
 
-<div class="footer">
-    <h2>TripMoreee</h2>
-    <p>Luxury Travel Admin Panel</p>
-    <a href="/" class="footer-btn">Back to Website</a>
-</div>
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <div class="sb-item"><div class="sb-num" style="color:#27ae60;">{{ active }}</div><div class="sb-label">Active Bookings</div></div>
+      <div class="sb-item"><div class="sb-num" style="color:#3b82f6;">{{ completed }}</div><div class="sb-label">Completed</div></div>
+      <div class="sb-item"><div class="sb-num" style="color:#e74c3c;">{{ cancelled }}</div><div class="sb-label">Cancelled</div></div>
+    </div>
 
-</body>
-</html>
+    <!-- QUICK ACTIONS -->
+    <div class="card" style="margin-bottom:1.5rem;">
+      <h3>⚡ Quick Actions</h3>
+      <div class="quick-grid">
+        <a href="{{ url_for('admin_add_destination') }}" class="qa"><span class="qa-icon">📍</span><span class="qa-label">Add Destination</span></a>
+        <a href="{{ url_for('admin_add_hotel') }}" class="qa"><span class="qa-icon">🏨</span><span class="qa-label">Add Hotel</span></a>
+        <a href="{{ url_for('admin_coupons') }}" class="qa"><span class="qa-icon">🎟</span><span class="qa-label">Add Coupon</span></a>
+        <a href="{{ url_for('admin_flash_sales') }}" class="qa"><span class="qa-icon">⚡</span><span class="qa-label">Flash Sale</span></a>
+        <a href="{{ url_for('admin_packages') }}" class="qa"><span class="qa-icon">📦</span><span class="qa-label">Add Package</span></a>
+        <a href="{{ url_for('admin_newsletter') }}" class="qa"><span class="qa-icon">📧</span><span class="qa-label">Newsletter</span></a>
+        <a href="{{ url_for('admin_support') }}" class="qa"><span class="qa-icon">🎧</span><span class="qa-label">Support ({{ open_tickets }})</span></a>
+        <a href="{{ url_for('admin_analytics') }}" class="qa"><span class="qa-icon">📈</span><span class="qa-label">Analytics</span></a>
+      </div>
+    </div>
+
+    <!-- TOP DESTINATIONS + FLASH SALES -->
+    <div class="cards-row">
+      <div class="card">
+        <h3>📍 Top Destinations Booked</h3>
+        {% if top_destinations %}
+          {% for dest, cnt in top_destinations[:8] %}
+          <div class="dest-row">
+            <span style="font-weight:600;">{{ dest }}</span>
+            <span style="color:#c9a84c;font-weight:700;">{{ cnt }} bookings</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="color:#888;font-size:13px;">No bookings yet.</p>
+        {% endif %}
+      </div>
+      <div class="card">
+        <h3>📊 Platform Stats</h3>
+        <div class="dest-row"><span>Open Support Tickets</span><span style="color:#e74c3c;font-weight:700;">{{ open_tickets }}</span></div>
+        <div class="dest-row"><span>Active Flash Sales</span><span style="color:#c9a84c;font-weight:700;">{{ flash_sales }}</span></div>
+        <div class="dest-row"><span>Active Bookings</span><span style="color:#27ae60;font-weight:700;">{{ active }}</span></div>
+        <div class="dest-row"><span>Total Revenue</span><span style="color:#1a5c50;font-weight:700;">₹{{ "{:,}".format(revenue|int) }}</span></div>
+        <div style="margin-top:1.5rem;padding:1rem;background:#f8f6f1;border-radius:10px;">
+          <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">⚙️ Admin Setup</div>
+          <div style="font-size:12px;color:#555;line-height:1.7;">
+            Default login: <strong>admin / admin123</strong><br>
+            Run <code>create_tables.py</code> to set up DB<br>
+            Run <code>seed.py</code> to add sample data
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
