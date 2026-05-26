@@ -1,78 +1,112 @@
 {% extends "base.html" %}
 {% block title %}🚌 Bus Payment — TripMoree{% endblock %}
 {% block extra_css %}<style>
-.pay-page{max-width:680px;margin:0 auto;padding:2rem 1.5rem;}
-.prog{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:#888;flex-wrap:wrap;}
-.prog .done{color:#1a5c50;font-weight:600;}.prog .act{color:#c9a84c;font-weight:700;background:#fffdf5;padding:4px 12px;border-radius:20px;border:1px solid #c9a84c;}
-.pay-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;margin-bottom:1rem;}
-.pay-header{text-align:center;padding-bottom:1.5rem;border-bottom:1px solid #f0ede8;margin-bottom:1.5rem;}
-.pay-icon{font-size:3rem;margin-bottom:.5rem;}
-.pay-title{font-family:Georgia,serif;font-size:1.5rem;color:#0d0f0e;margin-bottom:.4rem;}
-.pay-amount{font-family:Georgia,serif;font-size:2.8rem;font-weight:600;color:#1a5c50;}
-.pay-sub{font-size:13px;color:#888;margin-top:.3rem;}
-.info-box{background:#f0faf8;border:1px solid #b2dfdb;border-radius:14px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;}
-.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e0f0ee;font-size:13px;}
-.info-row:last-child{border:none;font-weight:700;}
-.info-label{color:#555;}.info-value{color:#0d0f0e;font-weight:600;}
-.upi-box{text-align:center;background:#f8f6f1;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
-.upi-id{display:inline-block;background:#fff;border:2px dashed #c9a84c;border-radius:10px;padding:.6rem 1.2rem;font-family:monospace;font-size:1.05rem;font-weight:700;color:#0d0f0e;cursor:pointer;margin:.5rem 0;}
-.upi-id:hover{background:#fffdf5;}
-.steps{list-style:none;padding:0;margin:.8rem auto 0;display:inline-block;text-align:left;}
-.steps li{font-size:13px;color:#555;padding:4px 0;display:flex;align-items:center;gap:8px;}
-.form-row{display:flex;gap:10px;margin-bottom:1rem;}
-.ref-input{flex:1;padding:12px 14px;border:1.5px solid #e8e4de;border-radius:10px;font-size:14px;font-family:inherit;outline:none;}
-.ref-input:focus{border-color:#c9a84c;}
-.pay-btn{padding:13px 24px;background:linear-gradient(135deg,#c9a84c,#b8934a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
-.pay-btn:hover{box-shadow:0 6px 20px rgba(201,168,76,.3);}
-.skip-link{text-align:center;margin-top:.8rem;}
-.skip-link a{color:#aaa;font-size:12px;text-decoration:none;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes qrs{0%{top:0}50%{top:calc(100% - 3px)}100%{top:0}}
+:root{--g:#c9a84c;--t:#1a5c50;--i:#0d0f0e;--b:#e8e4de;}
+.pw{min-height:calc(100vh - 64px);background:linear-gradient(135deg,#0d0f0e,#1a2e2a);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;}
+.pc{background:#fff;border-radius:24px;overflow:hidden;max-width:860px;width:100%;display:grid;grid-template-columns:1fr 1.1fr;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:fadeUp .5s;}
+.pl{background:linear-gradient(160deg,#0d1a1a,#1a3a2e);padding:2.5rem 2rem;display:flex;flex-direction:column;}
+.plogo{font-family:Georgia,serif;font-size:1.2rem;color:var(--g);margin-bottom:1.2rem;}
+.pg{display:flex;align-items:center;gap:4px;margin-bottom:1.5rem;flex-wrap:wrap;}
+.pd{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);flex-shrink:0;}
+.pd.done{background:var(--t);border-color:var(--t);color:#fff;}
+.pd.act{background:var(--g);border-color:var(--g);color:#fff;}
+.pl2{flex:1;height:2px;background:rgba(255,255,255,.08);min-width:14px;max-width:32px;}
+.pl2.done{background:var(--t);}
+.pal{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px;}
+.pam{font-family:Georgia,serif;font-size:2.8rem;font-weight:600;color:var(--g);line-height:1;}
+.psub{font-size:13px;color:rgba(255,255,255,.5);margin-top:7px;margin-bottom:1.5rem;}
+.pdr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
+.pdl{color:rgba(255,255,255,.4);} .pdv{color:#fff;font-weight:500;}
+.psec{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,.3);margin-top:auto;padding-top:1.5rem;}
+.pr{padding:2.5rem 2rem;}
+.pt{font-family:Georgia,serif;font-size:1.5rem;margin-bottom:.3rem;color:var(--i);}
+.pst{font-size:13px;color:#888;margin-bottom:1.4rem;}
+.mt{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--b);border-radius:10px;overflow:hidden;margin-bottom:1.4rem;}
+.mtb{padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border:none;background:#f8f6f1;color:#888;transition:.2s;font-family:inherit;border-right:1px solid var(--b);}
+.mtb:last-child{border-right:none;} .mtb.active{background:var(--i);color:#fff;}
+.uid{display:flex;align-items:center;justify-content:center;gap:.5rem;background:#f8f6f1;border:1.5px dashed var(--g);border-radius:10px;padding:.7rem 1.2rem;font-family:monospace;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:.7rem;transition:.2s;}
+.uid:hover{background:#fffdf5;}
+.ctg{background:var(--g);color:#fff;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.sb{background:#f8f6f1;border-radius:10px;padding:1rem;margin-bottom:1.1rem;}
+.si{display:flex;align-items:flex-start;gap:.6rem;font-size:13px;color:#555;padding:3px 0;}
+.sn{width:20px;height:20px;background:var(--i);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.qw{display:flex;justify-content:center;margin-bottom:1rem;}
+.qb{padding:11px;background:#fff;border:2px solid var(--b);border-radius:14px;position:relative;}
+.qi{width:180px;height:180px;border-radius:8px;display:block;}
+.qs{position:absolute;left:11px;right:11px;height:3px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:qrs 2s ease-in-out infinite;border-radius:2px;}
+.rr{display:flex;gap:8px;margin-top:.5rem;}
+.ri{flex:1;padding:12px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:.2s;}
+.ri:focus{border-color:var(--g);}
+.cb{padding:12px 22px;background:linear-gradient(135deg,var(--g),#b8934a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.cb:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.4);}
+.sk{text-align:center;margin-top:.8rem;font-size:12px;} .sk a{color:#aaa;text-decoration:none;}
+.cm{font-size:11px;color:#27ae60;text-align:center;height:14px;margin-top:2px;}
+@media(max-width:700px){.pc{grid-template-columns:1fr;}.pl,.pr{padding:1.5rem;}.pam{font-size:2.2rem;}}
 </style>{% endblock %}
 {% block content %}
-<div class="pay-page">
-  <div class="prog">
-    <span class="done">✓ Hotel</span> →
-    <span class="done">✓ Hotel Payment</span> →
-    <span class="done">✓ Bus Booked</span> →
-    <span class="act">🚌 Bus Payment</span> →
-    <span>📍 Spots & Cab</span>
+<div class="pw"><div class="pc">
+  <div class="pl">
+    <div class="plogo">TripMoree ✦</div>
+    <div class="pg"><div class="prog-dot done">1</div><div class="prog-line done"></div><div class="prog-dot done">2</div><div class="prog-line done"></div><div class="prog-dot done">3</div><div class="prog-line done"></div><div class="prog-dot act">4</div><div class="prog-line "></div><div class="prog-dot ">5</div><div class="prog-line "></div><div class="prog-dot ">6</div></div>
+    <div class="pal">Amount Due</div>
+    <div class="pam">₹{{ "{:,}".format(tb.price or 0) }}</div>
+    <div class="psub">🚌 Bus Booking</div>
+    <div class="pdr"><span class="pdl">From</span><span class="pdv">{{ tb.source }}</span></div>
+    <div class="pdr"><span class="pdl">To</span><span class="pdv">{{ tb.destination }}</span></div>
+    <div class="pdr"><span class="pdl">Passengers</span><span class="pdv">{{ tb.persons }}</span></div>
+    <div class="pdr"><span class="pdl">Mode</span><span class="pdv">🚌 Bus</span></div>
+    <div class="psec"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>SSL Encrypted · Secure Payment</div>
   </div>
-  <div class="pay-card">
-    <div class="pay-header">
-      <div class="pay-icon">🚌</div>
-      <div class="pay-title">Bus Payment</div>
-      <div class="pay-amount">₹{{ "{:,}".format(tb.price or 0) }}</div>
-      <div class="pay-sub">{{ tb.source }} → {{ tb.destination }} · {{ tb.persons }} passenger{{ 's' if (tb.persons or 1) > 1 }}</div>
+  <div class="pr">
+    <div class="pt">Complete Payment</div>
+    <div class="pst">Pay ₹{{ "{:,}".format(tb.price or 0) }} for your bus</div>
+    <div class="mt">
+      <button class="mtb active" onclick="showM('upi',this)">📱 UPI</button>
+      <button class="mtb" onclick="showM('qr',this)">📷 QR Code</button>
+      <button class="mtb" onclick="showM('apps',this)">💳 Apps</button>
     </div>
-    <div class="info-box">
-      <div class="info-row"><span class="info-label">Route</span><span class="info-value">{{ tb.source }} → {{ tb.destination }}</span></div>
-      <div class="info-row"><span class="info-label">Passengers</span><span class="info-value">{{ tb.persons }}</span></div>
-      <div class="info-row"><span class="info-label">Type</span><span class="info-value">🚌 Bus</span></div>
-      <div class="info-row"><span class="info-label">Amount Due</span><span class="info-value" style="color:#1a5c50;font-size:15px;">₹{{ "{:,}".format(tb.price or 0) }}</span></div>
-    </div>
-    <div class="upi-box">
-      <div style="font-weight:700;font-size:1rem;color:#0d0f0e;margin-bottom:.3rem;">Pay via UPI</div>
-      <div style="font-size:13px;color:#888;">Open any UPI app and pay to:</div>
-      <div class="upi-id" onclick="copyUPI('{{ upi_id }}','cm2')">{{ upi_id }} 📋</div>
-      <div id="cm2" style="font-size:11px;color:#27ae60;height:16px;"></div>
-      <ul class="steps">
-        <li>1️⃣ Open PhonePe / GPay / Paytm</li>
-        <li>2️⃣ Pay <strong>₹{{ "{:,}".format(tb.price or 0) }}</strong> to {{ upi_id }}</li>
-        <li>3️⃣ Note the UPI reference number</li>
-        <li>4️⃣ Enter below and confirm</li>
-      </ul>
-    </div>
-    <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
-      <label style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:8px;">UPI Reference / Transaction ID *</label>
-      <div class="form-row">
-        <input type="text" name="upi_ref" class="ref-input" placeholder="e.g. 412345678901" required>
-        <button type="submit" class="pay-btn">✅ Confirm Payment</button>
+    <div id="m-upi">
+      <div onclick="copyUPI('{{ upi_id }}')" class="uid"><span>{{ upi_id }}</span><span class="ctg">COPY</span></div>
+      <div class="cm" id="copyMsg"></div>
+      <div class="sb">
+        <div class="si"><div class="sn">1</div>Open PhonePe / GPay / Paytm</div>
+        <div class="si"><div class="sn">2</div>Pay <strong>₹{{ "{:,}".format(tb.price or 0) }}</strong> to {{ upi_id }}</div>
+        <div class="si"><div class="sn">3</div>Copy the UTR / reference number</div>
+        <div class="si"><div class="sn">4</div>Paste below and confirm</div>
       </div>
-    </form>
-    <div class="skip-link"><a href="{{ url_for('skip_bus_payment', transport_booking_id=tb.id) }}">Skip (Demo mode) →</a></div>
+      <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div id="m-qr" style="display:none">
+      <div class="qw"><div class="qb">
+        <img class="qi" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ upi_link|urlencode }}&bgcolor=ffffff&color=0d0f0e&margin=2" alt="QR" onerror="this.src='https://placehold.co/180x180/f8f6f1/c9a84c?text=UPI+QR'">
+        <div class="qs"></div>
+      </div></div>
+      <div style="text-align:center;font-size:12px;color:#888;margin-bottom:1rem;">Scan to pay ₹{{ "{:,}".format(tb.price or 0) }}</div>
+      <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div id="m-apps" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+        <a href="{{ upi_link }}" style="padding:14px;background:#5f259f;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">📱 PhonePe</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#4285f4;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟢 GPay</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#002970;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🔵 Paytm</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#00a651;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟠 BHIM</a>
+      </div>
+      <form method="POST" action="{{ url_for('confirm_bus_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div class="sk"><a href="{{ url_for('skip_bus_payment', transport_booking_id=tb.id) }}">Skip (Demo mode) →</a></div>
   </div>
-</div>
+</div></div>
 {% endblock %}
 {% block extra_js %}<script>
-function copyUPI(upi,msgId){navigator.clipboard.writeText(upi).then(()=>{document.getElementById(msgId).textContent='✓ Copied!';setTimeout(()=>document.getElementById(msgId).textContent='',2000);});}
-function disableBtn(f){const b=f.querySelector('[type="submit"]');if(b){b.disabled=true;b.textContent='⏳ Confirming...';}}
+function showM(id,btn){['upi','qr','apps'].forEach(m=>{const el=document.getElementById('m-'+m);if(el)el.style.display=m===id?'block':'none';});document.querySelectorAll('.mtb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function copyUPI(u){navigator.clipboard.writeText(u).then(()=>{const m=document.getElementById('copyMsg');if(m){m.textContent='✓ Copied!';setTimeout(()=>m.textContent='',2000);}});}
+function disableBtn(f){const b=f.querySelector('[type=submit]');if(b){b.disabled=true;b.textContent='⏳ Confirming...';}}
 </script>{% endblock %}

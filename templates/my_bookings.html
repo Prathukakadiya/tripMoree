@@ -1,134 +1,323 @@
 {% extends "base.html" %}
 {% block title %}My Bookings — TripMoree{% endblock %}
-{% block extra_css %}<style>
-.pg{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
-.pg-title{font-family:Georgia,serif;font-size:1.8rem;color:#0d0f0e;margin-bottom:.3rem;}
+{% block extra_css %}
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+:root{--gold:#c9a84c;--teal:#1a5c50;--ink:#0d0f0e;--paper:#f8f6f1;--border:#e8e4de;}
+.pg{max-width:1050px;margin:0 auto;padding:2rem 1.5rem;}
+.pg-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+.pg-title{font-family:Georgia,serif;font-size:2rem;color:var(--ink);}
+.pg-sub{font-size:13px;color:#888;margin-top:.2rem;}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
-.m-card{background:#fff;border:1px solid #e8e4de;border-radius:14px;padding:1.2rem;}
-.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.3rem;}
-.m-val{font-family:Georgia,serif;font-size:1.6rem;font-weight:600;color:#0d0f0e;}
-.b-card{background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;margin-bottom:1.2rem;}
-.b-head{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;background:#f8f6f1;border-bottom:1px solid #f0ede8;flex-wrap:wrap;gap:.5rem;}
-.b-id{font-family:monospace;font-size:12px;color:#888;}
-.b-dest{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:#0d0f0e;}
-.b-total{font-family:Georgia,serif;font-size:1.2rem;font-weight:600;color:#1a5c50;}
-.status-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
-.status-active{background:#d1fae5;color:#065f46;}
-.status-cancelled{background:#fee2e2;color:#991b1b;}
-.status-completed{background:#e0e7ff;color:#3730a3;}
-.status-demo,.status-pending{background:#fef3c7;color:#92400e;}
-.b-body{padding:1.2rem 1.5rem;}
-.b-section{margin-bottom:1rem;}
-.b-section-title{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;font-weight:600;}
-.b-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #f8f6f1;}
+.m-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.2rem;animation:fadeUp .5s ease both;}
+.m-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+.m-val{font-family:Georgia,serif;font-size:1.8rem;font-weight:600;color:var(--ink);}
+.m-sub{font-size:11px;color:var(--gold);margin-top:.2rem;}
+/* Booking card */
+.b-card{background:#fff;border:1px solid var(--border);border-radius:20px;margin-bottom:1.2rem;overflow:hidden;animation:fadeUp .5s ease both;transition:box-shadow .2s;}
+.b-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.08);}
+.b-header{display:flex;align-items:center;gap:.8rem;padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);flex-wrap:wrap;cursor:pointer;user-select:none;}
+.b-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0d1a1a,#1a3a2e);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.b-dest{font-family:Georgia,serif;font-size:1.1rem;font-weight:600;color:var(--ink);}
+.b-id{font-size:11px;color:#888;font-family:monospace;margin-top:1px;}
+.b-status{margin-left:.5rem;}
+.pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;}
+.pill-active{background:#d1fae5;color:#065f46;}
+.pill-completed{background:#e0e7ff;color:#3730a3;}
+.pill-cancelled{background:#fee2e2;color:#991b1b;}
+.pill-pending{background:#fef3c7;color:#92400e;}
+.b-total{margin-left:auto;font-family:Georgia,serif;font-size:1.2rem;font-weight:600;color:var(--teal);}
+.b-date{font-size:12px;color:#aaa;margin-left:.5rem;}
+.chevron{margin-left:.5rem;transition:transform .3s;color:#888;font-size:18px;}
+.b-card.open .chevron{transform:rotate(180deg);}
+/* Body */
+.b-body{display:none;padding:1.2rem 1.5rem;}
+.b-card.open .b-body{display:block;}
+.b-sections{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem;}
+.b-sec{background:var(--paper);border-radius:12px;padding:1rem;}
+.b-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+.b-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.04);}
 .b-row:last-child{border:none;}
-.b-label{color:#666;}
-.b-val{font-weight:600;color:#0d0f0e;}
-.b-actions{display:flex;gap:.6rem;flex-wrap:wrap;padding:1rem 1.5rem;border-top:1px solid #f0ede8;}
-.b-btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:.2s;border:none;cursor:pointer;font-family:inherit;}
-.b-btn-primary{background:#c9a84c;color:#fff;}
-.b-btn-primary:hover{background:#b8934a;color:#fff;}
-.b-btn-outline{background:#fff;border:1px solid #e8e4de;color:#555;}
-.b-btn-outline:hover{border-color:#0d0f0e;color:#0d0f0e;}
-.b-btn-danger{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
-.b-btn-danger:hover{background:#fecaca;color:#991b1b;}
-.empty{text-align:center;padding:4rem;color:#888;background:#fff;border-radius:20px;border:1px solid #e8e4de;}
-@media(max-width:600px){.metrics{grid-template-columns:1fr 1fr;}.b-head{flex-direction:column;align-items:flex-start;}}
-</style>{% endblock %}
+.b-lbl{color:#888;}
+.b-val{font-weight:600;color:var(--ink);}
+/* Actions */
+.b-actions{display:flex;gap:.6rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid var(--border);}
+.btn{padding:9px 18px;border-radius:10px;font-size:12px;font-weight:700;text-decoration:none;transition:.2s;display:inline-flex;align-items:center;gap:.4rem;border:none;cursor:pointer;font-family:inherit;}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:#b8934a;color:#fff;}
+.btn-dark{background:var(--ink);color:#fff;}
+.btn-dark:hover{background:#222;color:#fff;}
+.btn-outline{background:#fff;border:1px solid var(--border);color:#555;}
+.btn-outline:hover{border-color:var(--ink);color:var(--ink);}
+.btn-danger{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
+.btn-danger:hover{background:#fecaca;}
+/* Completed banner */
+.completed-banner{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;}
+.cb-text{flex:1;}
+.cb-title{font-family:Georgia,serif;font-size:.95rem;color:#fff;margin-bottom:2px;}
+.cb-sub{font-size:12px;color:rgba(255,255,255,.5);}
+/* Review modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:1rem;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:2rem;max-width:440px;width:100%;animation:fadeUp .3s ease;}
+.modal h3{font-family:Georgia,serif;font-size:1.2rem;margin-bottom:1rem;}
+.stars-row{display:flex;gap:.4rem;margin-bottom:1rem;}
+.star-btn{font-size:2rem;cursor:pointer;color:#e8e4de;transition:.15s;background:none;border:none;}
+.star-btn.lit{color:#f59e0b;}
+.modal textarea{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;outline:none;resize:vertical;}
+.modal textarea:focus{border-color:var(--gold);}
+.modal-actions{display:flex;gap:.8rem;margin-top:1rem;}
+/* Empty */
+.empty{text-align:center;padding:4rem;background:#fff;border-radius:20px;border:1px solid var(--border);}
+@media(max-width:600px){.metrics{grid-template-columns:1fr 1fr;}.b-header{gap:.5rem;}.b-total{margin-left:0;}}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="pg">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+  <div class="pg-head">
     <div>
       <div class="pg-title">My Bookings</div>
-      <div style="font-size:13px;color:#888;">All your TripMoree trips in one place</div>
+      <div class="pg-sub">All your TripMoree trips in one place</div>
     </div>
-    <a href="{{ url_for('destinations_page') }}" style="padding:11px 22px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;">+ New Trip</a>
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">+ New Trip</a>
   </div>
 
+  <!-- Metrics -->
   <div class="metrics">
-    <div class="m-card"><div class="m-label">Total Bookings</div><div class="m-val">{{ bookings|length }}</div></div>
-    <div class="m-card"><div class="m-label">Total Spent</div><div class="m-val">₹{{ "{:,}".format(total_spent|int) }}</div></div>
-    <div class="m-card"><div class="m-label">Active</div><div class="m-val">{{ bookings|selectattr('booking.status','eq','active')|list|length }}</div></div>
-    <div class="m-card"><div class="m-label">Destinations</div><div class="m-val">{{ bookings|map(attribute='booking.destination')|list|unique|list|length }}</div></div>
+    <div class="m-card" style="animation-delay:.0s">
+      <div class="m-label">Total Trips</div>
+      <div class="m-val">{{ bookings|length }}</div>
+      <div class="m-sub">All time</div>
+    </div>
+    <div class="m-card" style="animation-delay:.05s">
+      <div class="m-label">Total Spent</div>
+      <div class="m-val">₹{{ "{:,}".format(total_spent|int) }}</div>
+      <div class="m-sub">Lifetime</div>
+    </div>
+    <div class="m-card" style="animation-delay:.1s">
+      <div class="m-label">Active</div>
+      <div class="m-val">{{ bookings|selectattr('booking.status','eq','active')|list|length }}</div>
+      <div class="m-sub">Ongoing</div>
+    </div>
+    <div class="m-card" style="animation-delay:.15s">
+      <div class="m-label">Completed</div>
+      <div class="m-val">{{ bookings|selectattr('booking.status','eq','completed')|list|length }}</div>
+      <div class="m-sub">Past trips</div>
+    </div>
   </div>
 
   {% if bookings %}
   {% for b in bookings %}
-  <div class="b-card">
-    <div class="b-head">
-      <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
-        <span class="b-id">#TM-{{ '%04d'|format(b.booking.id) }}</span>
-        <span class="b-dest">{{ b.booking.destination }}</span>
-        <span class="status-pill status-{{ b.booking.status }}">{{ b.booking.status|title }}</span>
+  {% set delay = loop.index0 * 0.06 %}
+  <div class="b-card" id="bc{{ b.booking.id }}" style="animation-delay:{{ delay }}s">
+
+    <!-- HEADER (clickable to expand) -->
+    <div class="b-header" onclick="toggleCard('bc{{ b.booking.id }}')">
+      <div class="b-icon">
+        {% if b.booking.status == 'completed' %}✅
+        {% elif b.booking.status == 'cancelled' %}❌
+        {% else %}🏨{% endif %}
       </div>
-      <div style="display:flex;align-items:center;gap:1rem;">
-        <span class="b-total">₹{{ "{:,}".format(b.grand_total|int) }}</span>
-        <span style="font-size:12px;color:#888;">{{ b.booking.created_at.strftime('%d %b %Y') if b.booking.created_at else '' }}</span>
+      <div>
+        <div class="b-dest">{{ b.booking.destination }}</div>
+        <div class="b-id">#TM-{{ '%04d'|format(b.booking.id) }}</div>
       </div>
+      <div class="b-status">
+        {% if b.booking.status == 'active' %}
+          <span class="pill pill-active">● Active</span>
+        {% elif b.booking.status == 'completed' %}
+          <span class="pill pill-completed">✓ Trip Completed</span>
+        {% elif b.booking.status == 'cancelled' %}
+          <span class="pill pill-cancelled">✗ Cancelled</span>
+        {% else %}
+          <span class="pill pill-pending">⏳ {{ b.booking.status|title }}</span>
+        {% endif %}
+      </div>
+      <div class="b-total">₹{{ "{:,}".format(b.grand_total|int) }}</div>
+      <div class="b-date">{{ b.booking.created_at.strftime('%d %b %Y') if b.booking.created_at else '' }}</div>
+      <span class="chevron">⌄</span>
     </div>
 
+    <!-- BODY (expandable) -->
     <div class="b-body">
-      {% if b.hotel %}
-      <div class="b-section">
-        <div class="b-section-title">🏨 Hotel</div>
-        <div class="b-row"><span class="b-label">Check-in</span><span class="b-val">{{ b.hotel.check_in }}</span></div>
-        <div class="b-row"><span class="b-label">Check-out</span><span class="b-val">{{ b.hotel.check_out }}</span></div>
-        <div class="b-row"><span class="b-label">Guests</span><span class="b-val">{{ b.hotel.persons }}</span></div>
-        <div class="b-row"><span class="b-label">Payment</span>
-          <span class="b-val">
-            <span class="status-pill status-{{ b.hotel.payment_status or 'pending' }}">{{ (b.hotel.payment_status or 'pending')|title }}</span>
-            ₹{{ "{:,}".format(b.hotel_total|int) }}
-          </span>
+
+      <!-- Completed trip banner with review CTA -->
+      {% if b.booking.status == 'completed' %}
+      <div class="completed-banner">
+        <div style="font-size:2rem;">🎉</div>
+        <div class="cb-text">
+          <div class="cb-title">Hope you had an amazing trip to {{ b.booking.destination }}!</div>
+          <div class="cb-sub">Share your experience to help fellow travellers</div>
         </div>
+        <button class="btn btn-gold" onclick="openReview('{{ b.booking.destination }}', {{ b.booking.id }})">
+          ⭐ Write Review
+        </button>
       </div>
       {% endif %}
 
-      {% if b.transports %}
-      <div class="b-section">
-        <div class="b-section-title">✈️ Transport</div>
-        {% for t in b.transports %}
-        <div class="b-row">
-          <span class="b-label">{{ {'flight':'✈️','train':'🚆','bus':'🚌'}.get(t.transport.transport_type,'🚗') }} {{ t.transport.transport_type|title }}</span>
-          <span class="b-val">{{ t.transport.source }} → {{ t.transport.destination }} · ₹{{ "{:,}".format(t.transport.price or 0) }}</span>
+      <!-- Details sections -->
+      <div class="b-sections">
+        {% if b.hotel %}
+        <div class="b-sec">
+          <div class="b-sec-title">🏨 Hotel</div>
+          <div class="b-row"><span class="b-lbl">Check-in</span><span class="b-val">{{ b.hotel.check_in }}</span></div>
+          <div class="b-row"><span class="b-lbl">Check-out</span><span class="b-val">{{ b.hotel.check_out }}</span></div>
+          <div class="b-row"><span class="b-lbl">Guests</span><span class="b-val">{{ b.hotel.persons }}</span></div>
+          <div class="b-row"><span class="b-lbl">Payment</span>
+            <span class="b-val">
+              <span class="pill
+                {% if b.hotel.payment_status == 'paid' %}pill-completed
+                {% elif b.hotel.payment_status == 'pending' %}pill-pending
+                {% else %}pill-active{% endif %}" style="font-size:10px;padding:2px 8px;">
+                {{ (b.hotel.payment_status or 'pending')|title }}
+              </span>
+            </span>
+          </div>
+          <div class="b-row"><span class="b-lbl">Amount</span><span class="b-val" style="color:var(--teal);">₹{{ "{:,}".format(b.hotel_total|int) }}</span></div>
         </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+        {% endif %}
 
-      {% if b.cab %}
-      <div class="b-section">
-        <div class="b-section-title">🚕 Cab</div>
-        <div class="b-row"><span class="b-label">Days · Distance</span><span class="b-val">{{ b.cab.days }} days · {{ b.cab.total_km }} km</span></div>
-        {% for day in b.cab_days %}
-        <div class="b-row">
-          <span class="b-label">Day {{ day.day }} · {{ day.spots|join(', ') if day.spots else 'No spots' }}</span>
-          <span class="b-val">{{ "%.1f"|format(day.km or 0) }} km · ₹{{ "{:,}".format((day.price or 0)|int) }}</span>
+        {% if b.transports %}
+        <div class="b-sec">
+          <div class="b-sec-title">🚌 Transport</div>
+          {% for t in b.transports %}
+          <div class="b-row">
+            <span class="b-lbl">{{ {'flight':'✈️','train':'🚆','bus':'🚌'}.get(t.transport.transport_type,'🚗') }} {{ t.transport.transport_type|title }}</span>
+            <span class="b-val">₹{{ "{:,}".format(t.transport.price or 0) }}</span>
+          </div>
+          <div class="b-row"><span class="b-lbl">Route</span><span class="b-val">{{ t.transport.source }} → {{ t.transport.destination }}</span></div>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </div>
+        {% endif %}
 
-    <div class="b-actions">
-      <a href="{{ url_for('download_invoice', booking_id=b.booking.id) }}" class="b-btn b-btn-primary" download>↓ Invoice PDF</a>
-      <a href="{{ url_for('information_page', location=b.booking.destination) }}" class="b-btn b-btn-outline">📖 Travel Guide</a>
-      {% if b.booking.status == 'active' %}
-      <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.booking.id) }}" style="display:inline;" onsubmit="return confirm('Cancel this booking?')">
-        <input type="hidden" name="reason" value="Cancelled by user">
-        <button type="submit" class="b-btn b-btn-danger">✕ Cancel</button>
-      </form>
+        {% if b.cab %}
+<div class="b-sec">
+  <div class="b-sec-title">🚕 Cab</div>
+
+  <div class="b-row">
+    <span class="b-lbl">Days</span>
+    <span class="b-val">{{ b.cab.days }}</span>
+  </div>
+
+  <div class="b-row">
+    <span class="b-lbl">Distance</span>
+    <span class="b-val">{{ b.cab.total_km }} km</span>
+  </div>
+
+  <div class="b-row">
+    <span class="b-lbl">Amount</span>
+    <span class="b-val" style="color:var(--teal);">
+      ₹{{ "{:,}".format(b.cab_total|int) }}
+    </span>
+  </div>
+
+  {% for day in b.cab_days %}
+  <div class="b-row">
+    <span class="b-lbl">Day {{ day.day }}</span>
+
+    <span class="b-val">
+      {% if day.spots %}
+        {{ day.spots | join(', ') | truncate(30) }}
+      {% else %}
+        —
       {% endif %}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+      <!-- Actions -->
+      <div class="b-actions">
+        <a href="{{ url_for('download_invoice', booking_id=b.booking.id) }}" class="btn btn-dark" download>
+          ↓ Invoice PDF
+        </a>
+        <a href="{{ url_for('information_page', location=b.booking.destination) }}" class="btn btn-outline">
+          📖 Travel Guide
+        </a>
+        {% if b.booking.status == 'completed' %}
+        <button class="btn btn-gold" onclick="openReview('{{ b.booking.destination }}', {{ b.booking.id }})">
+          ⭐ Review
+        </button>
+        {% endif %}
+        {% if b.booking.status == 'active' %}
+        <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.booking.id) }}"
+              style="display:inline;" onsubmit="return confirm('Cancel this booking to {{ b.booking.destination }}?')">
+          <input type="hidden" name="reason" value="Cancelled by user">
+          <button type="submit" class="btn btn-danger">✕ Cancel</button>
+        </form>
+        {% endif %}
+      </div>
+
     </div>
   </div>
   {% endfor %}
 
   {% else %}
   <div class="empty">
-    <div style="font-size:3rem;margin-bottom:.8rem;">✈️</div>
-    <h3 style="margin-bottom:.5rem;">No bookings yet</h3>
-    <p style="margin-bottom:1.5rem;color:#888;">Your booked trips will appear here</p>
-    <a href="{{ url_for('destinations_page') }}" style="padding:12px 28px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">Browse Destinations →</a>
+    <div style="font-size:3.5rem;margin-bottom:1rem;">✈️</div>
+    <h3 style="font-family:Georgia,serif;font-size:1.4rem;margin-bottom:.5rem;">No trips yet</h3>
+    <p style="color:#888;margin-bottom:1.5rem;">Your booked trips will appear here</p>
+    <a href="{{ url_for('destinations_page') }}" class="btn btn-gold">Browse Destinations →</a>
   </div>
   {% endif %}
 </div>
+
+<!-- Review Modal -->
+<div class="modal-bg" id="reviewModal">
+  <div class="modal">
+    <h3>⭐ Review Your Trip</h3>
+    <div style="font-size:13px;color:#888;margin-bottom:1rem;" id="reviewDest"></div>
+    <form method="POST" action="{{ url_for('add_review') }}">
+      <input type="hidden" name="destination" id="reviewDestInput">
+      <div class="stars-row" id="starsRow">
+        {% for i in range(1,6) %}
+        <button type="button" class="star-btn" data-val="{{ i }}" onclick="setRating({{ i }})">★</button>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="rating" id="ratingInput" value="5">
+      <textarea name="comment" rows="4" placeholder="How was your trip? Share your experience..." required></textarea>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-gold" style="flex:1;">Submit Review</button>
+        <button type="button" class="btn btn-outline" onclick="closeReview()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  card.classList.toggle('open');
+}
+// Auto-open first active booking
+document.addEventListener('DOMContentLoaded', () => {
+  const first = document.querySelector('.b-card');
+  if (first) first.classList.add('open');
+});
+
+// Review modal
+function openReview(dest, id) {
+  document.getElementById('reviewDest').textContent = '📍 ' + dest;
+  document.getElementById('reviewDestInput').value = dest;
+  setRating(5);
+  document.getElementById('reviewModal').classList.add('open');
+}
+function closeReview() {
+  document.getElementById('reviewModal').classList.remove('open');
+}
+function setRating(val) {
+  document.getElementById('ratingInput').value = val;
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('lit', parseInt(b.dataset.val) <= val);
+  });
+}
+document.getElementById('reviewModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReview();
+});
+</script>
 {% endblock %}

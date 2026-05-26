@@ -1,120 +1,121 @@
 {% extends "base.html" %}
-{% block title %}Cab Payment — TripMoree{% endblock %}
+{% block title %}🚕 Cab Payment — TripMoree{% endblock %}
+{% block extra_css %}<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes qrs{0%{top:0}50%{top:calc(100% - 3px)}100%{top:0}}
+:root{--g:#c9a84c;--t:#1a5c50;--i:#0d0f0e;--b:#e8e4de;}
+.pw{min-height:calc(100vh - 64px);background:linear-gradient(135deg,#0d0f0e,#1a2e2a);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;}
+.pc{background:#fff;border-radius:24px;overflow:hidden;max-width:860px;width:100%;display:grid;grid-template-columns:1fr 1.1fr;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:fadeUp .5s;}
+.pl{background:linear-gradient(160deg,#0d1a1a,#1a3a2e);padding:2.5rem 2rem;display:flex;flex-direction:column;}
+.plogo{font-family:Georgia,serif;font-size:1.2rem;color:var(--g);margin-bottom:1.2rem;}
+.pg{display:flex;align-items:center;gap:4px;margin-bottom:1.5rem;}
+.pd{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);flex-shrink:0;}
+.pd.done{background:var(--t);border-color:var(--t);color:#fff;}
+.pd.act{background:var(--g);border-color:var(--g);color:#fff;}
+.pl2{flex:1;height:2px;background:rgba(255,255,255,.08);min-width:14px;max-width:30px;}
+.pl2.done{background:var(--t);}
+.pal{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px;}
+.pam{font-family:Georgia,serif;font-size:2.8rem;font-weight:600;color:var(--g);line-height:1;}
+.psub{font-size:13px;color:rgba(255,255,255,.5);margin-top:7px;margin-bottom:1.5rem;}
+.pdr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
+.pdl{color:rgba(255,255,255,.4);} .pdv{color:#fff;font-weight:500;}
+.psec{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,.3);margin-top:auto;padding-top:1.5rem;}
+.pr{padding:2.5rem 2rem;}
+.pt{font-family:Georgia,serif;font-size:1.5rem;margin-bottom:.3rem;color:var(--i);}
+.pst{font-size:13px;color:#888;margin-bottom:1.4rem;}
+.mt{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--b);border-radius:10px;overflow:hidden;margin-bottom:1.4rem;}
+.mtb{padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border:none;background:#f8f6f1;color:#888;transition:.2s;font-family:inherit;border-right:1px solid var(--b);}
+.mtb:last-child{border-right:none;} .mtb.active{background:var(--i);color:#fff;}
+.uid{display:flex;align-items:center;justify-content:center;gap:.5rem;background:#f8f6f1;border:1.5px dashed var(--g);border-radius:10px;padding:.7rem 1.2rem;font-family:monospace;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:.7rem;transition:.2s;}
+.uid:hover{background:#fffdf5;}
+.ctg{background:var(--g);color:#fff;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.sb{background:#f8f6f1;border-radius:10px;padding:1rem;margin-bottom:1.1rem;}
+.si{display:flex;align-items:flex-start;gap:.6rem;font-size:13px;color:#555;padding:3px 0;}
+.sn{width:20px;height:20px;background:var(--i);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.qw{display:flex;justify-content:center;margin-bottom:1rem;}
+.qb{padding:11px;background:#fff;border:2px solid var(--b);border-radius:14px;position:relative;}
+.qi{width:180px;height:180px;border-radius:8px;display:block;}
+.qs{position:absolute;left:11px;right:11px;height:3px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:qrs 2s ease-in-out infinite;border-radius:2px;}
+.rr{display:flex;gap:8px;margin-top:.5rem;}
+.ri{flex:1;padding:12px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:.2s;}
+.ri:focus{border-color:var(--g);}
+.cb{padding:12px 22px;background:linear-gradient(135deg,var(--g),#b8934a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
+.cb:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.4);}
+.sk{text-align:center;margin-top:.8rem;font-size:12px;} .sk a{color:#aaa;text-decoration:none;}
+.cm{font-size:11px;color:#27ae60;text-align:center;height:14px;margin-top:2px;}
+@media(max-width:700px){.pc{grid-template-columns:1fr;}.pl,.pr{padding:1.5rem;}.pam{font-size:2.2rem;}}
+</style>{% endblock %}
 {% block content %}
-<style>
-body { background: #f0f4f8; }
-.tp-hero { background: linear-gradient(135deg, #1a1a2e 0%, #f39c12 100%); padding: 50px 0 80px; color: white; text-align: center; }
-.tp-hero h1 { font-size: 2rem; font-weight: 900; }
-.tp-hero .amt { font-size: 2.8rem; font-weight: 900; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
-.tp-wrapper { margin-top: -50px; position: relative; z-index: 10; padding-bottom: 60px; }
-.tp-card { background: white; border-radius: 24px; box-shadow: 0 8px 40px rgba(0,0,0,.12); overflow: hidden; max-width: 700px; margin: 0 auto; }
-.tp-header { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; padding: 28px 32px; display: flex; align-items: center; gap: 16px; }
-.tp-icon { font-size: 3rem; }
-.tp-header h3 { font-weight: 800; margin: 0; font-size: 1.3rem; }
-.tp-header p  { margin: 0; opacity: .85; font-size: .88rem; }
-.tp-body { padding: 32px; }
-.upi-id-box { background: #fffbeb; border: 2px solid #fcd34d; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.upi-id-box .id { font-size: 1.1rem; font-weight: 800; color: #1a1a2e; }
-.btn-copy { background: #f39c12; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: .8rem; font-weight: 700; cursor: pointer; }
-.upi-apps { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
-.upi-app-btn { flex: 1; min-width: 80px; padding: 12px 8px; border-radius: 12px; border: 2px solid #e0e0e0; background: white; text-align: center; cursor: pointer; font-size: .75rem; font-weight: 700; color: #444; transition: all .2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.upi-app-btn:hover { border-color: #f39c12; color: #f39c12; }
-.upi-app-btn .app-icon { font-size: 1.8rem; }
-.steps { margin: 20px 0; }
-.step  { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
-.step-num { width: 26px; height: 26px; background: #f39c12; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .78rem; flex-shrink: 0; }
-.step-text { font-size: .88rem; color: #444; padding-top: 3px; }
-.ref-group { background: #f8f9fa; border-radius: 14px; padding: 20px; }
-.ref-group label { font-weight: 700; font-size: .9rem; margin-bottom: 8px; display: block; }
-.ref-input { width: 100%; padding: 13px 16px; border: 2px solid #dee2e6; border-radius: 10px; font-size: 1rem; }
-.ref-input:focus { outline: none; border-color: #f39c12; }
-.btn-pay { width: 100%; padding: 16px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border: none; border-radius: 14px; font-size: 1.1rem; font-weight: 800; cursor: pointer; margin-top: 18px; }
-.summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: .88rem; }
-.summary-row .lbl { color: #888; }
-.summary-row .val { font-weight: 700; }
-.trust-badges { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; padding: 16px; border-top: 1px solid #f0f0f0; font-size: .75rem; color: #888; }
-</style>
-
-<div class="tp-hero">
-  <div class="container">
-    <p style="font-size:.85rem; opacity:.8; margin-bottom:6px;">COMPLETE CAB BOOKING</p>
-    <h1>🚕 Cab / Sightseeing Payment</h1>
-    <div class="amt">₹{{ "{:,}".format(cab.price | int) }}</div>
-    <p>{{ cab.days }} day{{ 's' if cab.days > 1 }} · {{ cab.total_km }} km
-      {% if vehicle %} · {{ vehicle.vehicle_name }}{% endif %}</p>
-  </div>
-</div>
-
-<div class="tp-wrapper">
-  <div class="container">
-    <div class="tp-card">
-      <div class="tp-header">
-        <span class="tp-icon">🚕</span>
-        <div>
-          <h3>Local Cab &amp; Sightseeing</h3>
-          <p>
-            {{ cab.days }} day{{ 's' if cab.days > 1 }}
-            · {{ cab.total_km }} km
-            {% if vehicle %} · {{ vehicle.vehicle_name }} ({{ vehicle.ac_type }}){% endif %}
-          </p>
-        </div>
-      </div>
-
-      <div class="tp-body">
-        <h6 class="fw-bold mb-3" style="color:#1a1a2e;">Booking Summary</h6>
-        <div class="mb-4">
-          {% if vehicle %}
-          <div class="summary-row"><span class="lbl">Vehicle</span><span class="val">{{ vehicle.vehicle_name }}</span></div>
-          <div class="summary-row"><span class="lbl">Type</span><span class="val">{{ vehicle.vehicle_type }} · {{ vehicle.ac_type }}</span></div>
-          {% endif %}
-          <div class="summary-row"><span class="lbl">Total Days</span><span class="val">{{ cab.days }}</span></div>
-          <div class="summary-row"><span class="lbl">Total Distance</span><span class="val">{{ cab.total_km }} km</span></div>
-          {% if hb %}
-          <div class="summary-row"><span class="lbl">Linked Hotel Booking</span><span class="val">#{{ hb.id }}</span></div>
-          {% endif %}
-          <div class="summary-row" style="border:none;">
-            <span class="lbl"><strong>Total Amount</strong></span>
-            <span class="val" style="color:#f39c12; font-size:1.1rem;">₹{{ "{:,}".format(cab.price | int) }}</span>
-          </div>
-        </div>
-
-        <div class="upi-id-box">
-          <div><div style="font-size:.72rem; color:#888;">Pay to UPI ID</div><div class="id">{{ upi_id }}</div></div>
-          <button class="btn-copy" onclick="navigator.clipboard.writeText('{{ upi_id }}')">Copy</button>
-        </div>
-
-        <div class="upi-apps">
-          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🟣</span> PhonePe</a>
-          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🔵</span> GPay</a>
-          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🟡</span> Paytm</a>
-          <a href="{{ upi_link }}" class="upi-app-btn"><span class="app-icon">🔴</span> BHIM</a>
-        </div>
-
-        <div class="steps">
-          <div class="step"><div class="step-num">1</div><div class="step-text">Pay <strong>₹{{ "{:,}".format(cab.price | int) }}</strong> to <strong>{{ upi_id }}</strong></div></div>
-          <div class="step"><div class="step-num">2</div><div class="step-text">Get the 12-digit transaction ID from your app</div></div>
-          <div class="step"><div class="step-num">3</div><div class="step-text">Enter it below to confirm your cab booking</div></div>
-        </div>
-
-        <form method="POST" action="{{ url_for('confirm_cab_payment', cab_booking_id=cab.id) }}">
-          <div class="ref-group">
-            <label>UPI Transaction ID</label>
-            <input type="text" name="upi_ref" class="ref-input" placeholder="e.g. 426874291038" required>
-          </div>
-          <button type="submit" class="btn-pay">✅ Confirm Cab Payment — ₹{{ "{:,}".format(cab.price | int) }}</button>
-        </form>
-
-        <div class="text-center mt-3">
-          <a href="{{ url_for('skip_cab_payment', cab_booking_id=cab.id) }}" style="color:#aaa; font-size:.82rem; text-decoration:none;">
-            Skip (Demo mode) →
-          </a>
-        </div>
-      </div>
-
-      <div class="trust-badges">
-        <span>🔒 256-bit SSL</span><span>✅ RBI Compliant</span><span>🛡️ Secure</span><span>↩️ Easy Refund</span>
-      </div>
+<div class="pw"><div class="pc">
+  <div class="pl">
+    <div class="plogo">TripMoree ✦</div>
+    <div class="pg">
+      <div class="pd done">1</div><div class="pl2 done"></div>
+      <div class="pd done">2</div><div class="pl2 done"></div>
+      <div class="pd done">3</div><div class="pl2 done"></div>
+      <div class="pd done">4</div><div class="pl2 done"></div>
+      <div class="pd done">5</div><div class="pl2 done"></div>
+      <div class="pd act">6</div>
     </div>
+    <div class="pal">Amount Due</div>
+    <div class="pam">₹{{ "{:,}".format(cab.price|int or 0) }}</div>
+    <div class="psub">🚕 Local Cab & Sightseeing</div>
+    {% if vehicle %}
+    <div class="pdr"><span class="pdl">Vehicle</span><span class="pdv">{{ vehicle.vehicle_name }}</span></div>
+    <div class="pdr"><span class="pdl">Type</span><span class="pdv">{{ vehicle.vehicle_type }} · {{ vehicle.ac_type }}</span></div>
+    {% endif %}
+    <div class="pdr"><span class="pdl">Days</span><span class="pdv">{{ cab.days }} day{{ 's' if cab.days > 1 }}</span></div>
+    <div class="pdr"><span class="pdl">Distance</span><span class="pdv">{{ cab.total_km }} km</span></div>
+    <div class="psec"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>SSL Encrypted · Secure</div>
   </div>
-</div>
+  <div class="pr">
+    <div class="pt">Complete Payment</div>
+    <div class="pst">Pay ₹{{ "{:,}".format(cab.price|int or 0) }} for your cab booking</div>
+    <div class="mt">
+      <button class="mtb active" onclick="showM('upi',this)">📱 UPI</button>
+      <button class="mtb" onclick="showM('qr',this)">📷 QR Code</button>
+      <button class="mtb" onclick="showM('apps',this)">💳 Apps</button>
+    </div>
+    <div id="m-upi">
+      <div onclick="copyUPI('{{ upi_id }}')" class="uid"><span>{{ upi_id }}</span><span class="ctg">COPY</span></div>
+      <div class="cm" id="copyMsg"></div>
+      <div class="sb">
+        <div class="si"><div class="sn">1</div>Open PhonePe / GPay / Paytm</div>
+        <div class="si"><div class="sn">2</div>Pay <strong>₹{{ "{:,}".format(cab.price|int or 0) }}</strong> to {{ upi_id }}</div>
+        <div class="si"><div class="sn">3</div>Copy the UTR / reference number</div>
+        <div class="si"><div class="sn">4</div>Paste below and confirm</div>
+      </div>
+      <form method="POST" action="{{ url_for('confirm_cab_payment', cab_booking_id=cab.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div id="m-qr" style="display:none">
+      <div class="qw"><div class="qb">
+        <img class="qi" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ upi_link|urlencode }}&bgcolor=ffffff&color=0d0f0e&margin=2" alt="QR" onerror="this.src='https://placehold.co/180x180/f8f6f1/c9a84c?text=Scan+QR'">
+        <div class="qs"></div>
+      </div></div>
+      <div style="text-align:center;font-size:12px;color:#888;margin-bottom:1rem;">Scan to pay ₹{{ "{:,}".format(cab.price|int or 0) }}</div>
+      <form method="POST" action="{{ url_for('confirm_cab_payment', cab_booking_id=cab.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div id="m-apps" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
+        <a href="{{ upi_link }}" style="padding:14px;background:#5f259f;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">📱 PhonePe</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#4285f4;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟢 GPay</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#002970;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🔵 Paytm</a>
+        <a href="{{ upi_link }}" style="padding:14px;background:#00a651;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟠 BHIM</a>
+      </div>
+      <form method="POST" action="{{ url_for('confirm_cab_payment', cab_booking_id=cab.id) }}" onsubmit="disableBtn(this)">
+        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
+      </form>
+    </div>
+    <div class="sk"><a href="{{ url_for('skip_cab_payment', cab_booking_id=cab.id) }}">Skip (Demo mode) →</a></div>
+  </div>
+</div></div>
 {% endblock %}
+{% block extra_js %}<script>
+function showM(id,btn){['upi','qr','apps'].forEach(m=>{const el=document.getElementById('m-'+m);if(el)el.style.display=m===id?'block':'none';});document.querySelectorAll('.mtb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function copyUPI(u){navigator.clipboard.writeText(u).then(()=>{const m=document.getElementById('copyMsg');if(m){m.textContent='✓ Copied!';setTimeout(()=>m.textContent='',2000);}});}
+function disableBtn(f){const b=f.querySelector('[type=submit]');if(b){b.disabled=true;b.textContent='⏳ Confirming...';}}
+</script>{% endblock %}
