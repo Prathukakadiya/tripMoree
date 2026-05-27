@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Support — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item active"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('mob-open')"><i class="fa-solid fa-bars"></i></button>
+      <span class="topbar-title">Support Tickets</span>
+    </div>
+    <div class="topbar-right"><div class="topbar-avatar">A</div></div>
+  </div>
+
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Status tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;">
+      {% for s in ['open','replied','closed'] %}
+      <a href="{{ url_for('admin_support', status=s) }}"
+         class="btn {{ 'btn-gold' if current_status==s else 'btn-ghost' }}">
+        {{ s.capitalize() }}
+      </a>
+      {% endfor %}
+    </div>
+
+    {% for item in tickets %}
+    {% set t = item.ticket %}
+    {% set u = item.user %}
+    <div class="section-card anim" style="margin-bottom:16px;">
+      <div class="section-header">
+        <div>
+          <div style="font-size:14px;font-weight:600;">{{ t.subject }}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">
+            {{ u.name if u else 'Unknown' }} &bull; {{ u.email if u else '' }} &bull;
+            {{ t.created_at.strftime('%d %b %Y, %H:%M') if t.created_at else '' }}
+            {% if t.booking_id %} &bull; Booking #{{ t.booking_id }}{% endif %}
+          </div>
+        </div>
+        {% if t.status=='open' %}<span class="badge badge-orange">Open</span>
+        {% elif t.status=='replied' %}<span class="badge badge-blue">Replied</span>
+        {% else %}<span class="badge badge-muted">Closed</span>{% endif %}
+      </div>
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+        <div style="font-size:13px;color:var(--text);line-height:1.6;">{{ t.message }}</div>
+        {% if t.admin_reply %}
+        <div style="margin-top:12px;padding:12px 14px;background:rgba(245,197,24,.06);
+                    border-left:3px solid var(--gold);border-radius:0 6px 6px 0;">
+          <div style="font-size:11px;color:var(--gold);font-weight:600;margin-bottom:4px;">
+            <i class="fa-solid fa-reply"></i> Admin Reply
+          </div>
+          <div style="font-size:13px;color:var(--text);">{{ t.admin_reply }}</div>
+        </div>
+        {% endif %}
+      </div>
+      <form method="POST" action="{{ url_for('admin_reply_ticket', ticket_id=t.id) }}">
+        <div style="padding:14px 20px;display:flex;gap:10px;align-items:flex-end;">
+          <div style="flex:1;">
+            <textarea name="reply" rows="2" placeholder="Write reply..."
+              style="width:100%;background:var(--card2);border:1px solid var(--border);
+                     color:var(--text);padding:9px 13px;border-radius:8px;
+                     font-size:13px;font-family:'Poppins',sans-serif;
+                     outline:none;resize:vertical;">{{ t.admin_reply or '' }}</textarea>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <select name="status" style="background:var(--card2);border:1px solid var(--border);
+                    color:var(--text);padding:7px 10px;border-radius:7px;
+                    font-size:12px;font-family:'Poppins',sans-serif;outline:none;">
+              <option value="replied" {{ 'selected' if t.status=='replied' }}>Replied</option>
+              <option value="open"    {{ 'selected' if t.status=='open' }}>Open</option>
+              <option value="closed"  {{ 'selected' if t.status=='closed' }}>Closed</option>
+            </select>
+            <button type="submit" class="btn btn-gold btn-sm">
+              <i class="fa-solid fa-paper-plane"></i> Send
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+    {% else %}
+      <div class="section-card anim">
+        <div class="empty-state">
+          <i class="fa-solid fa-ticket"></i>
+          No {{ current_status }} tickets.
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<script>
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>

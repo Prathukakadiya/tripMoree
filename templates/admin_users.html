@@ -1,42 +1,222 @@
-{% extends "base.html" %}
-{% block title %}Admin — Users{% endblock %}
-{% block content %}
-<div style="max-width:1100px;margin:2rem auto;padding:0 1.5rem;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-    <h1 style="font-family:Georgia,serif;font-size:1.5rem;">👥 All Users</h1>
-    <form method="GET" style="display:flex;gap:.5rem;">
-      <input type="text" name="search" value="{{ request.args.get('search','') }}" placeholder="Search name / email..." style="padding:9px 14px;border:1px solid #e8e4de;border-radius:10px;font-size:13px;width:220px;outline:none;font-family:inherit;">
-      <button type="submit" style="padding:9px 16px;background:#0d0f0e;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;">Search</button>
-    </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage Users — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-name">✈ TripMoree</span>
+    <small>Admin Panel</small>
   </div>
-  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="background:#f8f6f1;">
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">ID</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Name</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Email</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Points</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Joined</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Actions</th>
-      </tr></thead>
-      <tbody>
-      {% for u in users %}
-      <tr style="border-top:1px solid #f0ede8;">
-        <td style="padding:12px 16px;font-size:13px;color:#888;">#{{ u.id }}</td>
-        <td style="padding:12px 16px;font-size:13px;font-weight:600;">{{ u.name }}</td>
-        <td style="padding:12px 16px;font-size:13px;color:#555;">{{ u.email }}</td>
-        <td style="padding:12px 16px;font-size:13px;color:#c9a84c;font-weight:600;">⭐ {{ u.loyalty_points or 0 }}</td>
-        <td style="padding:12px 16px;font-size:12px;color:#888;">{{ u.created_at.strftime('%d %b %Y') if u.created_at else '' }}</td>
-        <td style="padding:12px 16px;">
-          <a href="{{ url_for('admin_delete_user', user_id=u.id) }}" onclick="return confirm('Delete {{ u.name }}?')" style="color:#e74c3c;font-size:12px;text-decoration:none;font-weight:600;">Delete</a>
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="6" style="text-align:center;padding:3rem;color:#888;">No users found.</td></tr>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item">
+      <i class="fa-solid fa-gauge"></i> Dashboard
+    </a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item">
+      <i class="fa-solid fa-chart-line"></i> Analytics
+    </a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item active">
+      <i class="fa-solid fa-users"></i> Users
+    </a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item">
+      <i class="fa-solid fa-calendar-check"></i> Bookings
+    </a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item">
+      <i class="fa-solid fa-box"></i> Packages
+    </a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item">
+      <i class="fa-solid fa-hotel"></i> Hotels
+    </a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item">
+      <i class="fa-solid fa-map-pin"></i> Destinations
+    </a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item">
+      <i class="fa-solid fa-tag"></i> Coupons
+    </a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item">
+      <i class="fa-solid fa-bolt"></i> Flash Sales
+    </a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item">
+      <i class="fa-solid fa-shield-heart"></i> Insurance
+    </a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item">
+      <i class="fa-solid fa-envelope"></i> Newsletter
+    </a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item">
+      <i class="fa-solid fa-headset"></i> Support
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="{{ url_for('admin_logout') }}">
+      <i class="fa-solid fa-right-from-bracket"></i> Logout
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;"
+              onclick="document.getElementById('sidebar').classList.toggle('mob-open')">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="topbar-title">Manage Users</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--muted);">{{ users|length }} total</span>
+      <div class="topbar-avatar">A</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
       {% endfor %}
-      </tbody>
-    </table>
+    {% endwith %}
+
+    <div class="section-card anim">
+
+      <!-- Search bar -->
+      <form method="GET" action="{{ url_for('admin_users') }}">
+        <div class="search-bar">
+          <input type="text" name="search" placeholder="Search by name or email..."
+                 value="{{ request.args.get('search','') }}">
+          <button type="submit" class="btn btn-gold">
+            <i class="fa-solid fa-search"></i> Search
+          </button>
+          {% if request.args.get('search') %}
+          <a href="{{ url_for('admin_users') }}" class="btn btn-ghost">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </a>
+          {% endif %}
+        </div>
+      </form>
+
+      <!-- Users Table -->
+      {% if users %}
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>User</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>City</th>
+              <th>Loyalty Pts</th>
+              <th>Verified</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">{{ user.id }}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--card2);
+                              display:flex;align-items:center;justify-content:center;
+                              font-weight:700;font-size:13px;color:var(--gold);flex-shrink:0;">
+                    {{ user.name[0].upper() if user.name else '?' }}
+                  </div>
+                  <span style="font-weight:500;">{{ user.name or '—' }}</span>
+                </div>
+              </td>
+              <td style="color:var(--muted);font-size:12.5px;">{{ user.email }}</td>
+              <td style="font-size:12.5px;">{{ user.phone or '—' }}</td>
+              <td style="font-size:12.5px;">{{ user.city or '—' }}</td>
+              <td>
+                <span class="badge badge-gold">
+                  <i class="fa-solid fa-coins"></i>
+                  {{ user.loyalty_points or 0 }}
+                </span>
+              </td>
+              <td>
+                {% if user.is_verified %}
+                  <span class="badge badge-green"><i class="fa-solid fa-check"></i> Yes</span>
+                {% else %}
+                  <span class="badge badge-muted">No</span>
+                {% endif %}
+              </td>
+              <td style="font-size:12px;color:var(--muted);">
+                {{ user.created_at.strftime('%d %b %Y') if user.created_at else '—' }}
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <!-- View bookings link -->
+                  <a href="{{ url_for('admin_bookings') }}?user={{ user.id }}"
+                     class="btn btn-blue btn-sm" title="View Bookings">
+                    <i class="fa-solid fa-eye"></i>
+                  </a>
+                  <!-- Delete -->
+                  <a href="{{ url_for('admin_delete_user', user_id=user.id) }}"
+                     class="btn btn-red btn-sm"
+                     onclick="return confirm('Delete {{ user.name }}? This cannot be undone.');"
+                     title="Delete User">
+                    <i class="fa-solid fa-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-users-slash"></i>
+          No users found{% if request.args.get('search') %} for "{{ request.args.get('search') }}"{% endif %}.
+        </div>
+      {% endif %}
+
+    </div><!-- /section-card -->
+
+    <!-- Stats summary -->
+    <div class="stats-grid anim">
+      <div class="stat-card s-blue">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value">{{ users|length }}</div>
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      </div>
+      <div class="stat-card s-green">
+        <div class="stat-label">Verified</div>
+        <div class="stat-value">{{ users|selectattr('is_verified','equalto',true)|list|length }}</div>
+        <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
+      </div>
+      <div class="stat-card s-gold">
+        <div class="stat-label">With Newsletter</div>
+        <div class="stat-value">{{ users|selectattr('newsletter','equalto',true)|list|length }}</div>
+        <div class="stat-icon"><i class="fa-solid fa-envelope"></i></div>
+      </div>
+    </div>
+
   </div>
-  <div style="margin-top:1rem;"><a href="{{ url_for('admin_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Admin Dashboard</a></div>
 </div>
-{% endblock %}
+
+<script>
+function checkMobile(){
+  document.getElementById('menuBtn').style.display =
+    window.innerWidth<=900 ? 'flex':'none';
+}
+checkMobile();
+window.addEventListener('resize',checkMobile);
+</script>
+</body>
+</html>

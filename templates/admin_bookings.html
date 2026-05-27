@@ -1,54 +1,147 @@
-{% extends "base.html" %}
-{% block title %}Admin — Bookings{% endblock %}
-{% block content %}
-<div style="max-width:1200px;margin:2rem auto;padding:0 1.5rem;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-    <h1 style="font-family:Georgia,serif;font-size:1.5rem;">📋 All Bookings</h1>
-    <div style="display:flex;gap:.5rem;">
-      {% for s in ['','active','completed','cancelled'] %}
-      <a href="?status={{ s }}" style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;background:{% if current_status==s %}#0d0f0e{% else %}#fff{% endif %};color:{% if current_status==s %}#fff{% else %}#666{% endif %};border:1px solid #e8e4de;">{{ s.title() or 'All' }}</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookings — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item active"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('mob-open')"><i class="fa-solid fa-bars"></i></button>
+      <span class="topbar-title">All Bookings</span>
+    </div>
+    <div class="topbar-right"><div class="topbar-avatar">A</div></div>
+  </div>
+
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Filter tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+      {% for status in ['', 'active', 'completed', 'cancelled'] %}
+      <a href="{{ url_for('admin_bookings', status=status) }}"
+         class="btn {{ 'btn-gold' if current_status==status else 'btn-ghost' }}">
+        {% if status=='' %}All
+        {% elif status=='active' %}<i class="fa-solid fa-circle" style="color:var(--blue);font-size:9px;"></i> Active
+        {% elif status=='completed' %}<i class="fa-solid fa-circle" style="color:var(--green);font-size:9px;"></i> Completed
+        {% else %}<i class="fa-solid fa-circle" style="color:var(--red);font-size:9px;"></i> Cancelled{% endif %}
+      </a>
       {% endfor %}
     </div>
-  </div>
-  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="background:#f8f6f1;">
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">ID</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">User</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Destination</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Amount</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Status</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Date</th>
-        <th style="padding:12px 16px;text-align:left;font-size:12px;color:#888;font-weight:600;">Actions</th>
-      </tr></thead>
-      <tbody>
-      {% for b in bookings %}
-      <tr style="border-top:1px solid #f0ede8;">
-        <td style="padding:12px 16px;font-size:13px;font-family:monospace;">#TM-{{ '%04d'|format(b.booking.id) }}</td>
-        <td style="padding:12px 16px;font-size:13px;">{{ b.user.name if b.user else '—' }}<br><span style="font-size:11px;color:#888;">{{ b.user.email if b.user else '' }}</span></td>
-        <td style="padding:12px 16px;font-size:13px;font-weight:600;">{{ b.booking.destination }}</td>
-        <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#1a5c50;">₹{{ "{:,}".format(b.hotel.final_payable if b.hotel and b.hotel.final_payable else 0) }}</td>
-        <td style="padding:12px 16px;">
-          <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:{% if b.booking.status=='active' %}#d1fae5;color:#065f46{% elif b.booking.status=='cancelled' %}#fee2e2;color:#991b1b{% else %}#f3f4f6;color:#374151{% endif %};">{{ b.booking.status|title }}</span>
-        </td>
-        <td style="padding:12px 16px;font-size:12px;color:#888;">{{ b.booking.created_at.strftime('%d %b %Y') if b.booking.created_at else '' }}</td>
-        <td style="padding:12px 16px;">
-          <form method="POST" action="{{ url_for('admin_update_booking_status', booking_id=b.booking.id) }}" style="display:flex;gap:4px;">
-            <select name="status" style="padding:5px 8px;border:1px solid #e8e4de;border-radius:6px;font-size:12px;font-family:inherit;">
-              <option {% if b.booking.status=='active' %}selected{% endif %}>active</option>
-              <option {% if b.booking.status=='completed' %}selected{% endif %}>completed</option>
-              <option {% if b.booking.status=='cancelled' %}selected{% endif %}>cancelled</option>
-            </select>
-            <button type="submit" style="padding:5px 10px;background:#0d0f0e;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">Save</button>
-          </form>
-        </td>
-      </tr>
+
+    <div class="section-card anim">
+      {% if bookings %}
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>User</th><th>Destination</th>
+              <th>Hotel</th><th>Check-in</th><th>Amount</th>
+              <th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in bookings %}
+            {% set b = item.booking %}
+            {% set u = item.user %}
+            {% set h = item.hotel %}
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">#{{ b.id }}</td>
+              <td>
+                <div style="font-size:13px;font-weight:500;">{{ u.name if u else '—' }}</div>
+                <div style="font-size:11px;color:var(--muted);">{{ u.email if u else '' }}</div>
+              </td>
+              <td>
+                <span class="badge badge-blue">
+                  <i class="fa-solid fa-map-pin" style="font-size:9px;"></i> {{ b.destination }}
+                </span>
+              </td>
+              <td style="font-size:12.5px;">
+                {% if h %}
+                  Check-in: {{ h.check_in }}<br>
+                  <span style="color:var(--muted);">{{ h.persons }} guest(s)</span>
+                {% else %}—{% endif %}
+              </td>
+              <td style="font-size:12px;color:var(--muted);">
+                {{ b.created_at.strftime('%d %b %Y') if b.created_at else '—' }}
+              </td>
+              <td>
+                {% if h and h.final_payable %}
+                  <span style="font-weight:600;color:var(--green);">₹{{ "{:,}".format(h.final_payable) }}</span>
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                {% if b.status=='active' %}
+                  <span class="badge badge-blue">Active</span>
+                {% elif b.status=='completed' %}
+                  <span class="badge badge-green">Completed</span>
+                {% else %}
+                  <span class="badge badge-red">Cancelled</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('admin_update_booking_status', booking_id=b.id) }}"
+                      style="display:flex;gap:5px;align-items:center;">
+                  <select name="status" style="background:var(--card2);border:1px solid var(--border);
+                          color:var(--text);padding:5px 8px;border-radius:6px;font-size:12px;
+                          font-family:'Poppins',sans-serif;outline:none;">
+                    <option value="active"    {{ 'selected' if b.status=='active' }}>Active</option>
+                    <option value="completed" {{ 'selected' if b.status=='completed' }}>Completed</option>
+                    <option value="cancelled" {{ 'selected' if b.status=='cancelled' }}>Cancelled</option>
+                  </select>
+                  <button type="submit" class="btn btn-gold btn-sm">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% else %}
-      <tr><td colspan="7" style="text-align:center;padding:3rem;color:#888;">No bookings found.</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
+        <div class="empty-state">
+          <i class="fa-solid fa-calendar-xmark"></i>
+          No bookings found.
+        </div>
+      {% endif %}
+    </div>
   </div>
-  <div style="margin-top:1rem;"><a href="{{ url_for('admin_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Admin Dashboard</a></div>
 </div>
-{% endblock %}
+<script>
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>

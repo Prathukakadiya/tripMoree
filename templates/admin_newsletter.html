@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Newsletter — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item active"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('mob-open')"><i class="fa-solid fa-bars"></i></button>
+      <span class="topbar-title">Newsletter</span>
+    </div>
+    <div class="topbar-right"><div class="topbar-avatar">A</div></div>
+  </div>
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for cat, msg in messages %}<div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' }}"><i class="fa-solid fa-circle-info"></i> {{ msg }}</div>{% endfor %}{% endwith %}
+
+    <div class="stats-grid anim" style="max-width:400px;">
+      <div class="stat-card s-blue">
+        <div class="stat-label">Active Subscribers</div>
+        <div class="stat-value">{{ subscribers }}</div>
+        <div class="stat-icon"><i class="fa-solid fa-envelope"></i></div>
+      </div>
+    </div>
+
+    <div class="section-card anim">
+      <div class="section-header"><h3><i class="fa-solid fa-paper-plane" style="color:var(--gold);margin-right:7px;"></i>Send Newsletter</h3></div>
+      <form method="POST" action="{{ url_for('admin_newsletter') }}">
+        <div class="form-body">
+          <div class="form-grid cols-1">
+            <div class="form-group"><label>Subject *</label><input type="text" name="subject" placeholder="Newsletter subject..." required></div>
+            <div class="form-group"><label>Message *</label><textarea name="body" rows="8" placeholder="Write your newsletter message here..." required></textarea></div>
+          </div>
+        </div>
+        <div class="form-footer">
+          <button type="submit" class="btn btn-gold" onclick="return confirm('Send to {{ subscribers }} subscribers?')">
+            <i class="fa-solid fa-paper-plane"></i> Send to {{ subscribers }} Subscribers
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}checkMobile();window.addEventListener('resize',checkMobile);</script>
+</body></html>

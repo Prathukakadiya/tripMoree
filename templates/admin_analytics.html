@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item active"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('mob-open')"><i class="fa-solid fa-bars"></i></button>
+      <span class="topbar-title">Analytics</span>
+    </div>
+    <div class="topbar-right"><div class="topbar-avatar">A</div></div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Revenue Chart -->
+    <div class="charts-grid">
+      <div class="chart-card anim">
+        <h3><i class="fa-solid fa-chart-area" style="color:var(--green);margin-right:7px;"></i>Monthly Revenue (Last 6 Months)</h3>
+        <canvas id="revenueChart" height="180"></canvas>
+      </div>
+      <div class="chart-card anim d2">
+        <h3><i class="fa-solid fa-trophy" style="color:var(--gold);margin-right:7px;"></i>Top Destinations</h3>
+        <canvas id="destChart" height="180"></canvas>
+      </div>
+    </div>
+
+    <!-- Top destinations table -->
+    <div class="section-card anim">
+      <div class="section-header">
+        <h3><i class="fa-solid fa-map" style="color:var(--blue);margin-right:7px;"></i>Destination Performance</h3>
+      </div>
+      {% if top_dest %}
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Rank</th><th>Destination</th><th>Bookings</th><th>Share</th></tr>
+          </thead>
+          <tbody>
+            {% set total_bookings = top_dest|sum(attribute=1) %}
+            {% for dest, cnt in top_dest %}
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">{{ loop.index }}</td>
+              <td><span class="badge badge-blue"><i class="fa-solid fa-map-pin" style="font-size:9px;"></i> {{ dest }}</span></td>
+              <td><span style="font-weight:600;">{{ cnt }}</span></td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden;">
+                    <div style="width:{{ (cnt/total_bookings*100)|int if total_bookings else 0 }}%;
+                                height:100%;background:var(--gold);border-radius:6px;"></div>
+                  </div>
+                  <span style="font-size:12px;color:var(--muted);width:36px;text-align:right;">
+                    {{ (cnt/total_bookings*100)|int if total_bookings else 0 }}%
+                  </span>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state"><i class="fa-solid fa-chart-pie"></i>No data yet.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+const monthlyLabels = {{ monthly_labels | tojson }};
+const monthlyRev    = {{ monthly_rev    | tojson }};
+const topDestLabels = {{ top_dest | map(attribute=0) | list | tojson }};
+const topDestData   = {{ top_dest | map(attribute=1) | list | tojson }};
+
+// Revenue line chart
+new Chart(document.getElementById('revenueChart'), {
+  type: 'line',
+  data: {
+    labels: monthlyLabels,
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: monthlyRev,
+      borderColor: '#22c55e',
+      backgroundColor: 'rgba(34,197,94,.1)',
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: '#22c55e',
+      pointRadius: 4
+    }]
+  },
+  options: {
+    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Poppins' } } } },
+    scales: {
+      x: { ticks: { color: '#94a3b8' }, grid: { color: '#2d3748' } },
+      y: { ticks: { color: '#94a3b8' }, grid: { color: '#2d3748' } }
+    }
+  }
+});
+
+// Top dest bar chart
+new Chart(document.getElementById('destChart'), {
+  type: 'bar',
+  data: {
+    labels: topDestLabels,
+    datasets: [{
+      label: 'Bookings',
+      data: topDestData,
+      backgroundColor: '#f5c518',
+      borderRadius: 6
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#2d3748' } },
+      y: { ticks: { color: '#94a3b8' }, grid: { color: '#2d3748' } }
+    }
+  }
+});
+
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>
