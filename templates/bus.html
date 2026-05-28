@@ -1,176 +1,1238 @@
 {% extends "base.html" %}
-{% block title %}Buses to {{ destination }}{% endblock %}
-
+{% block title %}🚌 Buses to {{ destination }} — TripMoree{% endblock %}
 {% block extra_css %}
 <style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.bus-page{max-width:1100px;margin:0 auto;padding:2rem var(--page-pad);}
-.search-box{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:var(--radius-lg);padding:2rem;margin-bottom:2rem;}
-.search-box-title{font-family:var(--font-display);font-size:1.6rem;color:#fff;margin-bottom:1.5rem;}
-.search-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;}
-.form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
-.form-group select,.form-group input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:var(--font-body);outline:none;}
-.form-group select:focus,.form-group input:focus{border-color:var(--gold);}
-.form-group select option{background:#1a2e2a;}
-.search-btn{padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);height:46px;transition:all .2s;}
-.search-btn:hover{background:#b8934a;}
+:root {
+  --primary: #1e3a34;
+  --primary-glow: rgba(30, 58, 52, 0.15);
+  --accent: #c5a044;
+  --dark: #0a110f;
+  --light: #f4f6f5;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --success: #10b981;
+}
 
-.buses-list{display:flex;flex-direction:column;gap:12px;}
-.bus-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;transition:all .25s;animation:fadeUp .4s ease both;}
-.bus-card:hover{border-color:var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.08);}
-.bus-inner{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:1.5rem;align-items:center;}
-.bus-operator{font-family:var(--font-display);font-size:1.1rem;font-weight:600;}
-.bus-type-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
-.type-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-.tag-ac{background:#e3f2fd;color:#1976d2;}
-.tag-nonac{background:#f3e5f5;color:#7b1fa2;}
-.tag-sleeper{background:#e8f5e9;color:#2e7d32;}
-.tag-seater{background:#fff3e0;color:#e65100;}
-.bus-route{text-align:center;}
-.bus-time{font-family:var(--font-display);font-size:1.3rem;font-weight:600;}
-.bus-city{font-size:12px;color:var(--muted);}
-.bus-arrow{font-size:1.5rem;color:var(--gold);margin:4px 0;}
-.bus-duration{font-size:12px;color:var(--muted);}
-.bus-seats{font-size:13px;}
-.seats-ok{color:#27ae60;font-weight:600;}
-.seats-low{color:#e67e22;font-weight:600;}
-.seats-none{color:#e74c3c;font-weight:600;}
-.bus-price{text-align:right;}
-.bus-price-val{font-family:var(--font-display);font-size:1.4rem;font-weight:600;}
-.per-seat{font-size:11px;color:var(--muted);}
-.book-bus-btn{padding:10px 22px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .2s;margin-top:8px;display:block;text-align:center;text-decoration:none;}
-.book-bus-btn:hover{background:var(--teal);color:#fff;}
-.no-results{text-align:center;padding:3rem;color:var(--muted);}
-.no-results-icon{font-size:3rem;margin-bottom:1rem;}
-.sort-bar{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.5rem;margin-bottom:1rem;flex-wrap:wrap;}
-.sort-btn{padding:6px 16px;border:1px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--white);font-family:var(--font-body);transition:all .2s;}
-.sort-btn.active,.sort-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
-@media(max-width:768px){.search-form{grid-template-columns:1fr 1fr;}.bus-inner{grid-template-columns:1fr 1fr;gap:1rem;}}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGold {
+  0% { box-shadow: 0 0 0 0 rgba(197, 160, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(197, 160, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(197, 160, 68, 0); }
+}
+
+body {
+  background-color: #fafbfc;
+  color: #1e293b;
+}
+
+.b-hero {
+  background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+  padding: 4rem var(--page-pad) 5rem;
+  text-align: center;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.b-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 16H9v-2h5v2zm0 24H9v-2h5v2zm0 24H9v-2h5v2zm40-48h-5v-2h5v2zm0 24h-5v-2h5v2zm0 24h-5v-2h5v2zM9 29h5v2H9v-2zm0 24h5v2H9v-2zm40-48h5v2h-5v-2zm0 24h5v2h-5v-2zm0 24h5v2h-5v-2zM9 9h5v2H9V9zm0 24h5v2H9v-2zm0 24h5v2H9v-2zm40-48h5v2h-5v-2zm0 24h5v2h-5v-2zm0 24h5v2h-5v-2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+.b-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, #fff, #ebd394);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.b-hero p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+}
+
+.b-search {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  margin: -3rem auto 0;
+  position: relative;
+  z-index: 10;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+.b-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr auto;
+  gap: 16px;
+  align-items: end;
+}
+.igrp label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8px;
+}
+.igrp input, .igrp select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  outline: none;
+  background: #f8fafc;
+  transition: all 0.3s;
+}
+.igrp input:focus, .igrp select:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(197, 160, 68, 0.1);
+}
+.sbtn {
+  padding: 13px 28px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sbtn:hover {
+  background: #11221e;
+  transform: translateY(-1px);
+}
+
+.b-wrap {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 var(--page-pad);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1.2rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.sort-info {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: auto;
+}
+.schip {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+  color: #475569;
+}
+.schip:hover, .schip.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* Bus Card Grid */
+.fc {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+  display:grid;
+  grid-template-columns: 180px 1.2fr 1fr 1.2fr 1.5fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeUp .5s ease both;
+}
+.fc:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  border-color: var(--accent);
+}
+
+.bus-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bus-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+.bus-operator {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.bus-number {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.bus-type-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.type-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.tag-ac { background: #e0f2fe; color: #0369a1; }
+.tag-nonac { background: #f1f5f9; color: #475569; }
+.tag-sleeper { background: #f0fdf4; color: #15803d; }
+.tag-seater { background: #fdf2f8; color: #be185d; }
+
+.tb {
+  text-align: center;
+}
+.tv {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  font-family: var(--font-display);
+}
+.tc2 {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.dur {
+  text-align: center;
+}
+.dur-line {
+  position: relative;
+  height: 2px;
+  background: var(--border);
+  margin: 8px auto;
+  width: 80px;
+}
+.dur-line::before {
+  content: '🚌';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--accent);
+}
+.dur-t {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pb {
+  text-align: right;
+}
+.pv {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+.ps {
+  font-size: 11px;
+  color: var(--muted);
+}
+.pt {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.sl {
+  font-size: 11px;
+  color: #ea580c;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.bbtn {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+.bbtn:hover {
+  background: #11221e;
+  box-shadow: 0 6px 16px rgba(30,58,52,0.3);
+  color: var(--white);
+}
+
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  margin-top: 2rem;
+}
+.empty-i {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Connecting Bus Card Specifics */
+.fc-connect {
+  border-left: 4px solid var(--accent);
+}
+.connect-info {
+  background: #fcfcf9;
+  grid-column: 1 / -1;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #f2eedf;
+  font-size: 12px;
+  color: #785a28;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem;
+}
+
+/* Premium Seat Selection Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 17, 15, 0.7);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.modal-overlay.show {
+  display: flex;
+}
+.modal-card {
+  background: var(--white);
+  border-radius: 24px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+}
+.modal-left {
+  padding: 2.5rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.modal-right {
+  padding: 2.5rem;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+/* Bus Cabin / Seat Map Layouts */
+.bus-cabin {
+  background: #e2e8f0;
+  border: 4px solid #94a3b8;
+  border-radius: 12px 12px 24px 24px;
+  padding: 30px 15px 15px;
+  position: relative;
+  max-width: 250px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+.bus-driver {
+  width: 30px;
+  height: 30px;
+  background: #64748b;
+  border-radius: 6px;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: white;
+}
+.bus-cabin-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.bus-seat-grid-seater {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 24px repeat(2, 1fr);
+  gap: 8px;
+  justify-items: center;
+}
+.bus-seat-grid-sleeper {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 30px 1fr;
+  gap: 8px 12px;
+  justify-items: center;
+}
+
+/* Seats & Berths */
+.seat-cell {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+  user-select: none;
+  color: #475569;
+}
+.seat-cell:hover {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+.seat-cell.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+  animation: pulseGold 1.5s infinite;
+  transform: scale(1.08);
+}
+.seat-cell.occupied {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+.seat-cell.space {
+  grid-column: 3;
+  width: 24px;
+  height: 20px;
+  border: none;
+  cursor: default;
+  background: transparent;
+}
+
+/* Sleeper Berth specific style */
+.berth-cell {
+  width: 28px;
+  height: 52px; /* longer for sleeper berth */
+  border: 1.5px solid #94a3b8;
+  border-radius: 4px;
+  font-size: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+  user-select: none;
+  color: #475569;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.berth-cell:hover {
+  border-color: var(--primary);
+  background: #f0fdf4;
+}
+.berth-cell.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+  transform: scale(1.04);
+}
+.berth-cell.occupied {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Legend */
+.seat-legend {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+/* Preferences Box */
+.pref-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.pref-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pref-selector {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #f8fafc;
+  outline: none;
+}
+.pref-selector:focus {
+  border-color: var(--accent);
+}
+
+.sum-box {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.sum-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+.sum-val {
+  font-weight: 700;
+  color: var(--dark);
+}
+.sum-total {
+  font-size: 1.6rem;
+  color: var(--primary);
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.btn-proceed {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 14px rgba(30,58,52,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-proceed:hover {
+  background: #11221e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(30,58,52,0.35);
+}
+.btn-proceed:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.close-modal {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--muted);
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.close-modal:hover {
+  background: #f1f5f9;
+  color: var(--dark);
+}
+
+@media(max-width: 768px) {
+  .b-grid {
+    grid-template-columns: 1fr;
+  }
+  .sbtn {
+    width: 100%;
+  }
+  .fc {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .dur {
+    display: none;
+  }
+  .modal-card {
+    grid-template-columns: 1fr;
+  }
+  .modal-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+  .modal-right {
+    padding: 1.5rem;
+  }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="bus-page">
+<div class="b-hero">
+  <h1>🚌 Buses to {{ destination }}</h1>
+  <p>Compare and book premium direct & connecting bus routes</p>
+</div>
 
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:var(--muted);">
-    <span style="color:var(--teal);">✓ Hotel</span> →
-    <span style="color:var(--gold);font-weight:600;">🚌 Transport</span> →
-    <span>📍 Spots</span> → <span>🚕 Cab</span> → <span>💳 Pay</span>
-  </div>
-
-  <div class="search-box">
-    <div class="search-box-title">🚌 Buses to {{ destination }}</div>
+<div style="padding:0 var(--page-pad); max-width:900px; margin:0 auto;">
+  <div class="b-search">
     <form method="POST">
-      <div class="search-form">
-        <div class="form-group">
+      <div class="b-grid">
+        <div class="igrp">
           <label>From City</label>
-          <input type="text" name="source" placeholder="e.g. Ahmedabad" value="{{ request.form.get('source','') }}" required>
+          <input type="text" name="source" placeholder="e.g. Ahmedabad, Mumbai" value="{{ request.form.get('source','') }}" required>
         </div>
-        <div class="form-group">
-          <label>AC Type</label>
-          <select name="ac_type">
-            <option value="AC" {% if request.form.get('ac_type')=='AC' %}selected{% endif %}>AC</option>
+        <div class="igrp">
+          <label>AC Preference</label>
+          <select name="ac_type" id="acFilter">
+            <option value="AC" {% if request.form.get('ac_type')=='AC' %}selected{% endif %}>Air Conditioned (AC)</option>
             <option value="Non-AC" {% if request.form.get('ac_type')=='Non-AC' %}selected{% endif %}>Non-AC</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Seat Type</label>
-          <select name="seat_type">
-            <option value="Sleeper" {% if request.form.get('seat_type')=='Sleeper' %}selected{% endif %}>Sleeper</option>
-            <option value="Seater" {% if request.form.get('seat_type')=='Seater' %}selected{% endif %}>Seater</option>
+        <div class="igrp">
+          <label>Seat Class</label>
+          <select name="seat_type" id="typeFilter">
+            <option value="Sleeper" {% if request.form.get('seat_type','Sleeper')=='Sleeper' %}selected{% endif %}>Sleeper Coach</option>
+            <option value="Seater" {% if request.form.get('seat_type')=='Seater' %}selected{% endif %}>Seating Only</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="igrp">
           <label>Passengers</label>
-          <select name="persons">
-            {% for i in range(1,7) %}
-            <option value="{{ i }}" {% if persons == i %}selected{% endif %}>{{ i }} Passenger{{ 's' if i > 1 }}</option>
+          <select name="persons" id="passengersCount">
+            {% for i in range(1,10) %}
+            <option value="{{ i }}" {% if persons == i %}selected{% endif %}>{{ i }} Guest{{ 's' if i > 1 }}</option>
             {% endfor %}
           </select>
         </div>
-        <button type="submit" class="search-btn">🔍 Search</button>
+        <button type="submit" class="sbtn">Search 🔍</button>
       </div>
     </form>
   </div>
+</div>
 
+<div class="b-wrap">
+  
+  <!-- Direct Buses Section -->
   {% if buses %}
-  <div class="sort-bar">
-    <span style="font-size:13px;font-weight:600;">{{ buses|length }} buses found</span>
-    <button class="sort-btn active" onclick="sortBuses('price',this)">Cheapest</button>
-    <button class="sort-btn" onclick="sortBuses('time',this)">Earliest</button>
-  </div>
-  <div class="buses-list" id="busesList">
-    {% for b in buses %}
-    <div class="bus-card" data-price="{{ b.price }}" data-time="{{ b.departure_time }}" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
-      <div class="bus-inner">
-        <div>
-          <div class="bus-operator">{{ b.operator }}</div>
-          <div style="font-size:12px;color:var(--muted);">{{ b.bus_number }}</div>
-          <div class="bus-type-tags">
-            <span class="type-tag {{ 'tag-ac' if b.ac_type == 'AC' else 'tag-nonac' }}">{{ b.ac_type }}</span>
-            <span class="type-tag {{ 'tag-sleeper' if b.seat_type == 'Sleeper' else 'tag-seater' }}">{{ b.seat_type }}</span>
+    <h2 class="section-title">✨ Direct Bus Services</h2>
+    <div class="sort-bar">
+      <span class="sort-info">{{ buses|length }} buses found</span>
+      <button class="schip active" onclick="srt('price',this)">💰 Cheapest</button>
+      <button class="schip" onclick="srt('time',this)">⏰ Departure</button>
+    </div>
+    
+    <div id="busesList">
+      {% for b in buses %}
+      <div class="fc" style="animation-delay:{{ loop.index0 * 0.05 }}s;" 
+           data-price="{{ b.price }}" data-time="{{ b.departure_time }}" data-seats="{{ b.available_seats }}">
+        <div class="bus-info">
+          <div class="bus-logo">🚌</div>
+          <div>
+            <div class="bus-operator">{{ b.operator }}</div>
+            <div class="bus-number">{{ b.bus_number }}</div>
+            <div class="bus-type-tags">
+              <span class="type-tag {{ 'tag-ac' if b.ac_type == 'AC' else 'tag-nonac' }}">{{ b.ac_type }}</span>
+              <span class="type-tag {{ 'tag-sleeper' if b.seat_type == 'Sleeper' else 'tag-seater' }}">{{ b.seat_type }}</span>
+            </div>
           </div>
         </div>
-        <div class="bus-route">
-          <div class="bus-time">{{ b.departure_time[:5] if b.departure_time else '—' }}</div>
-          <div class="bus-city">{{ b.source }}</div>
-          <div class="bus-arrow">↓</div>
-          <div class="bus-time">{{ b.arrival_time[:5] if b.arrival_time else '—' }}</div>
-          <div class="bus-city">{{ b.destination }}</div>
+        
+        <div class="tb">
+          <div class="tv">{{ b.departure_time[:5] if b.departure_time else '—' }}</div>
+          <div class="tc2">{{ b.source }}</div>
         </div>
+        
+        <div class="dur">
+          <div class="dur-line"></div>
+          <div class="dur-t">Non-stop</div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ b.arrival_time[:5] if b.arrival_time else '—' }}</div>
+          <div class="tc2">{{ b.destination }}</div>
+        </div>
+        
         <div>
-          <div class="bus-seats">
-            {% if b.available_seats > 15 %}<span class="seats-ok">🟢 {{ b.available_seats }} seats available</span>
-            {% elif b.available_seats > 0 %}<span class="seats-low">🟠 Only {{ b.available_seats }} left!</span>
-            {% else %}<span class="seats-none">❌ Sold out</span>{% endif %}
+          <div class="pb">
+            <div class="pv" id="price-val-{{ b.id }}">₹{{ "{:,}".format(b.price) }}</div>
+            <div class="ps">per traveler</div>
+            <div class="pt" id="total-val-{{ b.id }}">₹{{ "{:,}".format(b.price * persons) }} total</div>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-top:6px;">Total: {{ b.total_seats }} seats</div>
+          <div style="margin-top:4px;">
+            {% if b.available_seats > 15 %}
+              <span class="seats-ok" style="font-size:11px; color:var(--success); font-weight:700;">🟢 {{ b.available_seats }} seats</span>
+            {% elif b.available_seats > 0 %}
+              <span class="seats-low" style="font-size:11px; color:#ea580c; font-weight:700;">🟠 {{ b.available_seats }} left!</span>
+            {% else %}
+              <span class="seats-none" style="font-size:11px; color:#ef4444; font-weight:700;">❌ Sold out</span>
+            {% endif %}
+          </div>
         </div>
-        <div class="bus-price">
-          <div class="bus-price-val">₹{{ "{:,}".format(b.price) }}</div>
-          <div class="per-seat">per seat</div>
-          <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--teal);margin-top:4px;">₹{{ "{:,}".format(b.price * persons) }} total</div>
+        
+        <div style="text-align:center;">
           {% if b.available_seats >= persons %}
-          <a href="{{ url_for('confirm_bus', bus_id=b.id, hotel_booking_id=hotel_booking_id) }}" class="book-bus-btn">Book Now →</a>
+            <button onclick="openSeatModal('direct', '{{ b.id }}', '{{ b.operator }}', '{{ b.source }} ➔ {{ b.destination }}', '{{ b.price }}', '{{ b.seat_type }}', '{{ b.ac_type }}')" class="bbtn">Select Seats →</button>
           {% else %}
-          <button class="book-bus-btn" style="background:#ccc;cursor:not-allowed;" disabled>Sold Out</button>
+            <button class="bbtn" style="background:#cbd5e1; color:#94a3b8; cursor:not-allowed;" disabled>Sold Out</button>
           {% endif %}
+          <div style="font-size:11px; color:var(--muted); margin-top:6px;">{{ b.available_seats }} seats avail.</div>
         </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
-
   {% elif request.method == 'POST' %}
-  <div class="no-results">
-    <div class="no-results-icon">🚌</div>
-    <h3 style="color:var(--ink);margin-bottom:.5rem;">No buses found</h3>
-    <p>No {{ request.form.get('ac_type') }} {{ request.form.get('seat_type') }} buses from <strong>{{ request.form.get('source') }}</strong> to <strong>{{ destination }}</strong>.</p>
-    <p style="margin-top:.5rem;font-size:13px;color:var(--muted);">Try: Ahmedabad, Delhi, Mumbai, Surat as source · Try different AC/seat type</p>
-    <a href="{{ url_for('transport_choice', destination=destination) }}" style="color:var(--gold);margin-top:1rem;display:inline-block;">← Try other transport options</a>
-  </div>
+    <div class="empty">
+      <div class="empty-i">🚌</div>
+      <p style="font-weight:700; font-size:1.1rem; color:var(--dark);">No Direct Buses Found</p>
+      <p style="font-size:13px; margin-top:.4rem;">Review alternative connecting routes below!</p>
+    </div>
   {% else %}
-  <div class="no-results">
-    <div class="no-results-icon">🚌</div>
-    <p>Enter your city and preferences above to search buses to {{ destination }}.</p>
-  </div>
+    <div class="empty">
+      <div class="empty-i">🔍</div>
+      <p style="font-weight:600;">Search bus services to get started</p>
+    </div>
   {% endif %}
+
+  <!-- Connecting Buses Section -->
+  {% if connecting_buses %}
+    <h2 class="section-title" style="margin-top:4rem;">🔄 Connecting Buses (Alternative Routes)</h2>
+    <div class="sort-bar">
+      <span class="sort-info">{{ connecting_buses|length }} alternative connections found</span>
+    </div>
+    
+    <div>
+      {% for route in connecting_buses %}
+      {% set b1 = route.leg1 %}
+      {% set b2 = route.leg2 %}
+      <div class="fc fc-connect" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+        <!-- Leg 1 Info -->
+        <div class="bus-info">
+          <div class="bus-logo">🚌</div>
+          <div>
+            <div class="bus-operator">{{ b1.operator }}</div>
+            <div class="bus-number">{{ b1.bus_number }}</div>
+            <span class="type-tag tag-ac" style="background:#f1f5f9; color:#475569;">Leg 1</span>
+          </div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ b1.departure_time[:5] if b1.departure_time else '—' }}</div>
+          <div class="tc2">{{ b1.source }}</div>
+        </div>
+        
+        <div class="dur">
+          <div class="dur-line"></div>
+          <div class="dur-t">Layover ➔</div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ b1.arrival_time[:5] if b1.arrival_time else '—' }}</div>
+          <div class="tc2" style="color:var(--accent); font-weight:700;">{{ b1.destination }}</div>
+        </div>
+        
+        <!-- Total Price -->
+        <div>
+          <div class="pb">
+            <div class="pv">₹{{ "{:,}".format(route.total_price) }}</div>
+            <div class="ps">combined fare</div>
+            <div class="pt">₹{{ "{:,}".format(route.total_price * persons) }} total</div>
+          </div>
+          <div class="sl" style="color:var(--muted); font-weight:500;">Layover: {{ route.layover }}</div>
+        </div>
+        
+        <!-- Book Button -->
+        <div style="text-align:center;">
+          <button onclick="openSeatModal('connecting', '{{ b1.id }},{{ b2.id }}', '{{ b1.operator }} / {{ b2.operator }}', '{{ b1.source }} ➔ {{ b1.destination }} ➔ {{ b2.destination }}', '{{ route.total_price }}', '{{ b1.seat_type }}', '{{ b1.ac_type }}')" class="bbtn" style="background:var(--accent); box-shadow:0 4px 12px rgba(197, 160, 68, 0.2);">Select Seats →</button>
+          <div style="font-size:10px; color:var(--muted); margin-top:6px;">Connect via {{ b1.destination }}</div>
+        </div>
+        
+        <!-- Hop detail row -->
+        <div class="connect-info">
+          <span>🚌 Connecting Bus Details: {{ b1.source }} to {{ b1.destination }} ({{ b1.departure_time }}–{{ b1.arrival_time }}) ➔ Layover of {{ route.layover }} ➔ {{ b2.source }} to {{ b2.destination }} ({{ b2.departure_time }}–{{ b2.arrival_time }})</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+</div>
+
+<!-- Seat Selection Modal -->
+<div class="modal-overlay" id="seatModal">
+  <div class="modal-card">
+    <button class="close-modal" onclick="closeSeatModal()">✕</button>
+    
+    <!-- Left Panel: Seat grid representation -->
+    <div class="modal-left">
+      <div class="modal-title" id="m-operator">Bus Operator</div>
+      <div class="modal-subtitle" id="m-route">Route Details</div>
+      
+      <div id="connecting-tabs" style="display:none; margin-bottom:1.5rem; justify-content:center; gap:8px;">
+        <button id="btn-tab-leg1" class="schip active" onclick="switchLegTab(1)">Leg 1: Source ➔ Hub</button>
+        <button id="btn-tab-leg2" class="schip" onclick="switchLegTab(2)">Leg 2: Hub ➔ Dest</button>
+      </div>
+      
+      <div id="deck-tabs" style="display:none; margin-bottom:1.5rem; justify-content:center; gap:8px;">
+        <button id="btn-tab-lower" class="schip active" onclick="switchDeckTab('lower')">Lower Deck</button>
+        <button id="btn-tab-upper" class="schip" onclick="switchDeckTab('upper')">Upper Deck</button>
+      </div>
+      
+      <!-- Bus Cabin Layout -->
+      <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+        <div class="bus-cabin">
+          <div class="bus-driver">👨‍✈️</div>
+          <div class="bus-cabin-labels">
+            <span>Left Side</span>
+            <span>Right Side</span>
+          </div>
+          
+          <div id="seatsContainer">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Legend -->
+      <div class="seat-legend">
+        <div class="legend-item"><div class="legend-color" style="background:#fff;"></div> Available</div>
+        <div class="legend-item"><div class="legend-color" style="background:var(--accent);"></div> Selected</div>
+        <div class="legend-item"><div class="legend-color" style="background:#cbd5e1;"></div> Occupied</div>
+      </div>
+    </div>
+    
+    <!-- Right Panel: Configurations & Pricing -->
+    <div class="modal-right">
+      <div class="modal-title" style="font-size:1.3rem;">Travel Configuration</div>
+      <div class="modal-subtitle">Configure class, meals, and seat preferences</div>
+      
+      <div class="pref-box">
+        <div class="pref-title">Bus Type & Class</div>
+        <select class="pref-selector" id="modalClass" onchange="updateModalPrices()">
+          <option value="Non-AC Seater">Non-AC Seater (Base Price)</option>
+          <option value="AC Seater">AC Seater (+20%)</option>
+          <option value="Non-AC Sleeper">Non-AC Sleeper Coach (+20%)</option>
+          <option value="AC Sleeper">AC Sleeper Coach (+40%)</option>
+        </select>
+      </div>
+      
+      <div class="pref-box">
+        <div class="pref-title">Berth/Seat Preference</div>
+        <select class="pref-selector" id="modalPref">
+          <option value="Any">No Preference (Any Seat)</option>
+          <option value="Window">Window Seat</option>
+          <option value="Aisle">Aisle Seat</option>
+          <option value="Lower">Lower Deck Berth (for Sleeper)</option>
+          <option value="Upper">Upper Deck Berth (for Sleeper)</option>
+        </select>
+      </div>
+      
+      <div class="pref-box" style="background:rgba(30,58,52,0.03); border-color:var(--primary-glow);">
+        <div class="pref-title" style="color:var(--primary)">Selected Seats</div>
+        <div style="font-size:16px; font-weight:800; color:var(--dark); margin-top:5px;" id="selectedSeatsText">None</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;" id="passengersQuota">Please select exactly {{ persons }} seat(s).</div>
+      </div>
+      
+      <div class="sum-box">
+        <div class="sum-row">
+          <span class="sum-label">Ticket Fare (per person)</span>
+          <span class="sum-val" id="sumPerPerson">₹0</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">Passengers</span>
+          <span class="sum-val">× {{ persons }}</span>
+        </div>
+        <div class="sum-divider" style="border-top:1px dashed var(--border); margin:12px 0;"></div>
+        <div class="sum-row" style="align-items:flex-end;">
+          <span class="sum-label" style="font-size:14px; font-weight:700; color:var(--dark);">Total Price</span>
+          <span class="sum-total" id="sumTotal">₹0</span>
+        </div>
+      </div>
+      
+      <button class="btn-proceed" id="proceedBookingBtn" disabled onclick="submitBooking()">
+        🔒 Proceed to Secure Payment
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function sortBuses(by, btn) {
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+// Sorting Logic
+function srt(by,btn){
+  document.querySelectorAll('.schip').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const list  = document.getElementById('busesList');
-  if (!list) return;
-  const cards = [...list.querySelectorAll('.bus-card')];
-  cards.sort((a, b) => {
-    if (by === 'price') return parseInt(a.dataset.price) - parseInt(b.dataset.price);
-    return a.dataset.time.localeCompare(b.dataset.time);
+  const list = document.getElementById('busesList');
+  if(!list) return;
+  const cards = [...list.querySelectorAll('.fc')];
+  cards.sort((a,b)=>{
+    if(by==='price') return parseInt(a.dataset.price)-parseInt(b.dataset.price);
+    return String(a.dataset.time).localeCompare(String(b.dataset.time));
   });
-  cards.forEach(c => list.appendChild(c));
+  cards.forEach(c=>list.appendChild(c));
+}
+
+// Seat Booking State
+let bookingType = 'direct';
+let transportIds = '';
+let basePricePerPerson = 0;
+let personsCount = {{ persons }};
+let seatTypeLayout = 'Sleeper'; // 'Sleeper' or 'Seater'
+let acTypePreference = 'AC';
+
+// Selections lists
+let selectedSeatsLeg1 = [];
+let selectedSeatsLeg2 = [];
+let activeLegTab = 1;
+let activeDeckTab = 'lower'; // 'lower' or 'upper'
+
+// Occupied lists
+let bookedSeatsLeg1 = [];
+let bookedSeatsLeg2 = [];
+
+function openSeatModal(type, ids, operator, route, price, seatType, acType) {
+  bookingType = type;
+  transportIds = ids;
+  basePricePerPerson = parseFloat(price);
+  seatTypeLayout = seatType;
+  acTypePreference = acType;
+  
+  selectedSeatsLeg1 = [];
+  selectedSeatsLeg2 = [];
+  activeLegTab = 1;
+  activeDeckTab = 'lower';
+  
+  document.getElementById('m-operator').textContent = operator;
+  document.getElementById('m-route').textContent = route;
+  
+  // Set default class select option
+  const classVal = `${acType} ${seatType}`;
+  document.getElementById('modalClass').value = classVal;
+  
+  // Tabs display configurations
+  const legTabContainer = document.getElementById('connecting-tabs');
+  const deckTabContainer = document.getElementById('deck-tabs');
+  
+  deckTabContainer.style.display = (seatType === 'Sleeper') ? 'flex' : 'none';
+  
+  if(type === 'connecting') {
+    legTabContainer.style.display = 'flex';
+    const splitIds = ids.split(',');
+    
+    Promise.all([
+      fetch(`/api/booked-seats/bus/${splitIds[0]}`).then(r => r.json()),
+      fetch(`/api/booked-seats/bus/${splitIds[1]}`).then(r => r.json())
+    ]).then(([d1, d2]) => {
+      bookedSeatsLeg1 = d1.booked_seats || [];
+      bookedSeatsLeg2 = d2.booked_seats || [];
+      renderSeatGrid();
+      updateModalPrices();
+    });
+  } else {
+    legTabContainer.style.display = 'none';
+    fetch(`/api/booked-seats/bus/${ids}`).then(r => r.json()).then(data => {
+      bookedSeatsLeg1 = data.booked_seats || [];
+      renderSeatGrid();
+      updateModalPrices();
+    });
+  }
+  
+  document.getElementById('seatModal').classList.add('show');
+}
+
+function closeSeatModal() {
+  document.getElementById('seatModal').classList.remove('show');
+}
+
+function switchLegTab(legNum) {
+  activeLegTab = legNum;
+  document.getElementById('btn-tab-leg1').classList.toggle('active', legNum === 1);
+  document.getElementById('btn-tab-leg2').classList.toggle('active', legNum === 2);
+  renderSeatGrid();
+  updateSeatsText();
+}
+
+function switchDeckTab(deck) {
+  activeDeckTab = deck;
+  document.getElementById('btn-tab-lower').classList.toggle('active', deck === 'lower');
+  document.getElementById('btn-tab-upper').classList.toggle('active', deck === 'upper');
+  renderSeatGrid();
+}
+
+function renderSeatGrid() {
+  const container = document.getElementById('seatsContainer');
+  container.innerHTML = '';
+  
+  const occupiedList = (bookingType === 'connecting' && activeLegTab === 2) ? bookedSeatsLeg2 : bookedSeatsLeg1;
+  const currentSelections = (bookingType === 'connecting' && activeLegTab === 2) ? selectedSeatsLeg2 : selectedSeatsLeg1;
+  
+  if (seatTypeLayout === 'Sleeper') {
+    // Render sleeper 2+1 layout (Left side: 2 berths, Right side: 1 berth)
+    container.className = 'bus-seat-grid-sleeper';
+    const rows = 6;
+    const prefix = (activeDeckTab === 'upper') ? 'U' : 'L';
+    
+    for (let r = 1; r <= rows; r++) {
+      // Left side berths: A and B
+      createSleeperBerth(container, `${prefix}${r}A`, occupiedList, currentSelections);
+      createSleeperBerth(container, `${prefix}${r}B`, occupiedList, currentSelections);
+      
+      // Aisle space
+      const space = document.createElement('div');
+      space.className = 'seat-cell space';
+      container.appendChild(space);
+      
+      // Right side berth: C
+      createSleeperBerth(container, `${prefix}${r}C`, occupiedList, currentSelections);
+    }
+  } else {
+    // Render Seater 2+2 layout
+    container.className = 'bus-seat-grid-seater';
+    const rows = 8;
+    for (let r = 1; r <= rows; r++) {
+      // Left side seats: A and B
+      createSeatingSeat(container, `${r}A`, occupiedList, currentSelections);
+      createSeatingSeat(container, `${r}B`, occupiedList, currentSelections);
+      
+      // Aisle space
+      const space = document.createElement('div');
+      space.className = 'seat-cell space';
+      container.appendChild(space);
+      
+      // Right side seats: C and D
+      createSeatingSeat(container, `${r}C`, occupiedList, currentSelections);
+      createSeatingSeat(container, `${r}D`, occupiedList, currentSelections);
+    }
+  }
+}
+
+function createSleeperBerth(container, berthId, occupiedList, currentSelections) {
+  const cell = document.createElement('div');
+  cell.className = 'berth-cell';
+  cell.textContent = berthId;
+  
+  if (occupiedList.includes(berthId)) {
+    cell.classList.add('occupied');
+  } else {
+    if (currentSelections.includes(berthId)) {
+      cell.classList.add('selected');
+    }
+    cell.onclick = () => toggleSelectSeat(berthId);
+  }
+  container.appendChild(cell);
+}
+
+function createSeatingSeat(container, seatId, occupiedList, currentSelections) {
+  const cell = document.createElement('div');
+  cell.className = 'seat-cell';
+  cell.textContent = seatId;
+  
+  if (occupiedList.includes(seatId)) {
+    cell.classList.add('occupied');
+  } else {
+    if (currentSelections.includes(seatId)) {
+      cell.classList.add('selected');
+    }
+    cell.onclick = () => toggleSelectSeat(seatId);
+  }
+  container.appendChild(cell);
+}
+
+function toggleSelectSeat(seatId) {
+  let currentSelections = (bookingType === 'connecting' && activeLegTab === 2) ? selectedSeatsLeg2 : selectedSeatsLeg1;
+  
+  const idx = currentSelections.indexOf(seatId);
+  if (idx > -1) {
+    currentSelections.splice(idx, 1);
+  } else {
+    if (currentSelections.length >= personsCount) {
+      currentSelections.shift();
+    }
+    currentSelections.push(seatId);
+  }
+  
+  if (bookingType === 'connecting' && activeLegTab === 2) {
+    selectedSeatsLeg2 = currentSelections;
+  } else {
+    selectedSeatsLeg1 = currentSelections;
+  }
+  
+  renderSeatGrid();
+  updateSeatsText();
+}
+
+function updateSeatsText() {
+  const textEl = document.getElementById('selectedSeatsText');
+  const btn = document.getElementById('proceedBookingBtn');
+  
+  if(bookingType === 'connecting') {
+    const s1 = selectedSeatsLeg1.join(', ') || 'None';
+    const s2 = selectedSeatsLeg2.join(', ') || 'None';
+    textEl.innerHTML = `<span style="color:var(--primary)">Leg 1:</span> ${s1} <br/> <span style="color:var(--accent)">Leg 2:</span> ${s2}`;
+    
+    const valid = (selectedSeatsLeg1.length === personsCount) && (selectedSeatsLeg2.length === personsCount);
+    btn.disabled = !valid;
+    document.getElementById('passengersQuota').textContent = `Leg 1: ${selectedSeatsLeg1.length}/${personsCount} | Leg 2: ${selectedSeatsLeg2.length}/${personsCount}`;
+  } else {
+    const s = selectedSeatsLeg1.join(', ') || 'None';
+    textEl.textContent = s;
+    const valid = (selectedSeatsLeg1.length === personsCount);
+    btn.disabled = !valid;
+    document.getElementById('passengersQuota').textContent = `Selected: ${selectedSeatsLeg1.length}/${personsCount} seats.`;
+  }
+}
+
+function updateModalPrices() {
+  const classVal = document.getElementById('modalClass').value;
+  let multiplier = 1.0;
+  if (classVal.includes('Sleeper')) multiplier += 0.2;
+  if (classVal.includes('AC') && !classVal.includes('Non-AC')) multiplier += 0.2;
+  
+  const finalPerPerson = basePricePerPerson * multiplier;
+  const finalTotal = finalPerPerson * personsCount;
+  
+  document.getElementById('sumPerPerson').textContent = `₹${Math.round(finalPerPerson).toLocaleString('en-IN')}`;
+  document.getElementById('sumTotal').textContent = `₹${Math.round(finalTotal).toLocaleString('en-IN')}`;
+}
+
+function submitBooking() {
+  const classVal = document.getElementById('modalClass').value;
+  const preference = document.getElementById('modalPref').value;
+  
+  if(bookingType === 'connecting') {
+    const splitIds = transportIds.split(',');
+    const s1 = selectedSeatsLeg1.join(',');
+    const s2 = selectedSeatsLeg2.join(',');
+    
+    window.location.href = `/confirm-connecting-bus?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${classVal}&preference=${preference}`;
+  } else {
+    const s = selectedSeatsLeg1.join(',');
+    window.location.href = `/confirm-bus/${transportIds}?seats=${s}&class=${classVal}&preference=${preference}`;
+  }
 }
 </script>
 {% endblock %}

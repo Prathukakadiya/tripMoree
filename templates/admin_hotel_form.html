@@ -1,27 +1,178 @@
-{% extends "base.html" %}
-{% block title %}{{ 'Edit' if hotel else 'Add' }} Hotel — Admin{% endblock %}
-{% block content %}
-<div style="max-width:700px;margin:2rem auto;padding:0 1.5rem;">
-  <h1 style="font-family:Georgia,serif;font-size:1.4rem;margin-bottom:1.5rem;">{{ 'Edit' if hotel else 'Add' }} Hotel</h1>
-  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;padding:2rem;">
-    <form method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Hotel Name</label><input type="text" name="name" value="{{ hotel.name if hotel else '' }}" required style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
-      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Destination</label>
-      <select name="destination_id" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
-        {% for d in destinations %}<option value="{{ d.id }}" {% if hotel and hotel.destination_id==d.id %}selected{% endif %}>{{ d.name }}</option>{% endfor %}
-      </select></div>
-      {% set hf = [('stars','Stars (1-5)','number',hotel.stars if hotel else '3'),('starting_price','Starting Price ₹','number',hotel.starting_price if hotel else '1000'),('latitude','Latitude','number',hotel.latitude if hotel else ''),('longitude','Longitude','number',hotel.longitude if hotel else ''),('lunch_price','Lunch Price ₹','number',hotel.lunch_price if hotel else '500'),('dinner_price','Dinner Price ₹','number',hotel.dinner_price if hotel else '600'),('pickup_price','Pickup Price ₹','number',hotel.pickup_price if hotel else '800')] %}
-      {% for name,label,type,val in hf %}
-      <div><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">{{ label }}</label><input type="{{ type }}" name="{{ name }}" value="{{ val or '' }}" step="any" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ 'Edit' if hotel else 'Add' }} Hotel — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item active"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;"
+        onclick="document.getElementById('sidebar').classList.toggle('mob-open')">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <a href="{{ url_for('admin_hotels') }}" class="btn btn-ghost btn-sm">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+      <span class="topbar-title">{{ 'Edit Hotel' if hotel else 'Add New Hotel' }}</span>
+    </div>
+    <div class="topbar-right"><div class="topbar-avatar">A</div></div>
+  </div>
+
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
       {% endfor %}
-      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Address</label><input type="text" name="address" value="{{ hotel.address if hotel else '' }}" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;"></div>
-      <div style="grid-column:1/-1;"><label style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Description</label><textarea name="description" rows="3" style="width:100%;padding:10px 12px;border:1px solid #e8e4de;border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;">{{ hotel.description if hotel else '' }}</textarea></div>
-      {% if hotel %}<div><label style="font-size:11px;color:#666;display:flex;align-items:center;gap:.5rem;cursor:pointer;"><input type="checkbox" name="is_active" {% if hotel.is_active %}checked{% endif %}> Active</label></div>{% endif %}
-      <div style="grid-column:1/-1;display:flex;gap:1rem;">
-        <button type="submit" style="padding:12px 28px;background:#c9a84c;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;">Save Hotel</button>
-        <a href="{{ url_for('admin_hotels') }}" style="padding:12px 20px;border:1px solid #e8e4de;border-radius:10px;text-decoration:none;color:#666;font-size:14px;">Cancel</a>
+    {% endwith %}
+
+    <div class="section-card anim" style="max-width:780px;">
+      <div class="section-header">
+        <h3>
+          <i class="fa-solid fa-hotel" style="color:var(--gold);margin-right:8px;"></i>
+          {{ 'Edit Hotel: ' + hotel.name if hotel else 'New Hotel Details' }}
+        </h3>
       </div>
-    </form>
+
+      <form method="POST"
+            action="{{ url_for('admin_edit_hotel', hotel_id=hotel.id) if hotel else url_for('admin_add_hotel') }}">
+
+        <div class="form-body">
+          <div class="form-grid">
+
+            <div class="form-group full">
+              <label>Hotel Name *</label>
+              <input type="text" name="name" placeholder="e.g. The Grand Palace"
+                     value="{{ hotel.name if hotel else '' }}" required>
+            </div>
+
+            <div class="form-group full">
+              <label>Destination *</label>
+              <select name="destination_id" required>
+                <option value="">Select destination</option>
+                {% for dest in destinations %}
+                <option value="{{ dest.id }}"
+                  {{ 'selected' if hotel and hotel.destination_id == dest.id }}>
+                  {{ dest.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Stars (1–5) *</label>
+              <input type="number" name="stars" min="1" max="5" step="0.5"
+                     value="{{ hotel.stars if hotel else '3' }}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Starting Price (₹) *</label>
+              <input type="number" name="starting_price" min="0"
+                     placeholder="e.g. 2500"
+                     value="{{ hotel.starting_price if hotel else '' }}" required>
+            </div>
+
+            <div class="form-group">
+              <label>Lunch Price (₹)</label>
+              <input type="number" name="lunch_price" min="0"
+                     value="{{ hotel.lunch_price if hotel else '500' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Dinner Price (₹)</label>
+              <input type="number" name="dinner_price" min="0"
+                     value="{{ hotel.dinner_price if hotel else '600' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Pickup Price (₹)</label>
+              <input type="number" name="pickup_price" min="0"
+                     value="{{ hotel.pickup_price if hotel else '800' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" name="latitude" step="any"
+                     placeholder="e.g. 19.0760"
+                     value="{{ hotel.latitude if hotel else '' }}">
+            </div>
+
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" name="longitude" step="any"
+                     placeholder="e.g. 72.8777"
+                     value="{{ hotel.longitude if hotel else '' }}">
+            </div>
+
+            <div class="form-group full">
+              <label>Address</label>
+              <input type="text" name="address" placeholder="Full hotel address"
+                     value="{{ hotel.address if hotel else '' }}">
+            </div>
+
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea name="description" placeholder="Brief description of the hotel...">{{ hotel.description if hotel else '' }}</textarea>
+            </div>
+
+            {% if hotel %}
+            <div class="form-group full">
+              <label>Active Status</label>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:4px;">
+                <label class="toggle">
+                  <input type="checkbox" name="is_active" {{ 'checked' if hotel.is_active }}>
+                  <span class="toggle-slider"></span>
+                </label>
+                <span style="font-size:13px;color:var(--muted);">Hotel is active and bookable</span>
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <a href="{{ url_for('admin_hotels') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-gold">
+            <i class="fa-solid fa-check"></i>
+            {{ 'Update Hotel' if hotel else 'Add Hotel' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
   </div>
 </div>
-{% endblock %}
+<script>
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>

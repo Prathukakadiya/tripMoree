@@ -1,171 +1,1153 @@
 {% extends "base.html" %}
-{% block title %}Trains to {{ destination }}{% endblock %}
-
+{% block title %}🚂 Trains to {{ destination }} — TripMoree{% endblock %}
 {% block extra_css %}
 <style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.train-page{max-width:1100px;margin:0 auto;padding:2rem var(--page-pad);}
-.search-box{background:linear-gradient(135deg,#0d1a1a,#1a3a2e);border-radius:var(--radius-lg);padding:2rem;margin-bottom:2rem;}
-.search-box-title{font-family:var(--font-display);font-size:1.6rem;color:#fff;margin-bottom:1.5rem;}
-.search-form{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;}
-.form-group label{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
-.form-group select,.form-group input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;font-size:14px;font-family:var(--font-body);outline:none;}
-.form-group select option{background:#1a2e2a;}
-.search-btn{padding:12px 24px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-body);height:46px;transition:all .2s;}
-.search-btn:hover{background:#b8934a;}
-.trains-list{display:flex;flex-direction:column;gap:12px;}
-.train-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;transition:all .25s;animation:fadeUp .4s ease both;}
-.train-card:hover{border-color:var(--gold);box-shadow:0 8px 30px rgba(0,0,0,.08);}
-.train-inner{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:1.5rem;align-items:center;}
-.train-name{font-family:var(--font-display);font-size:1.1rem;font-weight:600;}
-.train-number{font-size:12px;color:var(--muted);margin-top:2px;}
-.class-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
-.class-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
-.chip-ac{background:#e3f2fd;color:#1565c0;}
-.chip-sleeper{background:#e8f5e9;color:#1b5e20;}
-.chip-seater{background:#fff3e0;color:#bf360c;}
-.time-col{text-align:center;}
-.time-big{font-family:var(--font-display);font-size:1.3rem;font-weight:600;}
-.time-city{font-size:12px;color:var(--muted);}
-.train-path{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.train-bar{width:2px;height:40px;background:linear-gradient(to bottom,var(--gold),var(--teal));}
-.price-col{text-align:right;}
-.price-big{font-family:var(--font-display);font-size:1.4rem;font-weight:600;}
-.price-note{font-size:11px;color:var(--muted);}
-.seats-info{font-size:12px;margin-top:4px;}
-.book-train-btn{padding:10px 22px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all .2s;margin-top:8px;display:block;text-align:center;text-decoration:none;}
-.book-train-btn:hover{background:var(--teal);color:#fff;}
-.sort-bar{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.5rem;margin-bottom:1rem;}
-.sort-btn{padding:6px 16px;border:1px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--white);font-family:var(--font-body);transition:all .2s;}
-.sort-btn.active,.sort-btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
-.no-results{text-align:center;padding:3rem;color:var(--muted);}
-@media(max-width:768px){.search-form{grid-template-columns:1fr 1fr;}.train-inner{grid-template-columns:1fr 1fr;gap:1rem;}}
+:root {
+  --primary: #0f2c59;
+  --primary-glow: rgba(15, 44, 89, 0.15);
+  --accent: #c5a044;
+  --dark: #0a101d;
+  --light: #f4f6f9;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --success: #10b981;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGold {
+  0% { box-shadow: 0 0 0 0 rgba(197, 160, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(197, 160, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(197, 160, 68, 0); }
+}
+
+body {
+  background-color: #fafbfc;
+  color: #1e293b;
+}
+
+.t-hero {
+  background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+  padding: 4rem var(--page-pad) 5rem;
+  text-align: center;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.t-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 16H9v-2h5v2zm0 24H9v-2h5v2zm0 24H9v-2h5v2zm40-48h-5v-2h5v2zm0 24h-5v-2h5v2zm0 24h-5v-2h5v2zM9 29h5v2H9v-2zm0 24h5v2H9v-2zm40-48h5v2h-5v-2zm0 24h5v2h-5v-2zm0 24h5v2h-5v-2zM9 9h5v2H9V9zm0 24h5v2H9v-2zm0 24h5v2H9v-2zm40-48h5v2h-5v-2zm0 24h5v2h-5v-2zm0 24h5v2h-5v-2z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+.t-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(to right, #fff, #ebd394);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.t-hero p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+}
+
+.t-search {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  max-width: 900px;
+  margin: -3rem auto 0;
+  position: relative;
+  z-index: 10;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+.t-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 0.8fr auto;
+  gap: 16px;
+  align-items: end;
+}
+.igrp label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8px;
+}
+.igrp input, .igrp select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  outline: none;
+  background: #f8fafc;
+  transition: all 0.3s;
+}
+.igrp input:focus, .igrp select:focus {
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(197, 160, 68, 0.1);
+}
+.sbtn {
+  padding: 13px 28px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sbtn:hover {
+  background: #0b1d3d;
+  transform: translateY(-1px);
+}
+
+.t-wrap {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 var(--page-pad);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1.2rem;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.sort-info {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-right: auto;
+}
+.schip {
+  padding: 8px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+  color: #475569;
+}
+.schip:hover, .schip.active {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+/* Train Card Layout */
+.fc {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.2rem;
+  display:grid;
+  grid-template-columns: 180px 1.2fr 1fr 1.2fr 1.5fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeUp .5s ease both;
+}
+.fc:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  border-color: var(--accent);
+}
+
+.tr-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tr-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+.tr-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark);
+}
+.tr-num {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.tr-type-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.type-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.tag-ac { background: #e0f2fe; color: #0369a1; }
+.tag-sleeper { background: #f0fdf4; color: #15803d; }
+.tag-seater { background: #fdf2f8; color: #be185d; }
+
+.tb {
+  text-align: center;
+}
+.tv {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  font-family: var(--font-display);
+}
+.tc2 {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.dur {
+  text-align: center;
+}
+.dur-line {
+  position: relative;
+  height: 2px;
+  background: var(--border);
+  margin: 8px auto;
+  width: 80px;
+}
+.dur-line::before {
+  content: '🚆';
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--accent);
+}
+.dur-t {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pb {
+  text-align: right;
+}
+.pv {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+.ps {
+  font-size: 11px;
+  color: var(--muted);
+}
+.pt {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+.sl {
+  font-size: 11px;
+  color: #ea580c;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.bbtn {
+  padding: 10px 20px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+.bbtn:hover {
+  background: #0b1d3d;
+  box-shadow: 0 6px 16px rgba(15,44,89,0.3);
+  color: var(--white);
+}
+
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  margin-top: 2rem;
+}
+.empty-i {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Connecting Train Card Specifics */
+.fc-connect {
+  border-left: 4px solid var(--accent);
+}
+.connect-info {
+  background: #fcfcf9;
+  grid-column: 1 / -1;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #f2eedf;
+  font-size: 12px;
+  color: #785a28;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -0.5rem;
+}
+
+/* Premium Seat Selection Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 17, 15, 0.7);
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.modal-overlay.show {
+  display: flex;
+}
+.modal-card {
+  background: var(--white);
+  border-radius: 24px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+}
+.modal-left {
+  padding: 2.5rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.modal-right {
+  padding: 2.5rem;
+  background: #fafbfc;
+  display: flex;
+  flex-direction: column;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+.modal-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+/* Train Coach / Compartment Layouts */
+.train-cabin {
+  background: #e6edf8;
+  border: 4px solid var(--primary);
+  border-radius: 12px;
+  padding: 25px 15px;
+  position: relative;
+  max-width: 320px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+.train-cabin-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.train-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) 24px 1fr;
+  gap: 12px 6px;
+  justify-items: center;
+}
+
+/* Berths styling */
+.berth-cell {
+  width: 30px;
+  height: 48px;
+  border: 1.5px solid var(--primary);
+  border-radius: 4px;
+  font-size: 7.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--white);
+  transition: all 0.2s;
+  user-select: none;
+  color: #0f2c59;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.berth-cell:hover {
+  border-color: var(--accent);
+  background: #eff6ff;
+}
+.berth-cell.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+  transform: scale(1.05);
+  animation: pulseGold 1.5s infinite;
+}
+.berth-cell.occupied {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+.berth-cell.space {
+  grid-column: 4;
+  width: 24px;
+  height: 20px;
+  border: none;
+  cursor: default;
+  background: transparent;
+}
+
+/* Legend */
+.seat-legend {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+/* Preferences Box */
+.pref-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.pref-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pref-selector {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: #f8fafc;
+  outline: none;
+}
+.pref-selector:focus {
+  border-color: var(--accent);
+}
+
+.sum-box {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+.sum-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.sum-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+.sum-val {
+  font-weight: 700;
+  color: var(--dark);
+}
+.sum-total {
+  font-size: 1.6rem;
+  color: var(--primary);
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+.btn-proceed {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 14px rgba(15, 44, 89, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-proceed:hover {
+  background: #0b1d3d;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(15, 44, 89, 0.35);
+}
+.btn-proceed:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.close-modal {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--muted);
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.close-modal:hover {
+  background: #f1f5f9;
+  color: var(--dark);
+}
+
+@media(max-width: 768px) {
+  .t-grid {
+    grid-template-columns: 1fr;
+  }
+  .sbtn {
+    width: 100%;
+  }
+  .fc {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .dur {
+    display: none;
+  }
+  .modal-card {
+    grid-template-columns: 1fr;
+  }
+  .modal-left {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+  }
+  .modal-right {
+    padding: 1.5rem;
+  }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="train-page">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;font-size:13px;color:var(--muted);">
-    <span style="color:var(--teal);">✓ Hotel</span> →
-    <span style="color:var(--gold);font-weight:600;">🚂 Transport</span> →
-    <span>📍 Spots</span> → <span>🚕 Cab</span> → <span>💳 Pay</span>
-  </div>
+<div class="t-hero">
+  <h1>🚂 Trains to {{ destination }}</h1>
+  <p>Compare and book direct & alternative connecting train routes</p>
+</div>
 
-  <div class="search-box">
-    <div class="search-box-title">🚂 Trains to {{ destination }}</div>
+<div style="padding:0 var(--page-pad); max-width:900px; margin:0 auto;">
+  <div class="t-search">
     <form method="POST">
-      <div class="search-form">
-        <div class="form-group">
-          <label>From City</label>
-          <input type="text" name="source" placeholder="e.g. Ahmedabad" value="{{ request.form.get('source','') }}" required>
+      <div class="t-grid">
+        <div class="igrp">
+          <label>From Station</label>
+          <input type="text" name="source" placeholder="e.g. Ahmedabad, Mumbai" value="{{ request.form.get('source','') }}" required>
         </div>
-        <div class="form-group">
-          <label>AC Type</label>
-          <select name="ac_type">
-            <option value="AC" {% if request.form.get('ac_type')=='AC' %}selected{% endif %}>AC</option>
-            <option value="Non-AC" {% if request.form.get('ac_type')=='Non-AC' %}selected{% endif %}>Non-AC</option>
+        <div class="igrp">
+          <label>AC Preference</label>
+          <select name="ac_type" id="acFilter">
+            <option value="AC" {% if request.form.get('ac_type')=='AC' %}selected{% endif %}>AC Coaches</option>
+            <option value="Non-AC" {% if request.form.get('ac_type')=='Non-AC' %}selected{% endif %}>Non-AC Coaches</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Seat Type</label>
-          <select name="seat_type">
-            <option value="Sleeper" {% if request.form.get('seat_type')=='Sleeper' %}selected{% endif %}>Sleeper</option>
-            <option value="Seater" {% if request.form.get('seat_type')=='Seater' %}selected{% endif %}>Seater</option>
+        <div class="igrp">
+          <label>Coach Class</label>
+          <select name="seat_type" id="typeFilter">
+            <option value="Sleeper" {% if request.form.get('seat_type','Sleeper')=='Sleeper' %}selected{% endif %}>Sleeper Coach (SL)</option>
+            <option value="Seater" {% if request.form.get('seat_type')=='Seater' %}selected{% endif %}>Second Seating (2S/CC)</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="igrp">
           <label>Passengers</label>
-          <select name="persons">
-            {% for i in range(1,7) %}
+          <select name="persons" id="passengersCount">
+            {% for i in range(1,10) %}
             <option value="{{ i }}" {% if persons == i %}selected{% endif %}>{{ i }} Passenger{{ 's' if i > 1 }}</option>
             {% endfor %}
           </select>
         </div>
-        <button type="submit" class="search-btn">🔍 Search</button>
+        <button type="submit" class="sbtn">Search 🔍</button>
       </div>
     </form>
   </div>
+</div>
 
+<div class="t-wrap">
+  
+  <!-- Direct Trains Section -->
   {% if trains %}
-  <div class="sort-bar">
-    <span style="font-size:13px;font-weight:600;">{{ trains|length }} trains found</span>
-    <button class="sort-btn active" onclick="sortTrains('price',this)">Cheapest</button>
-    <button class="sort-btn" onclick="sortTrains('time',this)">Earliest</button>
-  </div>
-  <div class="trains-list" id="trainsList">
-    {% for t in trains %}
-    <div class="train-card" data-price="{{ t.price }}" data-time="{{ t.departure_time }}" style="animation-delay:{{ loop.index0 * 0.06 }}s;">
-      <div class="train-inner">
+    <h2 class="section-title">✨ Direct Train Services</h2>
+    <div class="sort-bar">
+      <span class="sort-info">{{ trains|length }} trains found</span>
+      <button class="schip active" onclick="srt('price',this)">💰 Cheapest</button>
+      <button class="schip" onclick="srt('time',this)">⏰ Departure</button>
+    </div>
+    
+    <div id="trainsList">
+      {% for t in trains %}
+      <div class="fc" style="animation-delay:{{ loop.index0 * 0.05 }}s;" 
+           data-price="{{ t.price }}" data-time="{{ t.departure_time }}" data-seats="{{ t.available_seats }}">
+        <div class="tr-info">
+          <div class="tr-logo">🚆</div>
+          <div>
+            <div class="tr-name">{{ t.train_name }}</div>
+            <div class="tr-num">#{{ t.train_number }}</div>
+            <div class="tr-type-tags">
+              <span class="type-tag {{ 'tag-ac' if t.ac_type == 'AC' else 'tag-nonac' }}" style="background:#e0f2fe; color:#0369a1;">{{ t.ac_type }}</span>
+              <span class="type-tag tag-sleeper">{{ t.seat_type }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ t.departure_time[:5] if t.departure_time else '—' }}</div>
+          <div class="tc2">{{ t.source }}</div>
+        </div>
+        
+        <div class="dur">
+          <div class="dur-line"></div>
+          <div class="dur-t">Non-stop</div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ (t.departure_time|string)[:5] if t.departure_time else '—' }}</div>
+          <div class="tc2">{{ t.destination }}</div>
+        </div>
+        
         <div>
-          <div class="train-name">{{ t.train_name }}</div>
-          <div class="train-number">🚂 {{ t.train_number }}</div>
-          <div class="class-chips">
-            <span class="class-chip {{ 'chip-ac' if t.ac_type == 'AC' else 'chip-sleeper' }}">{{ t.ac_type }}</span>
-            <span class="class-chip {{ 'chip-sleeper' if t.seat_type == 'Sleeper' else 'chip-seater' }}">{{ t.seat_type }}</span>
+          <div class="pb">
+            <div class="pv" id="price-val-{{ t.id }}">₹{{ "{:,}".format(t.price) }}</div>
+            <div class="ps">per seat</div>
+            <div class="pt" id="total-val-{{ t.id }}">₹{{ "{:,}".format(t.price * persons) }} total</div>
+          </div>
+          <div style="margin-top:4px;">
+            {% if t.available_seats > 15 %}
+              <span style="font-size:11px; color:var(--success); font-weight:700;">🟢 {{ t.available_seats }} available</span>
+            {% elif t.available_seats > 0 %}
+              <span style="font-size:11px; color:#ea580c; font-weight:700;">🟠 Only {{ t.available_seats }} left!</span>
+            {% else %}
+              <span style="font-size:11px; color:#ef4444; font-weight:700;">❌ Waitlist (WL)</span>
+            {% endif %}
           </div>
         </div>
-        <div class="time-col">
-          <div class="time-big">{{ t.departure_time[:5] if t.departure_time else '—' }}</div>
-          <div class="time-city">{{ t.source }}</div>
-        </div>
-        <div class="train-path">
-          <div style="font-size:11px;color:var(--muted);">Direct</div>
-          <div class="train-bar"></div>
-          <div style="font-size:18px;">🚂</div>
-        </div>
-        <div class="time-col">
-          <div class="time-big">{{ t.arrival_time[:5] if t.arrival_time else '—' }}</div>
-          <div class="time-city">{{ t.destination }}</div>
-        </div>
-        <div class="price-col">
-          <div class="price-big">₹{{ "{:,}".format(t.price) }}</div>
-          <div class="price-note">per person</div>
-          <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--teal);margin-top:4px;">₹{{ "{:,}".format(t.price * persons) }} total</div>
-          <div class="seats-info">
-            {% if t.available_seats > 10 %}<span style="color:#27ae60;">🟢 {{ t.available_seats }} seats</span>
-            {% elif t.available_seats > 0 %}<span style="color:#e67e22;">🟠 Only {{ t.available_seats }}!</span>
-            {% else %}<span style="color:#e74c3c;">❌ Waitlist</span>{% endif %}
-          </div>
+        
+        <div style="text-align:center;">
           {% if t.available_seats > 0 %}
-          <a href="{{ url_for('confirm_train', train_id=t.id, hotel_booking_id=hotel_booking_id) }}" class="book-train-btn">Book Now →</a>
+            <button onclick="openSeatModal('direct', '{{ t.id }}', '{{ t.train_name }}', '{{ t.source }} ➔ {{ t.destination }}', '{{ t.price }}', '{{ t.seat_type }}')" class="bbtn">Select Berth →</button>
           {% else %}
-          <button class="book-train-btn" style="background:#ccc;cursor:not-allowed;" disabled>Waitlist</button>
+            <button class="bbtn" style="background:#cbd5e1; color:#94a3b8; cursor:not-allowed;" disabled>Waitlist</button>
           {% endif %}
+          <div style="font-size:11px; color:var(--muted); margin-top:6px;">{{ t.available_seats }} seats avail.</div>
         </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
   {% elif request.method == 'POST' %}
-  <div class="no-results">
-    <div style="font-size:3rem;margin-bottom:1rem;">🚂</div>
-    <h3 style="color:var(--ink);margin-bottom:.5rem;">No trains found</h3>
-    <p>No trains from <strong>{{ request.form.get('source') }}</strong> to <strong>{{ destination }}</strong>.</p>
-    <p style="margin-top:.5rem;font-size:13px;color:var(--muted);">Try: Ahmedabad, Delhi, Mumbai · Try different class/type</p>
-    <a href="{{ url_for('transport_choice', destination=destination) }}" style="color:var(--gold);margin-top:1rem;display:inline-block;">← Back to transport options</a>
-  </div>
+    <div class="empty">
+      <div class="empty-i">🚂</div>
+      <p style="font-weight:700; font-size:1.1rem; color:var(--dark);">No Direct Trains Found</p>
+      <p style="font-size:13px; margin-top:.4rem;">Review alternative connecting routes below!</p>
+    </div>
   {% else %}
-  <div class="no-results">
-    <div style="font-size:3rem;margin-bottom:1rem;">🚂</div>
-    <p>Enter your city and preferences to search trains to {{ destination }}.</p>
-  </div>
+    <div class="empty">
+      <div class="empty-i">🔍</div>
+      <p style="font-weight:600;">Search train schedules to get started</p>
+    </div>
   {% endif %}
+
+  <!-- Connecting Trains Section -->
+  {% if connecting_trains %}
+    <h2 class="section-title" style="margin-top:4rem;">🔄 Connecting Trains (Alternative Routes)</h2>
+    <div class="sort-bar">
+      <span class="sort-info">{{ connecting_trains|length }} alternative connections found</span>
+    </div>
+    
+    <div>
+      {% for route in connecting_trains %}
+      {% set t1 = route.leg1 %}
+      {% set t2 = route.leg2 %}
+      <div class="fc fc-connect" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+        <!-- Leg 1 Info -->
+        <div class="tr-info">
+          <div class="tr-logo">🚆</div>
+          <div>
+            <div class="tr-name">{{ t1.train_name }}</div>
+            <div class="tr-num">#{{ t1.train_number }}</div>
+            <span class="type-tag tag-ac" style="background:#f1f5f9; color:#475569;">Leg 1</span>
+          </div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ t1.departure_time[:5] if t1.departure_time else '—' }}</div>
+          <div class="tc2">{{ t1.source }}</div>
+        </div>
+        
+        <div class="dur">
+          <div class="dur-line"></div>
+          <div class="dur-t">Layover ➔</div>
+        </div>
+        
+        <div class="tb">
+          <div class="tv">{{ t1.arrival_time[:5] if t1.arrival_time else '—' }}</div>
+          <div class="tc2" style="color:var(--accent); font-weight:700;">{{ t1.destination }}</div>
+        </div>
+        
+        <!-- Total Price -->
+        <div>
+          <div class="pb">
+            <div class="pv">₹{{ "{:,}".format(route.total_price) }}</div>
+            <div class="ps">combined fare</div>
+            <div class="pt">₹{{ "{:,}".format(route.total_price * persons) }} total</div>
+          </div>
+          <div class="sl" style="color:var(--muted); font-weight:500;">Layover: {{ route.layover }}</div>
+        </div>
+        
+        <!-- Book Button -->
+        <div style="text-align:center;">
+          <button onclick="openSeatModal('connecting', '{{ t1.id }},{{ t2.id }}', '{{ t1.train_name }} / {{ t2.train_name }}', '{{ t1.source }} ➔ {{ t1.destination }} ➔ {{ t2.destination }}', '{{ route.total_price }}', '{{ t1.seat_type }}')" class="bbtn" style="background:var(--accent); box-shadow:0 4px 12px rgba(197, 160, 68, 0.2);">Select Berth →</button>
+          <div style="font-size:10px; color:var(--muted); margin-top:6px;">Connect via {{ t1.destination }}</div>
+        </div>
+        
+        <!-- Hop detail row -->
+        <div class="connect-info">
+          <span>🚆 Connecting Train Details: {{ t1.source }} to {{ t1.destination }} ({{ t1.departure_time }}–{{ t1.arrival_time }}) ➔ Layover of {{ route.layover }} ➔ {{ t2.source }} to {{ t2.destination }} ({{ b2.departure_time if b2 else t2.departure_time }}–{{ b2.arrival_time if b2 else t2.arrival_time }})</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  
+</div>
+
+<!-- Seat Selection Modal -->
+<div class="modal-overlay" id="seatModal">
+  <div class="modal-card">
+    <button class="close-modal" onclick="closeSeatModal()">✕</button>
+    
+    <!-- Left Panel: Seat grid representation -->
+    <div class="modal-left">
+      <div class="modal-title" id="m-trainName">Train Operator</div>
+      <div class="modal-subtitle" id="m-route">Route Details</div>
+      
+      <div id="connecting-tabs" style="display:none; margin-bottom:1.5rem; justify-content:center; gap:8px;">
+        <button id="btn-tab-leg1" class="schip active" onclick="switchLegTab(1)">Leg 1: Source ➔ Hub</button>
+        <button id="btn-tab-leg2" class="schip" onclick="switchLegTab(2)">Leg 2: Hub ➔ Dest</button>
+      </div>
+      
+      <!-- Train Cabin / Compartment Layout -->
+      <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+        <div class="train-cabin">
+          <div class="train-cabin-labels">
+            <span>Berth Bay A</span>
+            <span>Berth Bay B</span>
+          </div>
+          
+          <div id="seatsContainer" class="train-seat-grid">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Legend -->
+      <div class="seat-legend">
+        <div class="legend-item"><div class="legend-color" style="background:#fff;"></div> Available</div>
+        <div class="legend-item"><div class="legend-color" style="background:var(--accent);"></div> Selected</div>
+        <div class="legend-item"><div class="legend-color" style="background:#cbd5e1;"></div> Occupied</div>
+      </div>
+    </div>
+    
+    <!-- Right Panel: Configurations & Pricing -->
+    <div class="modal-right">
+      <div class="modal-title" style="font-size:1.3rem;">Coach Configurations</div>
+      <div class="modal-subtitle">Configure class, berths, and preferences</div>
+      
+      <div class="pref-box">
+        <div class="pref-title">Travel Class</div>
+        <select class="pref-selector" id="modalClass" onchange="updateModalPrices()">
+          <option value="Sleeper">Sleeper Class (SL) - Base Fare</option>
+          <option value="2S">Second Seating (2S) - (-20%)</option>
+          <option value="CC">AC Chair Car (CC) - (+10%)</option>
+          <option value="3AC">AC 3 Tier (3AC) - (+30%)</option>
+          <option value="2AC">AC 2 Tier (2AC) - (+80%)</option>
+          <option value="1AC">AC 1 Tier (1AC) - (+150%)</option>
+        </select>
+      </div>
+      
+      <div class="pref-box">
+        <div class="pref-title">Berth Preference</div>
+        <select class="pref-selector" id="modalPref">
+          <option value="Any">No Preference (Any Berth)</option>
+          <option value="Lower">Lower Berth (LB) - Most Preferred</option>
+          <option value="Middle">Middle Berth (MB)</option>
+          <option value="Upper">Upper Berth (UB)</option>
+          <option value="Side Lower">Side Lower (SL)</option>
+          <option value="Side Upper">Side Upper (SU)</option>
+        </select>
+      </div>
+      
+      <div class="pref-box" style="background:rgba(15,44,89,0.03); border-color:var(--primary-glow);">
+        <div class="pref-title" style="color:var(--primary)">Selected Berths</div>
+        <div style="font-size:16px; font-weight:800; color:var(--dark); margin-top:5px;" id="selectedSeatsText">None</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;" id="passengersQuota">Please select exactly {{ persons }} berth(s).</div>
+      </div>
+      
+      <div class="sum-box">
+        <div class="sum-row">
+          <span class="sum-label">Ticket Fare (per person)</span>
+          <span class="sum-val" id="sumPerPerson">₹0</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-label">Passengers</span>
+          <span class="sum-val">× {{ persons }}</span>
+        </div>
+        <div class="sum-divider" style="border-top:1px dashed var(--border); margin:12px 0;"></div>
+        <div class="sum-row" style="align-items:flex-end;">
+          <span class="sum-label" style="font-size:14px; font-weight:700; color:var(--dark);">Total Price</span>
+          <span class="sum-total" id="sumTotal">₹0</span>
+        </div>
+      </div>
+      
+      <button class="btn-proceed" id="proceedBookingBtn" disabled onclick="submitBooking()">
+        🔒 Proceed to Secure Payment
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function sortTrains(by, btn) {
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+// Sorting Logic
+function srt(by,btn){
+  document.querySelectorAll('.schip').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  const list  = document.getElementById('trainsList');
-  if (!list) return;
-  const cards = [...list.querySelectorAll('.train-card')];
-  cards.sort((a, b) => {
-    if (by === 'price') return parseInt(a.dataset.price) - parseInt(b.dataset.price);
-    return a.dataset.time.localeCompare(b.dataset.time);
+  const list = document.getElementById('trainsList');
+  if(!list) return;
+  const cards = [...list.querySelectorAll('.fc')];
+  cards.sort((a,b)=>{
+    if(by==='price') return parseInt(a.dataset.price)-parseInt(b.dataset.price);
+    return String(a.dataset.time).localeCompare(String(b.dataset.time));
   });
-  cards.forEach(c => list.appendChild(c));
+  cards.forEach(c=>list.appendChild(c));
+}
+
+// Seat Booking State
+let bookingType = 'direct';
+let transportIds = '';
+let basePricePerPerson = 0;
+let personsCount = {{ persons }};
+
+// Selections lists
+let selectedSeatsLeg1 = [];
+let selectedSeatsLeg2 = [];
+let activeLegTab = 1;
+
+// Occupied lists
+let bookedSeatsLeg1 = [];
+let bookedSeatsLeg2 = [];
+
+function openSeatModal(type, ids, trainName, route, price, seatType) {
+  bookingType = type;
+  transportIds = ids;
+  basePricePerPerson = parseFloat(price);
+  
+  selectedSeatsLeg1 = [];
+  selectedSeatsLeg2 = [];
+  activeLegTab = 1;
+  
+  document.getElementById('m-trainName').textContent = trainName;
+  document.getElementById('m-route').textContent = route;
+  
+  // Set default class select option
+  document.getElementById('modalClass').value = seatType || 'Sleeper';
+  
+  // Tabs display configurations
+  const legTabContainer = document.getElementById('connecting-tabs');
+  
+  if(type === 'connecting') {
+    legTabContainer.style.display = 'flex';
+    const splitIds = ids.split(',');
+    
+    Promise.all([
+      fetch(`/api/booked-seats/train/${splitIds[0]}`).then(r => r.json()),
+      fetch(`/api/booked-seats/train/${splitIds[1]}`).then(r => r.json())
+    ]).then(([d1, d2]) => {
+      bookedSeatsLeg1 = d1.booked_seats || [];
+      bookedSeatsLeg2 = d2.booked_seats || [];
+      renderSeatGrid();
+      updateModalPrices();
+    });
+  } else {
+    legTabContainer.style.display = 'none';
+    fetch(`/api/booked-seats/train/${ids}`).then(r => r.json()).then(data => {
+      bookedSeatsLeg1 = data.booked_seats || [];
+      renderSeatGrid();
+      updateModalPrices();
+    });
+  }
+  
+  document.getElementById('seatModal').classList.add('show');
+}
+
+function closeSeatModal() {
+  document.getElementById('seatModal').classList.remove('show');
+}
+
+function switchLegTab(legNum) {
+  activeLegTab = legNum;
+  document.getElementById('btn-tab-leg1').classList.toggle('active', legNum === 1);
+  document.getElementById('btn-tab-leg2').classList.toggle('active', legNum === 2);
+  renderSeatGrid();
+  updateSeatsText();
+}
+
+function renderSeatGrid() {
+  const container = document.getElementById('seatsContainer');
+  container.innerHTML = '';
+  
+  const occupiedList = (bookingType === 'connecting' && activeLegTab === 2) ? bookedSeatsLeg2 : bookedSeatsLeg1;
+  const currentSelections = (bookingType === 'connecting' && activeLegTab === 2) ? selectedSeatsLeg2 : selectedSeatsLeg1;
+  
+  // Render Indian Railways Compartment Bay layout (LB, MB, UB | LB, MB, UB | aisle | SL, SU)
+  // Compartment 1 (Berths 1-8) and Compartment 2 (Berths 9-16)
+  const compartments = 2;
+  const labels = ["LB", "MB", "UB", "SL", "SU"];
+  
+  for (let comp = 0; comp < compartments; comp++) {
+    const offset = comp * 8;
+    
+    // Rows of berths in a bay:
+    // Bay Left side: 3 berths
+    createBerthCell(container, offset + 1, "LB", occupiedList, currentSelections);
+    createBerthCell(container, offset + 2, "MB", occupiedList, currentSelections);
+    createBerthCell(container, offset + 3, "UB", occupiedList, currentSelections);
+    
+    // Aisle space
+    const space1 = document.createElement('div');
+    space1.className = 'berth-cell space';
+    container.appendChild(space1);
+    
+    // Bay Side berths: 2 berths (SL and SU)
+    createBerthCell(container, offset + 7, "SL", occupiedList, currentSelections);
+    
+    // Bay Right side: 3 berths
+    createBerthCell(container, offset + 4, "LB", occupiedList, currentSelections);
+    createBerthCell(container, offset + 5, "MB", occupiedList, currentSelections);
+    createBerthCell(container, offset + 6, "UB", occupiedList, currentSelections);
+    
+    // Aisle space
+    const space2 = document.createElement('div');
+    space2.className = 'berth-cell space';
+    container.appendChild(space2);
+    
+    createBerthCell(container, offset + 8, "SU", occupiedList, currentSelections);
+  }
+}
+
+function createBerthCell(container, berthNum, type, occupiedList, currentSelections) {
+  const berthId = `${berthNum}-${type}`;
+  const cell = document.createElement('div');
+  cell.className = 'berth-cell';
+  cell.textContent = berthId;
+  
+  if (occupiedList.includes(berthId)) {
+    cell.classList.add('occupied');
+  } else {
+    if (currentSelections.includes(berthId)) {
+      cell.classList.add('selected');
+    }
+    cell.onclick = () => toggleSelectSeat(berthId);
+  }
+  container.appendChild(cell);
+}
+
+function toggleSelectSeat(seatId) {
+  let currentSelections = (bookingType === 'connecting' && activeLegTab === 2) ? selectedSeatsLeg2 : selectedSeatsLeg1;
+  
+  const idx = currentSelections.indexOf(seatId);
+  if (idx > -1) {
+    currentSelections.splice(idx, 1);
+  } else {
+    if (currentSelections.length >= personsCount) {
+      currentSelections.shift();
+    }
+    currentSelections.push(seatId);
+  }
+  
+  if (bookingType === 'connecting' && activeLegTab === 2) {
+    selectedSeatsLeg2 = currentSelections;
+  } else {
+    selectedSeatsLeg1 = currentSelections;
+  }
+  
+  renderSeatGrid();
+  updateSeatsText();
+}
+
+function updateSeatsText() {
+  const textEl = document.getElementById('selectedSeatsText');
+  const btn = document.getElementById('proceedBookingBtn');
+  
+  if(bookingType === 'connecting') {
+    const s1 = selectedSeatsLeg1.join(', ') || 'None';
+    const s2 = selectedSeatsLeg2.join(', ') || 'None';
+    textEl.innerHTML = `<span style="color:var(--primary)">Leg 1:</span> ${s1} <br/> <span style="color:var(--accent)">Leg 2:</span> ${s2}`;
+    
+    const valid = (selectedSeatsLeg1.length === personsCount) && (selectedSeatsLeg2.length === personsCount);
+    btn.disabled = !valid;
+    document.getElementById('passengersQuota').textContent = `Leg 1: ${selectedSeatsLeg1.length}/${personsCount} | Leg 2: ${selectedSeatsLeg2.length}/${personsCount}`;
+  } else {
+    const s = selectedSeatsLeg1.join(', ') || 'None';
+    textEl.textContent = s;
+    const valid = (selectedSeatsLeg1.length === personsCount);
+    btn.disabled = !valid;
+    document.getElementById('passengersQuota').textContent = `Selected: ${selectedSeatsLeg1.length}/${personsCount} berths.`;
+  }
+}
+
+function updateModalPrices() {
+  const cabinClass = document.getElementById('modalClass').value;
+  
+  const multipliers = {
+    "1AC": 2.5,
+    "2AC": 1.8,
+    "3AC": 1.3,
+    "CC": 1.1,
+    "Sleeper": 1.0,
+    "2S": 0.8
+  };
+  
+  const multiplier = multipliers[cabinClass] || 1.0;
+  const finalPerPerson = basePricePerPerson * multiplier;
+  const finalTotal = finalPerPerson * personsCount;
+  
+  document.getElementById('sumPerPerson').textContent = `₹${Math.round(finalPerPerson).toLocaleString('en-IN')}`;
+  document.getElementById('sumTotal').textContent = `₹${Math.round(finalTotal).toLocaleString('en-IN')}`;
+}
+
+function submitBooking() {
+  const cabinClass = document.getElementById('modalClass').value;
+  const preference = document.getElementById('modalPref').value;
+  
+  if(bookingType === 'connecting') {
+    const splitIds = transportIds.split(',');
+    const s1 = selectedSeatsLeg1.join(',');
+    const s2 = selectedSeatsLeg2.join(',');
+    
+    window.location.href = `/confirm-connecting-train?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${cabinClass}&preference=${preference}`;
+  } else {
+    const s = selectedSeatsLeg1.join(',');
+    window.location.href = `/confirm-train/${transportIds}?seats=${s}&class=${cabinClass}&preference=${preference}`;
+  }
 }
 </script>
 {% endblock %}

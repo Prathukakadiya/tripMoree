@@ -1,32 +1,138 @@
-{% extends "base.html" %}{% block title %}Admin — Destinations{% endblock %}
-{% block content %}
-<div style="max-width:1100px;margin:2rem auto;padding:0 1.5rem;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-    <h1 style="font-family:Georgia,serif;font-size:1.5rem;">📍 Destinations</h1>
-    <a href="{{ url_for('admin_add_destination') }}" style="padding:10px 20px;background:#c9a84c;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:700;">+ Add Destination</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Destinations — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item active"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;"
+        onclick="document.getElementById('sidebar').classList.toggle('mob-open')">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="topbar-title">Destinations</span>
+    </div>
+    <div class="topbar-right">
+      <a href="{{ url_for('admin_add_destination') }}" class="btn btn-gold">
+        <i class="fa-solid fa-plus"></i> Add Destination
+      </a>
+      <div class="topbar-avatar">A</div>
+    </div>
   </div>
-  <div style="background:#fff;border:1px solid #e8e4de;border-radius:20px;overflow:hidden;">
-    <table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="background:#f8f6f1;">
-        {% for h in ['ID','Name','Category','Rating','Status','Actions'] %}<th style="padding:12px 16px;text-align:left;font-size:11px;color:#888;font-weight:600;">{{ h }}</th>{% endfor %}
-      </tr></thead>
-      <tbody>
-      {% for d in destinations %}
-      <tr style="border-top:1px solid #f0ede8;">
-        <td style="padding:12px 16px;font-size:13px;color:#888;">#{{ d.id }}</td>
-        <td style="padding:12px 16px;font-size:13px;font-weight:600;">{{ d.name }}</td>
-        <td style="padding:12px 16px;font-size:13px;">{{ d.category or '—' }}</td>
-        <td style="padding:12px 16px;font-size:13px;color:#f59e0b;">⭐ {{ d.rating or 0 }}</td>
-        <td style="padding:12px 16px;"><span style="padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;background:{% if d.is_active %}#d1fae5;color:#065f46{% else %}#fee2e2;color:#991b1b{% endif %};">{{ 'Active' if d.is_active else 'Hidden' }}</span></td>
-        <td style="padding:12px 16px;display:flex;gap:.5rem;">
-          <a href="{{ url_for('admin_edit_destination', dest_id=d.id) }}" style="font-size:12px;color:#1a5c50;text-decoration:none;font-weight:600;">Edit</a>
-          <a href="{{ url_for('admin_delete_destination', dest_id=d.id) }}" style="font-size:12px;color:#e74c3c;text-decoration:none;font-weight:600;">Hide</a>
-        </td>
-      </tr>
+
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'warning' if cat=='warning' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
       {% endfor %}
-      </tbody>
-    </table>
+    {% endwith %}
+
+    <div class="section-card anim">
+      {% if destinations %}
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Rating</th>
+              <th>Best Time</th>
+              <th>Featured</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in destinations %}
+            <tr>
+              <td style="color:var(--muted);font-size:12px;">{{ d.id }}</td>
+              <td>
+                <div style="font-weight:600;">{{ d.name }}</div>
+                <div style="font-size:11.5px;color:var(--muted);">{{ d.country_type }}</div>
+              </td>
+              <td>
+                <span class="badge badge-blue">{{ d.category or '—' }}</span>
+              </td>
+              <td style="font-size:12.5px;color:var(--muted);">{{ d.vacation_type or '—' }}</td>
+              <td>
+                <span style="color:var(--gold);font-weight:600;">★ {{ d.rating or '—' }}</span>
+              </td>
+              <td style="font-size:12.5px;color:var(--muted);">{{ d.best_time or '—' }}</td>
+              <td>
+                {% if d.is_featured %}
+                  <span class="badge badge-gold"><i class="fa-solid fa-star" style="font-size:9px;"></i> Yes</span>
+                {% else %}
+                  <span class="badge badge-muted">No</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if d.is_active %}
+                  <span class="badge badge-green">Active</span>
+                {% else %}
+                  <span class="badge badge-red">Inactive</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <a href="{{ url_for('admin_edit_destination', dest_id=d.id) }}"
+                     class="btn btn-blue btn-sm" title="Edit">
+                    <i class="fa-solid fa-pen"></i>
+                  </a>
+                  <a href="{{ url_for('admin_delete_destination', dest_id=d.id) }}"
+                     class="btn btn-red btn-sm"
+                     onclick="return confirm('Deactivate {{ d.name }}?')"
+                     title="Deactivate">
+                    <i class="fa-solid fa-ban"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-map-pin"></i>
+          No destinations yet. <a href="{{ url_for('admin_add_destination') }}" style="color:var(--gold);">Add one</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
-  <div style="margin-top:1rem;"><a href="{{ url_for('admin_dashboard') }}" style="color:#888;font-size:13px;text-decoration:none;">← Admin Dashboard</a></div>
 </div>
-{% endblock %}
+<script>
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>

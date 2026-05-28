@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Coupons — TripMoree Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo"><span class="logo-name">✈ TripMoree</span><small>Admin Panel</small></div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <a href="{{ url_for('admin_dashboard') }}" class="nav-item"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+    <a href="{{ url_for('admin_analytics') }}" class="nav-item"><i class="fa-solid fa-chart-line"></i> Analytics</a>
+    <div class="nav-label">Manage</div>
+    <a href="{{ url_for('admin_users') }}" class="nav-item"><i class="fa-solid fa-users"></i> Users</a>
+    <a href="{{ url_for('admin_bookings') }}" class="nav-item"><i class="fa-solid fa-calendar-check"></i> Bookings</a>
+    <a href="{{ url_for('admin_packages') }}" class="nav-item"><i class="fa-solid fa-box"></i> Packages</a>
+    <a href="{{ url_for('admin_hotels') }}" class="nav-item"><i class="fa-solid fa-hotel"></i> Hotels</a>
+    <a href="{{ url_for('admin_destinations') }}" class="nav-item"><i class="fa-solid fa-map-pin"></i> Destinations</a>
+    <div class="nav-label">Tools</div>
+    <a href="{{ url_for('admin_coupons') }}" class="nav-item active"><i class="fa-solid fa-tag"></i> Coupons</a>
+    <a href="{{ url_for('admin_flash_sales') }}" class="nav-item"><i class="fa-solid fa-bolt"></i> Flash Sales</a>
+    <a href="{{ url_for('admin_insurance') }}" class="nav-item"><i class="fa-solid fa-shield-heart"></i> Insurance</a>
+    <a href="{{ url_for('admin_newsletter') }}" class="nav-item"><i class="fa-solid fa-envelope"></i> Newsletter</a>
+    <a href="{{ url_for('admin_support') }}" class="nav-item"><i class="fa-solid fa-headset"></i> Support</a>
+  </nav>
+  <div class="sidebar-footer"><a href="{{ url_for('admin_logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" id="menuBtn" style="display:none;"
+        onclick="document.getElementById('sidebar').classList.toggle('mob-open')">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="topbar-title">Coupons</span>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-gold" onclick="document.getElementById('addModal').classList.add('open')">
+        <i class="fa-solid fa-plus"></i> New Coupon
+      </button>
+      <div class="topbar-avatar">A</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ 'success' if cat=='success' else 'danger' if cat=='danger' else 'info' }}">
+          <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="section-card anim">
+      {% if coupons %}
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Discount</th>
+              <th>Max Off</th>
+              <th>Min Amount</th>
+              <th>Used / Limit</th>
+              <th>Valid From</th>
+              <th>Valid Till</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in coupons %}
+            <tr>
+              <td>
+                <span style="font-family:monospace;font-size:13px;font-weight:700;
+                             background:var(--card2);padding:4px 9px;border-radius:5px;
+                             color:var(--gold);letter-spacing:1px;">
+                  {{ c.code }}
+                </span>
+              </td>
+              <td><span class="badge badge-red">{{ c.discount_percent }}% OFF</span></td>
+              <td style="font-size:13px;">₹{{ "{:,}".format(c.max_discount or 0) }}</td>
+              <td style="font-size:13px;color:var(--muted);">₹{{ "{:,}".format(c.min_amount or 0) }}</td>
+              <td>
+                <span style="font-size:13px;">{{ c.used_count or 0 }}</span>
+                <span style="color:var(--muted);font-size:12px;"> / {{ c.usage_limit or 0 }}</span>
+              </td>
+              <td style="font-size:12px;color:var(--muted);">
+                {{ c.valid_from.strftime('%d %b %Y') if c.valid_from else '—' }}
+              </td>
+              <td style="font-size:12px;color:var(--muted);">
+                {{ c.valid_till.strftime('%d %b %Y') if c.valid_till else '—' }}
+              </td>
+              <td>
+                {% if c.active %}
+                  <span class="badge badge-green">Active</span>
+                {% else %}
+                  <span class="badge badge-muted">Off</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('admin_toggle_coupon', coupon_id=c.id) }}"
+                   class="btn {{ 'btn-red' if c.active else 'btn-green' }} btn-sm">
+                  {{ 'Disable' if c.active else 'Enable' }}
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fa-solid fa-tags"></i>
+          No coupons yet. Create your first one!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ADD COUPON MODAL -->
+<div class="modal-bg" id="addModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-tag" style="color:var(--gold);margin-right:8px;"></i>New Coupon</h3>
+      <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('open')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form method="POST" action="{{ url_for('admin_add_coupon') }}">
+      <div class="form-body">
+        <div class="form-grid">
+
+          <div class="form-group full">
+            <label>Coupon Code *</label>
+            <input type="text" name="code" placeholder="e.g. SAVE20"
+                   style="text-transform:uppercase;letter-spacing:1px;font-weight:600;" required>
+          </div>
+
+          <div class="form-group">
+            <label>Discount % *</label>
+            <input type="number" name="discount_percent" value="10" min="1" max="99" required>
+          </div>
+
+          <div class="form-group">
+            <label>Max Discount (₹)</label>
+            <input type="number" name="max_discount" value="5000" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Min Booking Amount (₹)</label>
+            <input type="number" name="min_amount" value="0" min="0">
+          </div>
+
+          <div class="form-group">
+            <label>Usage Limit</label>
+            <input type="number" name="usage_limit" value="100" min="1">
+          </div>
+
+          <div class="form-group">
+            <label>Valid From</label>
+            <input type="date" name="valid_from">
+          </div>
+
+          <div class="form-group">
+            <label>Valid Till</label>
+            <input type="date" name="valid_till">
+          </div>
+
+        </div>
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-ghost"
+                onclick="document.getElementById('addModal').classList.remove('open')">Cancel</button>
+        <button type="submit" class="btn btn-gold">
+          <i class="fa-solid fa-check"></i> Create Coupon
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Auto uppercase coupon code input
+document.querySelector('input[name="code"]') &&
+document.querySelector('input[name="code"]').addEventListener('input', function(){
+  this.value = this.value.toUpperCase();
+});
+function checkMobile(){document.getElementById('menuBtn').style.display=window.innerWidth<=900?'flex':'none';}
+checkMobile();window.addEventListener('resize',checkMobile);
+</script>
+</body></html>

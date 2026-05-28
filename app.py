@@ -29,11 +29,56 @@ import string
 app = Flask(__name__)
 app.secret_key = "tripmoreee"
 
-# ================= MYSQL CONFIG =================
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root@127.0.0.1:3306/tripmoree"
+# ================= DATABASE CONFIG =================
+import os
+import pymysql
+# Try to connect to MySQL; fallback to SQLite if it fails
+mysql_uri = "mysql+pymysql://root@127.0.0.1:3306/tripmoree"
+try:
+    conn_check = pymysql.connect(host="127.0.0.1", user="root", password="", port=3306, connect_timeout=1)
+    conn_check.close()
+    app.config["SQLALCHEMY_DATABASE_URI"] = mysql_uri
+    print("Database Config: Connected to MySQL database")
+except Exception:
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tripmoreee.db"
+    print("Database Config: MySQL not available, falling back to SQLite: sqlite:///tripmoreee.db")
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+# ================= SCHEMA UPDATES =================
+from sqlalchemy import text
+
+def update_db_schema():
+    with app.app_context():
+        try:
+            # Check if columns exist in transport_bookings table
+            engine = db.engine
+            inspector = db.inspect(engine)
+            columns = [c["name"] for c in inspector.get_columns("transport_bookings")]
+            
+            # New columns to add
+            new_cols = {
+                "transport_id": "INTEGER NULL",
+                "seat_numbers": "VARCHAR(100) NULL",
+                "class_type": "VARCHAR(50) NULL",
+                "preference": "VARCHAR(50) NULL",
+                "route_type": "VARCHAR(20) DEFAULT 'direct'",
+                "hop_details": "TEXT NULL"
+            }
+            
+            for col, col_type in new_cols.items():
+                if col not in columns:
+                    db.session.execute(text(f"ALTER TABLE transport_bookings ADD COLUMN {col} {col_type}"))
+                    db.session.commit()
+                    print(f"Added column {col} to transport_bookings table successfully.")
+        except Exception as e:
+            print(f"Migration error (already migrated or table missing): {e}")
+
+# Run schema update immediately
+update_db_schema()
+
 
 # ================= CONTEXT PROCESSOR =================
 @app.context_processor
@@ -156,6 +201,12 @@ class Room(db.Model):
     @property
     def available_rooms(self):
         return (self.total_rooms or 0) - (self.booked_rooms or 0)
+
+class HotelImage(db.Model):
+    __tablename__ = "hotel_image"
+    id        = db.Column(db.Integer, primary_key=True)
+    hotel_id  = db.Column(db.Integer, db.ForeignKey("hotel.id"))
+    image_url = db.Column(db.String(500))
 
 class HiddenStreetFood(db.Model):
     __tablename__ = "hidden_street_food"
@@ -1991,7 +2042,40 @@ def newsletter_unsubscribe(email):
 
 
 # ── TRANSPORT ──────────────────────────────────────────────
-# FIX: Bus/Train available_seats None check in confirm routes
+
+def get_minutes(t_str):
+    try:
+        t_str = t_str.upper().strip()
+        if "AM" in t_str or "PM" in t_str:
+            time_part = t_str.replace("AM", "").replace("PM", "").strip()
+            h, m = map(int, time_part.split(":"))
+            if "PM" in t_str and h < 12:
+                h += 12
+            if "AM" in t_str and h == 12:
+                h = 0
+            return h * 60 + m
+        else:
+            h, m = map(int, t_str.split(":"))
+            return h * 60 + m
+    except:
+        return 0
+
+@app.route("/api/booked-seats/<transport_type>/<int:transport_id>")
+@login_required
+def booked_seats(transport_type, transport_id):
+    bookings = TransportBooking.query.filter_by(
+        transport_type=transport_type,
+        transport_id=transport_id
+    ).all()
+    seats = []
+    for b in bookings:
+        if b.seat_numbers:
+            parts = b.seat_numbers.replace("|", ",").split(",")
+            for p in parts:
+                clean_seat = p.replace("Leg 1:", "").replace("Leg 2:", "").replace("L1:", "").replace("L2:", "").strip()
+                if clean_seat:
+                    seats.append(clean_seat)
+    return jsonify({"booked_seats": list(set(seats))})
 
 @app.route("/transport-choice/<destination>")
 def transport_choice(destination):
@@ -2017,6 +2101,8 @@ def flight(destination):
         except: pass
     if not booking_id:
         flash("Please complete hotel booking first.", "warning"); return redirect(url_for("home"))
+    
+    connecting_flights = []
     if request.method == "POST":
         src    = request.form.get("source", "").strip()
         fclass = request.form.get("flight_class", "").strip()
@@ -2024,12 +2110,32 @@ def flight(destination):
         if src:    q = q.filter_by(source=src)
         if fclass: q = q.filter_by(flight_class=fclass)
         flights = q.all()
+        
+        # Connection route search if source specified
+        if src:
+            first_legs = Flight.query.filter_by(source=src).all()
+            for f1 in first_legs:
+                second_legs = Flight.query.filter_by(source=f1.destination, destination=destination).all()
+                for f2 in second_legs:
+                    t1_arr = get_minutes(f1.arrival_time)
+                    t2_dep = get_minutes(f2.departure_time)
+                    layover_mins = (t2_dep - t1_arr) % 1440
+                    layover_str = f"{layover_mins // 60}h {layover_mins % 60}m"
+                    connecting_flights.append({
+                        "leg1": f1,
+                        "leg2": f2,
+                        "layover": layover_str,
+                        "total_price": f1.price + f2.price
+                    })
+            connecting_flights = sorted(connecting_flights, key=lambda x: x["total_price"])
     else:
         flights = Flight.query.filter_by(destination=destination).all()
+        
     sources = db.session.query(Flight.source).filter_by(destination=destination).distinct().all()
     classes = db.session.query(Flight.flight_class).distinct().all()
     return render_template("flights.html", destination=destination, persons=persons,
-                           flights=flights, sources=[s[0] for s in sources],
+                           flights=flights, connecting_flights=connecting_flights,
+                           sources=[s[0] for s in sources],
                            classes=[c[0] for c in classes], hotel_booking_id=hotel_booking_id)
 
 @app.route("/confirm-flight/<int:flight_id>")
@@ -2038,6 +2144,11 @@ def confirm_flight(flight_id):
     booking_id       = session.get("booking_id")
     hotel_booking_id = request.args.get("hotel_booking_id") or session.get("hotel_booking_id")
     persons          = session.get("persons", 1)
+    
+    seats        = request.args.get("seats", "")
+    flight_class = request.args.get("class", "Economy")
+    preference   = request.args.get("preference", "")
+    
     if not booking_id:
         flash("Session expired. Please rebook.", "warning"); return redirect(url_for("home"))
     already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="flight").first()
@@ -2048,17 +2159,93 @@ def confirm_flight(flight_id):
         if hb: return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
         return redirect(url_for("my_bookings"))
     f = Flight.query.get_or_404(flight_id)
-    # FIX: None-safe seats check
     avail = f.available_seats or 0
     if avail < persons:
         flash(f"Only {avail} seats available.", "warning")
         return redirect(request.referrer or url_for("home"))
     f.available_seats = avail - persons
-    tb = TransportBooking(booking_id=booking_id, transport_type="flight",
-        source=f.source, destination=f.destination, persons=persons, price=f.price * persons)
+    
+    base_price = f.price
+    if flight_class == "Business":
+        base_price *= 2
+    total_price = base_price * persons
+    
+    tb = TransportBooking(
+        booking_id=booking_id,
+        transport_type="flight",
+        transport_id=f.id,
+        source=f.source,
+        destination=f.destination,
+        persons=persons,
+        price=total_price,
+        seat_numbers=seats,
+        class_type=flight_class,
+        preference=preference,
+        route_type="direct"
+    )
     db.session.add(tb); db.session.commit()
-    flash(f"Flight booked! {f.airline} {f.source}→{f.destination} ✈️", "success")
-    # FIX: Redirect to flight payment page
+    flash(f"Flight booked! {f.airline} {f.source}➔{f.destination} ✈️", "success")
+    return redirect(url_for("flight_payment", transport_booking_id=tb.id))
+
+@app.route("/confirm-connecting-flight")
+@login_required
+def confirm_connecting_flight():
+    booking_id       = session.get("booking_id")
+    hotel_booking_id = request.args.get("hotel_booking_id") or session.get("hotel_booking_id")
+    persons          = session.get("persons", 1)
+    
+    leg1_id      = request.args.get("leg1_id", type=int)
+    leg2_id      = request.args.get("leg2_id", type=int)
+    seats_leg1   = request.args.get("seats_leg1", "")
+    seats_leg2   = request.args.get("seats_leg2", "")
+    flight_class = request.args.get("class", "Economy")
+    preference   = request.args.get("preference", "")
+    
+    if not booking_id:
+        flash("Session expired. Please rebook.", "warning"); return redirect(url_for("home"))
+    already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="flight").first()
+    if already:
+        flash("Flight already booked for this trip.", "info")
+        return redirect(url_for("my_bookings"))
+        
+    f1 = Flight.query.get_or_404(leg1_id)
+    f2 = Flight.query.get_or_404(leg2_id)
+    
+    avail1 = f1.available_seats or 0
+    avail2 = f2.available_seats or 0
+    if avail1 < persons or avail2 < persons:
+        flash("One of the connecting flights is full.", "warning")
+        return redirect(request.referrer or url_for("home"))
+        
+    f1.available_seats = avail1 - persons
+    f2.available_seats = avail2 - persons
+    
+    base_price = f1.price + f2.price
+    if flight_class == "Business":
+        base_price *= 2
+    total_price = base_price * persons
+    
+    hop_details = f"{f1.airline} {f1.flight_number} ({f1.source}➔{f1.destination}) | {f2.airline} {f2.flight_number} ({f2.source}➔{f2.destination})"
+    seat_numbers = f"L1: {seats_leg1} | L2: {seats_leg2}"
+    
+    tb = TransportBooking(
+        booking_id=booking_id,
+        transport_type="flight",
+        transport_id=f1.id,
+        source=f1.source,
+        destination=f2.destination,
+        persons=persons,
+        price=total_price,
+        seat_numbers=seat_numbers,
+        class_type=flight_class,
+        preference=preference,
+        route_type="connecting",
+        hop_details=hop_details
+    )
+    db.session.add(tb)
+    db.session.commit()
+    
+    flash(f"Connecting flights booked! {f1.source}➔{f1.destination}➔{f2.destination} ✈️", "success")
     return redirect(url_for("flight_payment", transport_booking_id=tb.id))
 
 @app.route("/bus/<destination>", methods=["GET", "POST"])
@@ -2078,7 +2265,8 @@ def bus(destination):
     if not booking_id:
         flash("Please complete hotel booking first.", "warning")
         return redirect(url_for("home"))
-    # ALWAYS show all buses on GET, filter on POST
+        
+    connecting_buses = []
     q = Bus.query.filter(func.lower(Bus.destination) == destination.lower())
     if request.method == "POST":
         src   = request.form.get("source", "").strip()
@@ -2087,13 +2275,37 @@ def bus(destination):
         if src:   q = q.filter(func.lower(Bus.source) == src.lower())
         if ac:    q = q.filter_by(ac_type=ac)
         if stype: q = q.filter_by(seat_type=stype)
-    buses      = q.order_by(Bus.price).all()
+        buses = q.order_by(Bus.price).all()
+        
+        if src:
+            first_legs = Bus.query.filter(func.lower(Bus.source) == src.lower()).all()
+            for b1 in first_legs:
+                second_legs = Bus.query.filter(
+                    func.lower(Bus.source) == b1.destination.lower(),
+                    func.lower(Bus.destination) == destination.lower()
+                ).all()
+                for b2 in second_legs:
+                    t1_arr = get_minutes(b1.arrival_time)
+                    t2_dep = get_minutes(b2.departure_time)
+                    layover_mins = (t2_dep - t1_arr) % 1440
+                    layover_str = f"{layover_mins // 60}h {layover_mins % 60}m"
+                    connecting_buses.append({
+                        "leg1": b1,
+                        "leg2": b2,
+                        "layover": layover_str,
+                        "total_price": b1.price + b2.price
+                    })
+            connecting_buses = sorted(connecting_buses, key=lambda x: x["total_price"])
+    else:
+        buses = q.order_by(Bus.price).all()
+        
     sources    = db.session.query(Bus.source).filter(func.lower(Bus.destination) == destination.lower()).distinct().all()
     ac_types   = db.session.query(Bus.ac_type).distinct().all()
     seat_types = db.session.query(Bus.seat_type).distinct().all()
     return render_template("bus.html", destination=destination,
                            persons=session.get("persons", 1),
-                           buses=buses, sources=[s[0] for s in sources if s[0]],
+                           buses=buses, connecting_buses=connecting_buses,
+                           sources=[s[0] for s in sources if s[0]],
                            ac_types=[a[0] for a in ac_types if a[0]],
                            seat_types=[s[0] for s in seat_types if s[0]],
                            hotel_booking_id=hotel_booking_id or 0)
@@ -2104,6 +2316,11 @@ def confirm_bus(bus_id):
     booking_id       = session.get("booking_id")
     hotel_booking_id = request.args.get("hotel_booking_id") or session.get("hotel_booking_id")
     persons          = session.get("persons", 1)
+    
+    seats      = request.args.get("seats", "")
+    bus_class  = request.args.get("class", "Standard")
+    preference = request.args.get("preference", "")
+    
     if not booking_id:
         flash("Session expired. Please rebook.", "warning"); return redirect(url_for("home"))
     already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="bus").first()
@@ -2114,18 +2331,100 @@ def confirm_bus(bus_id):
         if hb: return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
         return redirect(url_for("my_bookings"))
     b = Bus.query.get_or_404(bus_id)
-    # FIX: None-safe seats check
     avail = b.available_seats or 0
     if avail < persons:
         flash(f"Only {avail} seats available.", "warning")
         return redirect(request.referrer or url_for("home"))
     b.available_seats = avail - persons
-    tb_bus = TransportBooking(booking_id=booking_id, transport_type="bus",
-        source=b.source, destination=b.destination, persons=persons, price=b.price * persons)
+    
+    price_multiplier = 1.0
+    if "Sleeper" in bus_class:
+        price_multiplier += 0.2
+    if "AC" in bus_class and "Non-AC" not in bus_class:
+        price_multiplier += 0.2
+    total_price = int(b.price * price_multiplier) * persons
+    
+    tb_bus = TransportBooking(
+        booking_id=booking_id,
+        transport_type="bus",
+        transport_id=b.id,
+        source=b.source,
+        destination=b.destination,
+        persons=persons,
+        price=total_price,
+        seat_numbers=seats,
+        class_type=bus_class,
+        preference=preference,
+        route_type="direct"
+    )
     db.session.add(tb_bus)
     db.session.commit()
-    flash(f"Bus booked! {b.operator} {b.source}→{b.destination} 🚌", "success")
+    flash(f"Bus booked! {b.operator} {b.source}➔{b.destination} 🚌", "success")
     return redirect(url_for("bus_payment", transport_booking_id=tb_bus.id))
+
+@app.route("/confirm-connecting-bus")
+@login_required
+def confirm_connecting_bus():
+    booking_id       = session.get("booking_id")
+    hotel_booking_id = request.args.get("hotel_booking_id") or session.get("hotel_booking_id")
+    persons          = session.get("persons", 1)
+    
+    leg1_id    = request.args.get("leg1_id", type=int)
+    leg2_id    = request.args.get("leg2_id", type=int)
+    seats_leg1 = request.args.get("seats_leg1", "")
+    seats_leg2 = request.args.get("seats_leg2", "")
+    bus_class  = request.args.get("class", "Standard")
+    preference = request.args.get("preference", "")
+    
+    if not booking_id:
+        flash("Session expired. Please rebook.", "warning"); return redirect(url_for("home"))
+    already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="bus").first()
+    if already:
+        flash("Bus already booked for this trip.", "info")
+        return redirect(url_for("my_bookings"))
+        
+    b1 = Bus.query.get_or_404(leg1_id)
+    b2 = Bus.query.get_or_404(leg2_id)
+    
+    avail1 = b1.available_seats or 0
+    avail2 = b2.available_seats or 0
+    if avail1 < persons or avail2 < persons:
+        flash("One of the connecting buses is full.", "warning")
+        return redirect(request.referrer or url_for("home"))
+        
+    b1.available_seats = avail1 - persons
+    b2.available_seats = avail2 - persons
+    
+    price_multiplier = 1.0
+    if "Sleeper" in bus_class:
+        price_multiplier += 0.2
+    if "AC" in bus_class and "Non-AC" not in bus_class:
+        price_multiplier += 0.2
+    base_price = b1.price + b2.price
+    total_price = int(base_price * price_multiplier) * persons
+    
+    hop_details = f"{b1.operator} {b1.bus_number} ({b1.source}➔{b1.destination}) | {b2.operator} {b2.bus_number} ({b2.source}➔{b2.destination})"
+    seat_numbers = f"L1: {seats_leg1} | L2: {seats_leg2}"
+    
+    tb = TransportBooking(
+        booking_id=booking_id,
+        transport_type="bus",
+        transport_id=b1.id,
+        source=b1.source,
+        destination=b2.destination,
+        persons=persons,
+        price=total_price,
+        seat_numbers=seat_numbers,
+        class_type=bus_class,
+        preference=preference,
+        route_type="connecting",
+        hop_details=hop_details
+    )
+    db.session.add(tb)
+    db.session.commit()
+    
+    flash(f"Connecting buses booked! {b1.source}➔{b1.destination}➔{b2.destination} 🚌", "success")
+    return redirect(url_for("bus_payment", transport_booking_id=tb.id))
 
 @app.route("/train/<destination>", methods=["GET", "POST"])
 @login_required
@@ -2144,7 +2443,8 @@ def train(destination):
     if not booking_id:
         flash("Please complete hotel booking first.", "warning")
         return redirect(url_for("home"))
-    # ALWAYS show all trains on GET, filter on POST
+        
+    connecting_trains = []
     q = Train.query.filter(func.lower(Train.destination) == destination.lower())
     if request.method == "POST":
         src   = request.form.get("source", "").strip()
@@ -2153,13 +2453,37 @@ def train(destination):
         if src:   q = q.filter(func.lower(Train.source) == src.lower())
         if ac:    q = q.filter_by(ac_type=ac)
         if stype: q = q.filter_by(seat_type=stype)
-    trains     = q.order_by(Train.price).all()
+        trains = q.order_by(Train.price).all()
+        
+        if src:
+            first_legs = Train.query.filter(func.lower(Train.source) == src.lower()).all()
+            for t1 in first_legs:
+                second_legs = Train.query.filter(
+                    func.lower(Train.source) == t1.destination.lower(),
+                    func.lower(Train.destination) == destination.lower()
+                ).all()
+                for t2 in second_legs:
+                    t1_arr = get_minutes(t1.arrival_time)
+                    t2_dep = get_minutes(t2.departure_time)
+                    layover_mins = (t2_dep - t1_arr) % 1440
+                    layover_str = f"{layover_mins // 60}h {layover_mins % 60}m"
+                    connecting_trains.append({
+                        "leg1": t1,
+                        "leg2": t2,
+                        "layover": layover_str,
+                        "total_price": t1.price + t2.price
+                    })
+            connecting_trains = sorted(connecting_trains, key=lambda x: x["total_price"])
+    else:
+        trains = q.order_by(Train.price).all()
+        
     sources    = db.session.query(Train.source).filter(func.lower(Train.destination) == destination.lower()).distinct().all()
     ac_types   = db.session.query(Train.ac_type).distinct().all()
     seat_types = db.session.query(Train.seat_type).distinct().all()
     return render_template("train.html", destination=destination,
                            persons=session.get("persons", 1),
-                           trains=trains, sources=[s[0] for s in sources if s[0]],
+                           trains=trains, connecting_trains=connecting_trains,
+                           sources=[s[0] for s in sources if s[0]],
                            ac_types=[a[0] for a in ac_types if a[0]],
                            seat_types=[s[0] for s in seat_types if s[0]],
                            hotel_booking_id=hotel_booking_id or 0)
@@ -2170,6 +2494,11 @@ def confirm_train(train_id):
     booking_id       = session.get("booking_id")
     hotel_booking_id = request.args.get("hotel_booking_id") or session.get("hotel_booking_id")
     persons          = session.get("persons", 1)
+    
+    seats       = request.args.get("seats", "")
+    train_class = request.args.get("class", "Sleeper")
+    preference  = request.args.get("preference", "")
+    
     if not booking_id:
         flash("Session expired. Please rebook.", "warning"); return redirect(url_for("home"))
     already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="train").first()
@@ -2180,7 +2509,6 @@ def confirm_train(train_id):
         if hb: return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
         return redirect(url_for("my_bookings"))
     t = Train.query.get_or_404(train_id)
-    # FIX: None-safe seats check
     avail = t.available_seats or 0
     if avail < persons:
         flash(f"Only {avail} seats available.", "warning")
@@ -2755,10 +3083,23 @@ def generate_invoice_pdf(booking_id):
         t_rows = []
         for tb in transport_list:
             icon = {"flight":"✈️","train":"🚆","bus":"🚌"}.get(tb.transport_type,"🚗")
+            
+            # Format mode text with class and seat numbers
+            mode_desc = f"{icon} {tb.transport_type.capitalize()}"
+            if tb.class_type:
+                mode_desc += f"<br/><font size='7' color='#666666'>{tb.class_type}</font>"
+            if tb.seat_numbers:
+                mode_desc += f"<br/><font size='7' color='#e94560'>Seats: {tb.seat_numbers}</font>"
+                
+            from_desc = tb.source or "—"
+            to_desc = tb.destination or "—"
+            if tb.route_type == "connecting" and tb.hop_details:
+                to_desc += f"<br/><font size='6' color='#888888'>Connecting</font>"
+                
             t_rows.append([
-                Paragraph(f"{icon} {tb.transport_type.capitalize()}", sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK)),
-                Paragraph(tb.source or "—",      sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK)),
-                Paragraph(tb.destination or "—", sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK)),
+                Paragraph(mode_desc, sty("tcmd",fontSize=8,alignment=TA_CENTER,textColor=TEXT_DARK,leading=10)),
+                Paragraph(from_desc, sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK)),
+                Paragraph(to_desc,   sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK,leading=10)),
                 Paragraph(str(tb.persons or 1),  sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK)),
                 Paragraph(f"₹{tb.price or 0:,}", sty("tc",fontSize=8.5,alignment=TA_CENTER,textColor=TEXT_DARK,fontName="Helvetica-Bold")),
             ])

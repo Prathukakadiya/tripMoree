@@ -115,7 +115,7 @@
       {% if spots %}
       <div class="spots-grid">
         {% for s in spots %}
-        <div class="spot-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+        <div class="spot-card" style="animation-delay:{{ loop.index0* 0.05 }}s;">
           <div class="spot-img">
             {% if s.pexels_img %}
             <img src="{{ s.pexels_img }}" alt="{{ s.spot_name }}" loading="lazy"
@@ -147,7 +147,7 @@
       {% if foods %}
       <div class="info-grid">
         {% for f in foods %}
-        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+        <div class="info-card" style="animation-delay:{{ loop.index0* 0.05 }}s;">
           <div class="card-icon">🍽️</div>
           <div class="card-title">{{ f.food_name }}</div>
           <div class="card-text">{{ f.description or '' }}</div>
@@ -178,7 +178,7 @@
       {% if safety %}
       <div class="info-grid">
         {% for s in safety %}
-        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+        <div class="info-card" style="animation-delay:{{ loop.index0* 0.05 }}s;">
           <div class="card-icon">🛡️</div>
           <div class="card-title">{{ s.title }}</div>
           <div class="card-text">{{ s.description or '' }}</div>
@@ -201,7 +201,7 @@
       {% if etiquettes %}
       <div class="info-grid">
         {% for e in etiquettes %}
-        <div class="info-card" style="animation-delay:{{ loop.index0*.05 }}s;">
+        <div class="info-card" style="animation-delay:{{ loop.index0* 0.05 }}s;">
           <div class="card-icon">🙏</div>
           <div class="card-title">{{ e.title }}</div>
           <div class="card-text">{{ e.description or '' }}</div>
@@ -223,7 +223,7 @@
       <div class="section-title">⚠️ Tourist Alerts & Tips</div>
       {% if alerts %}
       {% for a in alerts %}
-      <div class="alert-box" style="animation-delay:{{ loop.index0*.05 }}s;">
+      <div class="alert-box" style="animation-delay:{{ loop.index0* 0.05 }}s;">
         <div class="alert-icon">⚠️</div>
         <div class="alert-text">
           <div class="alert-title">{{ a.title }}</div>

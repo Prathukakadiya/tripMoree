@@ -1,112 +1,659 @@
 {% extends "base.html" %}
 {% block title %}✈️ Flight Payment — TripMoree{% endblock %}
-{% block extra_css %}<style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes qrs{0%{top:0}50%{top:calc(100% - 3px)}100%{top:0}}
-:root{--g:#c9a84c;--t:#1a5c50;--i:#0d0f0e;--b:#e8e4de;}
-.pw{min-height:calc(100vh - 64px);background:linear-gradient(135deg,#0d0f0e,#1a2e2a);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;}
-.pc{background:#fff;border-radius:24px;overflow:hidden;max-width:860px;width:100%;display:grid;grid-template-columns:1fr 1.1fr;box-shadow:0 32px 80px rgba(0,0,0,.5);animation:fadeUp .5s;}
-.pl{background:linear-gradient(160deg,#0d1a1a,#1a3a2e);padding:2.5rem 2rem;display:flex;flex-direction:column;}
-.plogo{font-family:Georgia,serif;font-size:1.2rem;color:var(--g);margin-bottom:1.2rem;}
-.pg{display:flex;align-items:center;gap:4px;margin-bottom:1.5rem;flex-wrap:wrap;}
-.pd{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);flex-shrink:0;}
-.pd.done{background:var(--t);border-color:var(--t);color:#fff;}
-.pd.act{background:var(--g);border-color:var(--g);color:#fff;}
-.pl2{flex:1;height:2px;background:rgba(255,255,255,.08);min-width:14px;max-width:32px;}
-.pl2.done{background:var(--t);}
-.pal{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px;}
-.pam{font-family:Georgia,serif;font-size:2.8rem;font-weight:600;color:var(--g);line-height:1;}
-.psub{font-size:13px;color:rgba(255,255,255,.5);margin-top:7px;margin-bottom:1.5rem;}
-.pdr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
-.pdl{color:rgba(255,255,255,.4);} .pdv{color:#fff;font-weight:500;}
-.psec{display:flex;align-items:center;gap:7px;font-size:11px;color:rgba(255,255,255,.3);margin-top:auto;padding-top:1.5rem;}
-.pr{padding:2.5rem 2rem;}
-.pt{font-family:Georgia,serif;font-size:1.5rem;margin-bottom:.3rem;color:var(--i);}
-.pst{font-size:13px;color:#888;margin-bottom:1.4rem;}
-.mt{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--b);border-radius:10px;overflow:hidden;margin-bottom:1.4rem;}
-.mtb{padding:10px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;border:none;background:#f8f6f1;color:#888;transition:.2s;font-family:inherit;border-right:1px solid var(--b);}
-.mtb:last-child{border-right:none;} .mtb.active{background:var(--i);color:#fff;}
-.uid{display:flex;align-items:center;justify-content:center;gap:.5rem;background:#f8f6f1;border:1.5px dashed var(--g);border-radius:10px;padding:.7rem 1.2rem;font-family:monospace;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:.7rem;transition:.2s;}
-.uid:hover{background:#fffdf5;}
-.ctg{background:var(--g);color:#fff;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
-.sb{background:#f8f6f1;border-radius:10px;padding:1rem;margin-bottom:1.1rem;}
-.si{display:flex;align-items:flex-start;gap:.6rem;font-size:13px;color:#555;padding:3px 0;}
-.sn{width:20px;height:20px;background:var(--i);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px;}
-.qw{display:flex;justify-content:center;margin-bottom:1rem;}
-.qb{padding:11px;background:#fff;border:2px solid var(--b);border-radius:14px;position:relative;}
-.qi{width:180px;height:180px;border-radius:8px;display:block;}
-.qs{position:absolute;left:11px;right:11px;height:3px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:qrs 2s ease-in-out infinite;border-radius:2px;}
-.rr{display:flex;gap:8px;margin-top:.5rem;}
-.ri{flex:1;padding:12px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:.2s;}
-.ri:focus{border-color:var(--g);}
-.cb{padding:12px 22px;background:linear-gradient(135deg,var(--g),#b8934a);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;white-space:nowrap;}
-.cb:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,168,76,.4);}
-.sk{text-align:center;margin-top:.8rem;font-size:12px;} .sk a{color:#aaa;text-decoration:none;}
-.cm{font-size:11px;color:#27ae60;text-align:center;height:14px;margin-top:2px;}
-@media(max-width:700px){.pc{grid-template-columns:1fr;}.pl,.pr{padding:1.5rem;}.pam{font-size:2.2rem;}}
-</style>{% endblock %}
-{% block content %}
-<div class="pw"><div class="pc">
-  <div class="pl">
-    <div class="plogo">TripMoree ✦</div>
-    <div class="pg"><div class="prog-dot done">1</div><div class="prog-line done"></div><div class="prog-dot done">2</div><div class="prog-line done"></div><div class="prog-dot done">3</div><div class="prog-line done"></div><div class="prog-dot act">4</div><div class="prog-line "></div><div class="prog-dot ">5</div><div class="prog-line "></div><div class="prog-dot ">6</div></div>
-    <div class="pal">Amount Due</div>
-    <div class="pam">₹{{ "{:,}".format(tb.price or 0) }}</div>
-    <div class="psub">✈️ Flight Booking</div>
-    <div class="pdr"><span class="pdl">From</span><span class="pdv">{{ tb.source }}</span></div>
-    <div class="pdr"><span class="pdl">To</span><span class="pdv">{{ tb.destination }}</span></div>
-    <div class="pdr"><span class="pdl">Passengers</span><span class="pdv">{{ tb.persons }}</span></div>
-    <div class="pdr"><span class="pdl">Mode</span><span class="pdv">✈️ Flight</span></div>
-    <div class="psec"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>SSL Encrypted · Secure Payment</div>
-  </div>
-  <div class="pr">
-    <div class="pt">Complete Payment</div>
-    <div class="pst">Pay ₹{{ "{:,}".format(tb.price or 0) }} for your flight</div>
-    <div class="mt">
-      <button class="mtb active" onclick="showM('upi',this)">📱 UPI</button>
-      <button class="mtb" onclick="showM('qr',this)">📷 QR Code</button>
-      <button class="mtb" onclick="showM('apps',this)">💳 Apps</button>
-    </div>
-    <div id="m-upi">
-      <div onclick="copyUPI('{{ upi_id }}')" class="uid"><span>{{ upi_id }}</span><span class="ctg">COPY</span></div>
-      <div class="cm" id="copyMsg"></div>
-      <div class="sb">
-        <div class="si"><div class="sn">1</div>Open PhonePe / GPay / Paytm</div>
-        <div class="si"><div class="sn">2</div>Pay <strong>₹{{ "{:,}".format(tb.price or 0) }}</strong> to {{ upi_id }}</div>
-        <div class="si"><div class="sn">3</div>Copy the UTR / reference number</div>
-        <div class="si"><div class="sn">4</div>Paste below and confirm</div>
-      </div>
-      <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
-        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
-      </form>
-    </div>
-    <div id="m-qr" style="display:none">
-      <div class="qw"><div class="qb">
-        <img class="qi" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ upi_link|urlencode }}&bgcolor=ffffff&color=0d0f0e&margin=2" alt="QR" onerror="this.src='https://placehold.co/180x180/f8f6f1/c9a84c?text=UPI+QR'">
-        <div class="qs"></div>
-      </div></div>
-      <div style="text-align:center;font-size:12px;color:#888;margin-bottom:1rem;">Scan to pay ₹{{ "{:,}".format(tb.price or 0) }}</div>
-      <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
-        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
-      </form>
-    </div>
-    <div id="m-apps" style="display:none">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem;">
-        <a href="{{ upi_link }}" style="padding:14px;background:#5f259f;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">📱 PhonePe</a>
-        <a href="{{ upi_link }}" style="padding:14px;background:#4285f4;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟢 GPay</a>
-        <a href="{{ upi_link }}" style="padding:14px;background:#002970;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🔵 Paytm</a>
-        <a href="{{ upi_link }}" style="padding:14px;background:#00a651;color:#fff;border-radius:12px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">🟠 BHIM</a>
-      </div>
-      <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="disableBtn(this)">
-        <div class="rr"><input type="text" name="upi_ref" class="ri" placeholder="UTR / Reference number" required><button type="submit" class="cb">✅ Confirm</button></div>
-      </form>
-    </div>
-    <div class="sk"><a href="{{ url_for('skip_flight_payment', transport_booking_id=tb.id) }}">Skip (Demo mode) →</a></div>
-  </div>
-</div></div>
+{% block extra_css %}
+<style>
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scanLaser {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes drawCheck {
+  0% { stroke-dashoffset: 80px; }
+  100% { stroke-dashoffset: 0; }
+}
+
+:root {
+  --gold: #ebd394;
+  --gold-dark: #c5a044;
+  --teal: #115243;
+  --dark-bg: #090e0c;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+.pw {
+  min-height: calc(100vh - 64px);
+  background: radial-gradient(circle at 20% 30%, #152d27 0%, var(--dark-bg) 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ambient glow blobs */
+.pw::before {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 300px;
+  height: 300px;
+  background: rgba(17, 82, 67, 0.2);
+  filter: blur(120px);
+  pointer-events: none;
+  border-radius: 50%;
+}
+.pw::after {
+  content: "";
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  width: 350px;
+  height: 350px;
+  background: rgba(197, 160, 68, 0.08);
+  filter: blur(120px);
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.pc {
+  background: rgba(15, 23, 20, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  overflow: hidden;
+  max-width: 860px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+  animation: fadeUp .6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  position: relative;
+  z-index: 5;
+}
+
+.pl {
+  background: linear-gradient(160deg, rgba(9, 25, 21, 0.9) 0%, rgba(13, 19, 17, 0.95) 100%);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--glass-border);
+}
+
+.plogo {
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  color: var(--gold);
+  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.pg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+.prog-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+}
+.prog-dot.done {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+.prog-dot.act {
+  background: var(--gold-dark);
+  border-color: var(--gold-dark);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(197, 160, 68, 0.4);
+}
+.prog-line {
+  flex: 1;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  min-width: 10px;
+  max-width: 25px;
+}
+.prog-line.done {
+  background: var(--teal);
+}
+
+.pal {
+  font-size: 11px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.pam {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.psub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 10px;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+.pdr {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+.pdl {
+  color: rgba(255, 255, 255, 0.4);
+}
+.pdv {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.psec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: auto;
+  padding-top: 2rem;
+  font-weight: 500;
+}
+
+.pr {
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.pt {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: #ffffff;
+}
+.pst {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 2rem;
+}
+
+.mt {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.8rem;
+}
+.mtb {
+  padding: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s;
+  font-family: inherit;
+  border-right: 1px solid var(--glass-border);
+}
+.mtb:last-child {
+  border-right: none;
+}
+.mtb.active {
+  background: var(--gold-dark);
+  color: #fff;
+}
+.mtb:hover:not(.active) {
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+}
+
+.uid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255,255,255,0.02);
+  border: 1px dashed var(--gold-dark);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  color: var(--gold);
+  transition: all 0.2s;
+}
+.uid:hover {
+  background: rgba(197, 160, 68, 0.08);
+}
+.ctg {
+  background: var(--gold-dark);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.sb {
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.si {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 5px 0;
+  font-weight: 500;
+}
+.sn {
+  width: 20px;
+  height: 20px;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Scanner QR Animation Box */
+.qw {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.qb {
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 18px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.qi {
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+  display: block;
+}
+.qs {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #ef4444, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 10px #ef4444;
+  animation: scanLaser 2.2s ease-in-out infinite;
+}
+
+.rr {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+}
+.ri {
+  flex: 1;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1.5px solid var(--glass-border);
+  border-radius: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  color: white;
+  transition: all 0.3s;
+}
+.ri:focus {
+  border-color: var(--gold-dark);
+  background: rgba(255,255,255,0.05);
+  box-shadow: 0 0 0 4px rgba(197, 160, 68, 0.15);
+}
+.cb {
+  padding: 14px 26px;
+  background: linear-gradient(135deg, var(--gold-dark) 0%, #a48130 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.cb:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(197, 160, 68, 0.35);
+}
+
+.sk {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 13px;
+}
+.sk a {
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.sk a:hover {
+  color: var(--gold);
+}
+
+.cm {
+  font-size: 11px;
+  color: #10b981;
+  text-align: center;
+  height: 14px;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+/* Premium full-screen processing overlay */
+.processing-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 12, 0.95);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.processing-overlay.show {
+  display: flex;
+}
+.spinner-box {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinner-circle {
+  width: 80px;
+  height: 80px;
+  border: 4px solid rgba(255,255,255,0.05);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.checkmark-circle {
+  display: none;
+  width: 80px;
+  height: 80px;
+}
+.checkmark-path {
+  stroke: var(--success);
+  stroke-dasharray: 80px;
+  stroke-dashoffset: 80px;
+  stroke-width: 5px;
+  fill: none;
+  animation: drawCheck 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+.processing-text {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: white;
+  margin-top: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+.processing-subtext {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+@media(max-width: 768px) {
+  .pc {
+    grid-template-columns: 1fr;
+  }
+  .pl, .pr {
+    padding: 2rem;
+  }
+  .pam {
+    font-size: 2.2rem;
+  }
+}
+</style>
 {% endblock %}
-{% block extra_js %}<script>
-function showM(id,btn){['upi','qr','apps'].forEach(m=>{const el=document.getElementById('m-'+m);if(el)el.style.display=m===id?'block':'none';});document.querySelectorAll('.mtb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-function copyUPI(u){navigator.clipboard.writeText(u).then(()=>{const m=document.getElementById('copyMsg');if(m){m.textContent='✓ Copied!';setTimeout(()=>m.textContent='',2000);}});}
-function disableBtn(f){const b=f.querySelector('[type=submit]');if(b){b.disabled=true;b.textContent='⏳ Confirming...';}}
-</script>{% endblock %}
+
+{% block content %}
+<div class="pw">
+  <div class="pc">
+    <!-- LEFT PANEL: Summary -->
+    <div class="pl">
+      <div class="plogo">TripMoree ✦</div>
+      <div class="pg">
+        <div class="prog-dot done">1</div><div class="prog-line done"></div>
+        <div class="prog-dot done">2</div><div class="prog-line done"></div>
+        <div class="prog-dot done">3</div><div class="prog-line done"></div>
+        <div class="prog-dot act">4</div><div class="prog-line"></div>
+        <div class="prog-dot">5</div>
+      </div>
+      <div class="pal">Amount Due</div>
+      <div class="pam">₹{{ "{:,}".format(tb.price or 0) }}</div>
+      <div class="psub">✈️ Flight Reservation</div>
+      
+      {% if tb.route_type == "connecting" %}
+        <div class="pdr"><span class="pdl">Route</span><span class="pdv" style="font-size:11px; text-align:right;">{{ tb.source }} ➔ {{ tb.destination }}<br/><font color="#c5a044">Connecting</font></span></div>
+        <div class="pdr"><span class="pdl">Hops</span><span class="pdv" style="font-size:10px; max-width:180px; text-align:right; font-weight:500;">{{ tb.hop_details }}</span></div>
+      {% else %}
+        <div class="pdr"><span class="pdl">From</span><span class="pdv">{{ tb.source }}</span></div>
+        <div class="pdr"><span class="pdl">To</span><span class="pdv">{{ tb.destination }}</span></div>
+      {% endif %}
+      
+      <div class="pdr"><span class="pdl">Class type</span><span class="pdv">{{ tb.class_type or 'Economy' }}</span></div>
+      <div class="pdr"><span class="pdl">Seat Numbers</span><span class="pdv" style="color:var(--gold);">{{ tb.seat_numbers or 'Auto-assigned' }}</span></div>
+      <div class="pdr"><span class="pdl">Passengers</span><span class="pdv">{{ tb.persons }}</span></div>
+      
+      <div class="psec">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        SSL Secured Connection · 256-bit Encryption
+      </div>
+    </div>
+    
+    <!-- RIGHT PANEL: UPI / Scan -->
+    <div class="pr">
+      <div class="pt">Payment Method</div>
+      <div class="pst">Select option and pay ₹{{ "{:,}".format(tb.price or 0) }}</div>
+      
+      <div class="mt">
+        <button class="mtb active" onclick="showMethod('upi',this)">📱 UPI ID</button>
+        <button class="mtb" onclick="showMethod('qr',this)">📷 Scan QR</button>
+        <button class="mtb" onclick="showMethod('apps',this)">💳 UPI Apps</button>
+      </div>
+      
+      <!-- UPI ID Tab -->
+      <div id="m-upi">
+        <div onclick="copyUPI('{{ upi_id }}')" class="uid">
+          <span>{{ upi_id }}</span>
+          <span class="ctg" id="copyBadge">COPY</span>
+        </div>
+        <div class="cm" id="copyMsg"></div>
+        <div class="sb">
+          <div class="si"><div class="sn">1</div>Open GPay, PhonePe or Paytm</div>
+          <div class="si"><div class="sn">2</div>Pay <strong>₹{{ "{:,}".format(tb.price or 0) }}</strong> to UPI ID: {{ upi_id }}</div>
+          <div class="si"><div class="sn">3</div>Copy the UTR / 12-digit transaction Ref ID</div>
+          <div class="si"><div class="sn">4</div>Paste UTR below and confirm booking</div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="handleSubmit(event, this)">
+          <div class="rr">
+            <input type="text" name="upi_ref" class="ri" placeholder="Enter 12-digit UTR number" pattern="\d{12}" title="Enter 12-digit transaction reference number" required>
+            <button type="submit" class="cb">✅ Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- QR Tab -->
+      <div id="m-qr" style="display:none">
+        <div class="qw">
+          <div class="qb">
+            <img class="qi" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ upi_link|urlencode }}&bgcolor=ffffff&color=090e0c&margin=2" alt="UPI QR Code" onerror="this.src='https://placehold.co/180x180/ffffff/090e0c?text=Scan+to+Pay'">
+            <div class="qs"></div>
+          </div>
+        </div>
+        <div style="text-align:center; font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:1.5rem; font-weight:600;">
+          Scan with any scanner (GPay, BHIM, Paytm, PhonePe)
+        </div>
+        <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="handleSubmit(event, this)">
+          <div class="rr">
+            <input type="text" name="upi_ref" class="ri" placeholder="Enter 12-digit UTR number" pattern="\d{12}" title="Enter 12-digit reference number" required>
+            <button type="submit" class="cb">✅ Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Apps Tab -->
+      <div id="m-apps" style="display:none">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:1.5rem;">
+          <a href="{{ upi_link }}" class="cb" style="background:#5f259f; text-decoration:none; text-align:center; padding:15px 0;">🟣 PhonePe</a>
+          <a href="{{ upi_link }}" class="cb" style="background:#1a73e8; text-decoration:none; text-align:center; padding:15px 0;">🔵 Google Pay</a>
+          <a href="{{ upi_link }}" class="cb" style="background:#00baf2; text-decoration:none; text-align:center; padding:15px 0;">🟡 Paytm</a>
+          <a href="{{ upi_link }}" class="cb" style="background:#ff6b00; text-decoration:none; text-align:center; padding:15px 0;">🟠 BHIM UPI</a>
+        </div>
+        <form method="POST" action="{{ url_for('confirm_flight_payment', transport_booking_id=tb.id) }}" onsubmit="handleSubmit(event, this)">
+          <div class="rr">
+            <input type="text" name="upi_ref" class="ri" placeholder="Enter 12-digit UTR number" pattern="\d{12}" required>
+            <button type="submit" class="cb">✅ Confirm Booking</button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="sk">
+        <a href="{{ url_for('skip_flight_payment', transport_booking_id=tb.id) }}">Skip Payment (Demo Mode) →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loader Screen Overlay -->
+<div class="processing-overlay" id="loaderOverlay">
+  <div class="spinner-box" id="spinnerBox">
+    <div class="spinner-circle"></div>
+  </div>
+  <svg class="checkmark-circle" id="checkmarkBox" viewBox="0 0 52 52">
+    <circle cx="26" cy="26" r="25" fill="none" style="stroke:var(--success); stroke-width:3; fill:none;"/>
+    <path class="checkmark-path" d="M14 27l7 7 16-16"/>
+  </svg>
+  <div class="processing-text" id="loaderText">Processing Secure Payment...</div>
+  <div class="processing-subtext" id="loaderSubtext">Please do not refresh this page.</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showMethod(id, btn) {
+  ['upi', 'qr', 'apps'].forEach(m => {
+    const el = document.getElementById('m-' + m);
+    if(el) el.style.display = m === id ? 'block' : 'none';
+  });
+  document.querySelectorAll('.mtb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function copyUPI(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const badge = document.getElementById('copyBadge');
+    const msg = document.getElementById('copyMsg');
+    
+    badge.textContent = '✓ COPIED';
+    badge.style.background = '#10b981';
+    msg.textContent = 'UPI address copied to clipboard!';
+    
+    setTimeout(() => {
+      badge.textContent = 'COPY';
+      badge.style.background = 'var(--gold-dark)';
+      msg.textContent = '';
+    }, 2500);
+  });
+}
+
+function handleSubmit(e, form) {
+  e.preventDefault();
+  const overlay = document.getElementById('loaderOverlay');
+  const spinner = document.getElementById('spinnerBox');
+  const checkmark = document.getElementById('checkmarkBox');
+  const text = document.getElementById('loaderText');
+  const subtext = document.getElementById('loaderSubtext');
+  
+  // Show processing loader
+  overlay.classList.add('show');
+  
+  // Animate processing steps
+  setTimeout(() => {
+    text.textContent = "Verifying transaction reference...";
+  }, 1200);
+  
+  setTimeout(() => {
+    spinner.style.display = 'none';
+    checkmark.style.display = 'block';
+    text.textContent = "Booking Confirmed!";
+    text.style.color = "var(--success)";
+    subtext.textContent = "Your ticket is active. Redirecting...";
+  }, 2600);
+  
+  setTimeout(() => {
+    form.submit();
+  }, 3800);
+}
+</script>
+{% endblock %}
