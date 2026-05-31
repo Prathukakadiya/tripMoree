@@ -1,101 +1,170 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Backwater Experience | TripMoreee</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+{% extends "base.html" %}
+{% block title %}Backwater Experience — TripMoree{% endblock %}
+{% block extra_css %}
 <style>
-body{
-    background: linear-gradient(to right,#134e5e,#71b280);
-    color:white;
-    font-family: Arial;
-}
-
-.hero{
-    text-align:center;
-    padding:80px 20px;
-    animation: fadeIn 1s ease-in;
-}
-
-.stat-box{
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    padding:25px;
-    border-radius:20px;
-    text-align:center;
-    transition:0.4s;
-}
-
-.stat-box:hover{
-    transform: translateY(-8px);
-    background: rgba(255,255,255,0.25);
-}
-
-.trip-card{
-    background:white;
-    color:black;
-    border-radius:15px;
-    padding:20px;
-    margin-bottom:20px;
-    transition:0.3s;
-}
-
-.trip-card:hover{
-    transform: scale(1.02);
-}
-
-@keyframes fadeIn{
-from{opacity:0;}
-to{opacity:1;}
-}
+.exp-hero{min-height:100vh;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-top:-72px;}
+.exp-hero-bg{position:absolute;inset:0;background:url('https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg') center/cover;animation:heroZoom 20s ease-in-out infinite alternate;}
+@keyframes heroZoom{from{transform:scale(1);}to{transform:scale(1.1);}}
+.exp-hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2) 0%,rgba(0,0,0,.05) 35%,rgba(2,14,10,.93) 100%);}
+.exp-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.exp-particle{position:absolute;animation:floatUp linear infinite;opacity:0;}
+@keyframes floatUp{0%{transform:translateY(100vh) rotate(0);opacity:0;}10%{opacity:.6;}90%{opacity:.6;}100%{transform:translateY(-20vh) rotate(180deg);opacity:0;}}
+.exp-hero-content{position:relative;z-index:2;text-align:center;padding:0 24px;max-width:800px;}
+.exp-tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);backdrop-filter:blur(8px);padding:7px 18px;border-radius:50px;margin-bottom:24px;animation:fadeUp .8s ease both;}
+.exp-hero-title{font-size:clamp(38px,7vw,80px);font-weight:800;color:#fff;line-height:1.05;margin-bottom:18px;animation:fadeUp .8s .1s ease both;text-shadow:0 4px 24px rgba(0,0,0,.6);}
+.exp-hero-title .hl{color:#34d399;}
+.exp-hero-sub{font-size:clamp(15px,2.5vw,19px);color:rgba(255,255,255,.8);margin-bottom:36px;line-height:1.7;animation:fadeUp .8s .2s ease both;}
+.exp-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .3s ease both;}
+.ebtn-p{background:#34d399;color:#000;padding:14px 32px;border-radius:50px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .3s;display:inline-flex;align-items:center;gap:8px;text-decoration:none;box-shadow:0 8px 24px rgba(52,211,153,.4);}
+.ebtn-p:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(52,211,153,.5);}
+.ebtn-o{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);padding:13px 28px;border-radius:50px;font-size:15px;font-weight:600;transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;}
+.ebtn-o:hover{background:rgba(255,255,255,.18);transform:translateY(-2px);}
+.exp-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;color:rgba(255,255,255,.45);font-size:11px;letter-spacing:1.5px;animation:fadeIn 1s 1.2s ease both;}
+.scroll-mouse{width:26px;height:40px;border:2px solid rgba(255,255,255,.3);border-radius:13px;display:flex;align-items:flex-start;justify-content:center;padding-top:5px;}
+.scroll-mouse::after{content:'';width:3px;height:7px;background:#34d399;border-radius:2px;animation:scrollBob 1.6s ease-in-out infinite;}
+@keyframes scrollBob{0%,100%{transform:translateY(0);opacity:1;}60%{transform:translateY(10px);opacity:0;}}
+.e-stats{background:#020f0a;border-bottom:1px solid rgba(255,255,255,.07);padding:28px 0;}
+.e-stats-inner{max-width:900px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);}
+.e-stat{text-align:center;padding:16px;border-right:1px solid rgba(255,255,255,.07);}
+.e-stat:last-child{border-right:none;}
+.e-stat .num{font-size:30px;font-weight:800;color:#34d399;display:block;line-height:1;}
+.e-stat .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-top:5px;}
+.e-section{padding:80px 0;}
+.e-wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
+.e-heading{text-align:center;margin-bottom:52px;}
+.e-heading .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#34d399;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);padding:5px 14px;border-radius:20px;margin-bottom:14px;}
+.e-heading h2{font-size:clamp(24px,4vw,38px);font-weight:700;color:#fff;}
+.e-heading p{font-size:15px;color:var(--muted);margin-top:8px;}
+.e-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;}
+.e-card{background:#1a1f2e;border:1px solid rgba(255,255,255,.07);border-radius:18px;overflow:hidden;transition:transform .35s,box-shadow .35s,border-color .3s;}
+.e-card.visible{animation:fadeUp .6s ease both;}
+.e-card:hover{transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.5);border-color:rgba(52,211,153,.3);}
+.e-card-img{height:200px;overflow:hidden;}
+.e-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.e-card:hover .e-card-img img{transform:scale(1.08);}
+.e-card-body{padding:20px;}
+.e-card-icon{font-size:28px;margin-bottom:10px;display:block;}
+.e-card-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:7px;}
+.e-card-desc{font-size:13.5px;color:var(--muted);line-height:1.7;}
+.e-card-price{margin-top:14px;font-size:14px;font-weight:700;color:#34d399;}
+.e-timeline{position:relative;padding-left:32px;margin-top:40px;}
+.e-timeline::before{content:'';position:absolute;left:11px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#34d399,transparent);}
+.t-item{position:relative;margin-bottom:36px;}
+.t-item.visible{animation:fadeUp .6s ease both;}
+.t-item::before{content:'';position:absolute;left:-26px;top:4px;width:14px;height:14px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.2);animation:tpulse 2s ease-in-out infinite;}
+@keyframes tpulse{0%,100%{box-shadow:0 0 0 4px rgba(52,211,153,.2);}50%{box-shadow:0 0 0 8px rgba(0,0,0,0);}}
+.t-day{font-size:11px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.t-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;}
+.t-desc{font-size:13.5px;color:var(--muted);line-height:1.7;}
+.e-gallery{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,200px);gap:10px;border-radius:16px;overflow:hidden;}
+.e-gitem{overflow:hidden;}
+.e-gitem:first-child{grid-row:span 2;}
+.e-gitem img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
+.e-gitem:hover img{transform:scale(1.07);}
+.e-cta{background:linear-gradient(135deg,#064e3b,#10b981);border-radius:20px;padding:52px 40px;text-align:center;position:relative;overflow:hidden;}
+.e-cta::before{content:'🛶';position:absolute;right:-20px;top:-30px;font-size:160px;opacity:.07;pointer-events:none;}
+.e-cta h2{font-size:30px;font-weight:800;color:#fff;margin-bottom:12px;}
+.e-cta p{font-size:15px;color:rgba(255,255,255,.8);margin-bottom:28px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@media(max-width:768px){.e-stats-inner{grid-template-columns:repeat(2,1fr);}.e-gallery{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.e-gitem:first-child{grid-row:auto;}.e-cards{grid-template-columns:1fr;}}
 </style>
-</head>
-
-<body>
-
-<div class="hero">
-    <h1>🌊 Backwater Cruises</h1>
-    <p>Your Luxury Water Journey</p>
-</div>
-
-<div class="container">
-
-<div class="row mb-5">
-    <div class="col-md-4">
-        <div class="stat-box">
-            <h2>2</h2>
-            <p>Total Backwater Trips</p>
-        </div>
+{% endblock %}
+{% block content %}
+<section class="exp-hero">
+  <div class="exp-hero-bg"></div>
+  <div class="exp-hero-overlay"></div>
+  <div class="exp-particles" id="particles"></div>
+  <div class="exp-hero-content">
+    <div class="exp-tag">🛶 Kerala Serenity</div>
+    <h1 class="exp-hero-title">Drift Through<br><span class="hl">Emerald Waters</span></h1>
+    <p class="exp-hero-sub">Float through Kerala's legendary backwaters on a traditional houseboat — where time slows, nature heals and every bend reveals a new paradise.</p>
+    <div class="exp-btns">
+      <a href="{{ url_for('packages_page') }}" class="ebtn-p">🛶 Book Backwater Package</a>
+      <a href="{{ url_for('destinations_page') }}" class="ebtn-o">🗺 Explore Destinations</a>
     </div>
-    <div class="col-md-4">
-        <div class="stat-box">
-            <h2>₹28,000</h2>
-            <p>Total Spent</p>
-        </div>
+  </div>
+  <div class="exp-scroll"><div class="scroll-mouse"></div><span>SCROLL</span></div>
+</section>
+
+<div class="e-stats">
+  <div class="e-stats-inner">
+    <div class="e-stat"><span class="num">30+</span><span class="lbl">Houseboat Routes</span></div>
+    <div class="e-stat"><span class="num">3000+</span><span class="lbl">Happy Guests</span></div>
+    <div class="e-stat"><span class="num">900km</span><span class="lbl">Waterways</span></div>
+    <div class="e-stat"><span class="num">4.9★</span><span class="lbl">Avg. Rating</span></div>
+  </div>
+</div>
+
+<section class="e-section">
+  <div class="e-wrap">
+    <div class="e-heading"><div class="tag">🛶 EXPERIENCES</div><h2>Backwater Experiences</h2><p>Peaceful, beautiful and truly unforgettable Kerala journeys</p></div>
+    <div class="e-cards">
+      <div class="e-card">
+        <div class="e-card-img"><img src="https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg" alt="Houseboat" loading="lazy"></div>
+        <div class="e-card-body"><span class="e-card-icon">🛶</span><div class="e-card-title">Luxury Houseboat Stay</div><div class="e-card-desc">Overnight on a traditional Kerala kettuvallam. AC bedrooms, private deck, personal chef and butler service on the waters of Alleppey.</div><div class="e-card-price">Starting ₹8,000/night</div></div>
+      </div>
+      <div class="e-card">
+        <div class="e-card-img"><img src="https://images.pexels.com/photos/3225528/pexels-photo-3225528.jpeg" alt="Canoe" loading="lazy"></div>
+        <div class="e-card-body"><span class="e-card-icon">🌿</span><div class="e-card-title">Village Canoe Tour</div><div class="e-card-desc">Explore narrow canals and village life by hand-paddled canoe. Meet local fishermen, see toddy tappers, and taste fresh coconut chutney.</div><div class="e-card-price">Starting ₹1,200/person</div></div>
+      </div>
+      <div class="e-card">
+        <div class="e-card-img"><img src="https://images.pexels.com/photos/3822864/pexels-photo-3822864.jpeg" alt="Ayurveda" loading="lazy"></div>
+        <div class="e-card-body"><span class="e-card-icon">🧖</span><div class="e-card-title">Ayurvedic Wellness</div><div class="e-card-desc">Rejuvenate with authentic Ayurvedic treatments — Shirodhara, Abhyangam and herbal steam baths in lakeside wellness centres.</div><div class="e-card-price">Starting ₹4,500/session</div></div>
+      </div>
     </div>
-    <div class="col-md-4">
-        <div class="stat-box">
-            <h2>Kerala</h2>
-            <p>Favorite Destination</p>
-        </div>
+  </div>
+</section>
+
+<section class="e-section" style="padding-top:0;">
+  <div class="e-wrap">
+    <div class="e-heading"><div class="tag">ITINERARY</div><h2>Sample Backwater Journey</h2><p>Your perfect Kerala escape, day by serene day</p></div>
+    <div class="e-timeline">
+      <div class="t-item"><div class="t-day">Day 1</div><div class="t-title">Arrive in Kochi</div><div class="t-desc">Explore Fort Kochi's heritage — Chinese fishing nets, spice markets and colonial churches. Evening Kathakali performance and a seafood dinner.</div></div>
+      <div class="t-item"><div class="t-day">Day 2</div><div class="t-title">Board Your Houseboat</div><div class="t-desc">Drive to Alleppey and board your luxury houseboat. Float through emerald canals, watch village life unfold and enjoy a fresh Kerala lunch on deck.</div></div>
+      <div class="t-item"><div class="t-day">Day 3</div><div class="t-title">Sunrise & Village Walk</div><div class="t-desc">Wake up to the most peaceful sunrise you've ever seen. Morning canoe ride through narrow village canals. Afternoon Ayurvedic massage.</div></div>
+      <div class="t-item"><div class="t-day">Day 4</div><div class="t-title">Kumarakom & Departure</div><div class="t-desc">Visit Kumarakom Bird Sanctuary at dawn for rare migratory birds. Final lunch of Kerala fish curry before a contented return home.</div></div>
     </div>
-</div>
+  </div>
+</section>
 
-<h3 class="mb-4">Your Cruise History</h3>
+<section class="e-section" style="padding-top:0;">
+  <div class="e-wrap">
+    <div class="e-heading"><div class="tag">GALLERY</div><h2>Visual Journey</h2></div>
+    <div class="e-gallery">
+      <div class="e-gitem"><img src="https://images.pexels.com/photos/2187605/pexels-photo-2187605.jpeg" alt="backwater" loading="lazy"></div>
+      <div class="e-gitem"><img src="https://images.pexels.com/photos/3225528/pexels-photo-3225528.jpeg" alt="canoe" loading="lazy"></div>
+      <div class="e-gitem"><img src="https://images.pexels.com/photos/3822864/pexels-photo-3822864.jpeg" alt="ayurveda" loading="lazy"></div>
+      <div class="e-gitem"><img src="https://images.pexels.com/photos/3876394/pexels-photo-3876394.jpeg" alt="kerala" loading="lazy"></div>
+      <div class="e-gitem"><img src="https://images.pexels.com/photos/1660995/pexels-photo-1660995.jpeg" alt="palm" loading="lazy"></div>
+    </div>
+  </div>
+</section>
 
-<div class="trip-card">
-    <h5>Alleppey Houseboat Stay</h5>
-    <p>Duration: 2 Days</p>
-    <p>Status: Completed</p>
-</div>
-
-<div class="trip-card">
-    <h5>Kumarakom Sunset Cruise</h5>
-    <p>Duration: 3 Days</p>
-    <p>Status: Completed</p>
-</div>
-
-</div>
-
-</body>
-</html>
+<section class="e-section" style="padding-top:0;padding-bottom:80px;">
+  <div class="e-wrap">
+    <div class="e-cta">
+      <h2>Ready to Find Your Calm? 🛶</h2>
+      <p>Book a backwater package — houseboat, meals, Ayurveda and village tours all included.</p>
+      <a href="{{ url_for('packages_page') }}" class="ebtn-p" style="font-size:16px;padding:16px 36px;">🌿 View Backwater Packages</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  const c=document.getElementById('particles');
+  const e=['🌿','🛶','🐸','🌺','🦋','🌴','🐟'];
+  for(let i=0;i<14;i++){
+    const p=document.createElement('div');p.className='exp-particle';
+    p.style.cssText=`left:${Math.random()*100}%;font-size:${Math.random()*16+10}px;animation-duration:${Math.random()*16+10}s;animation-delay:${Math.random()*12}s;`;
+    p.textContent=e[Math.floor(Math.random()*e.length)];c.appendChild(p);
+  }
+})();
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+},{threshold:0.12});
+document.querySelectorAll('.e-card,.t-item,.e-gitem').forEach(el=>obs.observe(el));
+</script>
+{% endblock %}

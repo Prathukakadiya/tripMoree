@@ -10,7 +10,35 @@
 <style>
 :root{--gold:#c9a84c;--teal:#1a5c50;--ink:#0d0f0e;--paper:#f8f6f1;--white:#fff;--border:#e8e4de;--muted:#888;--radius-lg:16px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);}
+body{font-family:'Outfit',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;}
+
+/* Global page transition on load */
+main {
+  animation: pageReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes pageReveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll reveal helper classes */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 3D tilt perspective container */
+.tilt-3d {
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
 .navbar{position:sticky;top:0;z-index:1000;background:rgba(248,246,241,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);transition:box-shadow .3s;}
 .navbar.scrolled{box-shadow:0 4px 20px rgba(0,0,0,.08);}
 .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:1rem;padding:.75rem 1.5rem;}
@@ -274,6 +302,44 @@ async function toggleWishlist(destId,btn){
   btn.classList.toggle('wishlisted',d.status==='added');
   btn.title=d.status==='added'?'Remove from wishlist':'Add to wishlist';
 }
+
+// Scroll Reveal Observer
+document.addEventListener("DOMContentLoaded", () => {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting) {
+        entry.target.classList.add("active");
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll(".reveal").forEach(el => revealObserver.observe(el));
+});
+
+// 3D Tilt Script
+function init3DTilt() {
+  const cards = document.querySelectorAll(".tilt-3d");
+  cards.forEach(card => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const xc = rect.width / 2;
+      const yc = rect.height / 2;
+      const dx = x - xc;
+      const dy = y - yc;
+      card.style.transform = `perspective(1000px) rotateX(${-dy / yc * 6}deg) rotateY(${dx / xc * 6}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+      card.style.transition = "transform 0.4s ease";
+    });
+    card.addEventListener("mouseenter", () => {
+      card.style.transition = "none";
+    });
+  });
+}
+document.addEventListener("DOMContentLoaded", init3DTilt);
+
 </script>
 </body>
 </html>

@@ -1143,7 +1143,8 @@ function submitBooking() {
     const s1 = selectedSeatsLeg1.join(',');
     const s2 = selectedSeatsLeg2.join(',');
     
-    window.location.href = `/confirm-connecting-train?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${cabinClass}&preference=${preference}`;
+    const _urlP=new URLSearchParams(window.location.search);const _hbId=_urlP.get('hotel_booking_id')||'';
+    window.location.href = `/confirm-connecting-train?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${cabinClass}&preference=${preference}&hotel_booking_id=${_hbId}`;
   } else {
     const s = selectedSeatsLeg1.join(',');
     window.location.href = `/confirm-train/${transportIds}?seats=${s}&class=${cabinClass}&preference=${preference}`;

@@ -2204,6 +2204,129 @@ def confirm_train(train_id):
     flash(f"Train booked! {t.train_name} {t.source}→{t.destination} 🚆", "success")
     return redirect(url_for("train_payment", transport_booking_id=tb_train.id))
 
+
+# ── BOOKED SEATS API (for seat map modals in flight/bus/train templates) ──
+
+@app.route("/api/booked-seats/flight/<int:flight_id>")
+@login_required
+def api_booked_seats_flight(flight_id):
+    """Return list of already-booked seat IDs for a flight."""
+    # In a real system you'd store seat numbers; here we return empty so all seats show available
+    return jsonify({"booked_seats": [], "flight_id": flight_id})
+
+@app.route("/api/booked-seats/bus/<int:bus_id>")
+@login_required
+def api_booked_seats_bus(bus_id):
+    return jsonify({"booked_seats": [], "bus_id": bus_id})
+
+@app.route("/api/booked-seats/train/<int:train_id>")
+@login_required
+def api_booked_seats_train(train_id):
+    return jsonify({"booked_seats": [], "train_id": train_id})
+
+# ── CONNECTING FLIGHT CONFIRM ──
+
+@app.route("/confirm-connecting-flight")
+@login_required
+def confirm_connecting_flight():
+    booking_id = session.get("booking_id")
+    if not booking_id:
+        flash("Session expired. Please rebook.", "warning")
+        return redirect(url_for("home"))
+    leg1_id = request.args.get("leg1_id", type=int)
+    leg2_id = request.args.get("leg2_id", type=int)
+    persons = session.get("persons", 1)
+    already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="flight").first()
+    if already:
+        flash("Flight already booked for this trip.", "info")
+        hb = HotelBooking.query.filter_by(booking_id=booking_id).first()
+        if hb:
+            return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
+        return redirect(url_for("my_bookings"))
+    f1 = Flight.query.get_or_404(leg1_id)
+    f2 = Flight.query.get_or_404(leg2_id)
+    # Deduct seats on both legs
+    f1.available_seats = max(0, (f1.available_seats or 0) - persons)
+    f2.available_seats = max(0, (f2.available_seats or 0) - persons)
+    total_price = (f1.price + f2.price) * persons
+    tb = TransportBooking(
+        booking_id=booking_id, transport_type="flight",
+        source=f1.source, destination=f2.destination,
+        persons=persons, price=total_price
+    )
+    db.session.add(tb)
+    db.session.commit()
+    flash(f"Connecting flight booked! {f1.source} → {f1.destination} → {f2.destination} ✈️", "success")
+    return redirect(url_for("flight_payment", transport_booking_id=tb.id))
+
+# ── CONNECTING BUS CONFIRM ──
+
+@app.route("/confirm-connecting-bus")
+@login_required
+def confirm_connecting_bus():
+    booking_id = session.get("booking_id")
+    if not booking_id:
+        flash("Session expired. Please rebook.", "warning")
+        return redirect(url_for("home"))
+    leg1_id = request.args.get("leg1_id", type=int)
+    leg2_id = request.args.get("leg2_id", type=int)
+    persons = session.get("persons", 1)
+    already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="bus").first()
+    if already:
+        flash("Bus already booked for this trip.", "info")
+        hb = HotelBooking.query.filter_by(booking_id=booking_id).first()
+        if hb:
+            return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
+        return redirect(url_for("my_bookings"))
+    b1 = Bus.query.get_or_404(leg1_id)
+    b2 = Bus.query.get_or_404(leg2_id)
+    b1.available_seats = max(0, (b1.available_seats or 0) - persons)
+    b2.available_seats = max(0, (b2.available_seats or 0) - persons)
+    total_price = (b1.price + b2.price) * persons
+    tb = TransportBooking(
+        booking_id=booking_id, transport_type="bus",
+        source=b1.source, destination=b2.destination,
+        persons=persons, price=total_price
+    )
+    db.session.add(tb)
+    db.session.commit()
+    flash(f"Connecting bus booked! {b1.source} → {b1.destination} → {b2.destination} 🚌", "success")
+    return redirect(url_for("bus_payment", transport_booking_id=tb.id))
+
+# ── CONNECTING TRAIN CONFIRM ──
+
+@app.route("/confirm-connecting-train")
+@login_required
+def confirm_connecting_train():
+    booking_id = session.get("booking_id")
+    if not booking_id:
+        flash("Session expired. Please rebook.", "warning")
+        return redirect(url_for("home"))
+    leg1_id = request.args.get("leg1_id", type=int)
+    leg2_id = request.args.get("leg2_id", type=int)
+    persons = session.get("persons", 1)
+    already = TransportBooking.query.filter_by(booking_id=booking_id, transport_type="train").first()
+    if already:
+        flash("Train already booked for this trip.", "info")
+        hb = HotelBooking.query.filter_by(booking_id=booking_id).first()
+        if hb:
+            return redirect(url_for("hype_spots", hotel_booking_id=hb.id))
+        return redirect(url_for("my_bookings"))
+    t1 = Train.query.get_or_404(leg1_id)
+    t2 = Train.query.get_or_404(leg2_id)
+    t1.available_seats = max(0, (t1.available_seats or 0) - persons)
+    t2.available_seats = max(0, (t2.available_seats or 0) - persons)
+    total_price = (t1.price + t2.price) * persons
+    tb = TransportBooking(
+        booking_id=booking_id, transport_type="train",
+        source=t1.source, destination=t2.destination,
+        persons=persons, price=total_price
+    )
+    db.session.add(tb)
+    db.session.commit()
+    flash(f"Connecting train booked! {t1.source} → {t1.destination} → {t2.destination} 🚆", "success")
+    return redirect(url_for("train_payment", transport_booking_id=tb.id))
+
 @app.route("/api/transport-availability")
 def transport_availability():
     destination   = request.args.get("destination", "")

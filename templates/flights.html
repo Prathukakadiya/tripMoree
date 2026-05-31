@@ -1111,16 +1111,18 @@ function updateModalPrices() {
 function submitBooking() {
   const cabinClass = document.getElementById('modalClass').value;
   const preference = document.getElementById('modalPref').value;
-  
+  // Get hotel_booking_id from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const hbId = urlParams.get('hotel_booking_id') || '';
+
   if(bookingType === 'connecting') {
     const splitIds = transportIds.split(',');
     const s1 = selectedSeatsLeg1.join(',');
     const s2 = selectedSeatsLeg2.join(',');
-    
-    window.location.href = `/confirm-connecting-flight?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${cabinClass}&preference=${preference}`;
+    window.location.href = `/confirm-connecting-flight?leg1_id=${splitIds[0]}&leg2_id=${splitIds[1]}&seats_leg1=${s1}&seats_leg2=${s2}&class=${cabinClass}&preference=${preference}&hotel_booking_id=${hbId}`;
   } else {
     const s = selectedSeatsLeg1.join(',');
-    window.location.href = `/confirm-flight/${transportIds}?seats=${s}&class=${cabinClass}&preference=${preference}`;
+    window.location.href = `/confirm-flight/${transportIds}?seats=${s}&class=${cabinClass}&preference=${preference}&hotel_booking_id=${hbId}`;
   }
 }
 </script>
